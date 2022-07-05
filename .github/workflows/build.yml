@@ -28,4 +28,7 @@ jobs:
       # Runs a single command using the runners shell
       - name: Make Docker Build Image
         run: make docker-builder
+        
+      - name: Build Binaries
+        run: make build-bin
 
