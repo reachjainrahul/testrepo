@@ -1,34 +1,50 @@
-# Trying AntreaCloud Build
+name: Build and push latest image if needed
 
-name: build antrea cloud binaries
-
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "master" branch
-  push:
-    branches: [ "master" ]
   pull_request:
-    branches: [ "master" ]
+    branches:
+      - master
+      - release-*
+      - feature/*
+  push:
+    branches:
+      - master
+      - release-*
+      - feature/*
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+  check-changes:
+    name: Check whether tests need to be run based on diff
+    runs-on: [ubuntu-latest]
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - uses: antrea-io/has-changes@v2
+      id: check_diff
+      with:
+        paths-ignore: docs/*
+    outputs:
+      has_changes: ${{ steps.check_diff.outputs.has_changes }}
 
-      # Runs a single command using the runners shell
-      - name: Make Docker Build Image
-        run: make docker-builder
-        
-      - name: Build Binaries
-        run: make build-bin
-
+  build:
+    needs: check-changes
+    if: ${{ needs.check-changes.outputs.has_changes == 'yes' || github.event_name == 'push' }}
+    runs-on: [ubuntu-latest]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build Antrea Cloud Docker image without pushing to registry
+      if: ${{github.event_name != 'push' || github.ref != 'refs/heads/main' }}
+      run: |
+        make docker-builder
+        make
+    - name: Build and push Antrea Cloud Docker image to registry
+      if: ${{github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: |
+        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        make docker-builder
+        make
+        docker push antrea/antrea-cloud:latest
