@@ -221,9 +221,6 @@ function create {
   set -e
 
   image=$NODE_IMG
-  if [[ ! -z $CI ]]; then
-    image="harbor-repo.vmware.com/antreaplus/"$image
-  fi
   config_file="/tmp/kind.yml"
   cat <<EOF > $config_file
 kind: Cluster
