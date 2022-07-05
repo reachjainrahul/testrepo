@@ -34,12 +34,12 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build Antrea Cloud Docker image without pushing to registry
-      if: ${{github.event_name != 'push' || github.ref != 'refs/heads/main' }}
+      if: ${{github.event_name != 'push' || github.ref != 'refs/heads/master' }}
       run: |
         make docker-builder
         make
     - name: Build and push Antrea Cloud Docker image to registry
-      if: ${{github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      if: ${{github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
