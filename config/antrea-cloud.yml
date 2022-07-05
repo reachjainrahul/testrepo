@@ -1,0 +1,952 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    control-plane: antreacloud-cloud-controller
+  name: antreacloud-system
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: antreacloud-system/antreacloud-serving-cert
+    controller-gen.kubebuilder.io/version: v0.8.0
+  name: cloudentityselectors.crd.cloud.antrea.io
+spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        caBundle: Cg==
+        service:
+          name: antreacloud-cloud-controller-webhook-service
+          namespace: antreacloud-system
+          path: /convert
+      conversionReviewVersions:
+      - v1
+      - v1beta1
+  group: crd.cloud.antrea.io
+  names:
+    kind: CloudEntitySelector
+    listKind: CloudEntitySelectorList
+    plural: cloudentityselectors
+    shortNames:
+    - ces
+    singular: cloudentityselector
+  preserveUnknownFields: false
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: CloudEntitySelector is the Schema for the cloudentityselectors API.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: CloudEntitySelectorSpec defines the desired state of CloudEntitySelector.
+            properties:
+              accountName:
+                description: AccountName specifies cloud account in this CloudProvider.
+                type: string
+              vmSelector:
+                description: VMSelector selects the VirtualMachines the user has modify privilege. If it is not specified, no VirtualMachines are selected.
+                properties:
+                  vmMatches:
+                    description: VMMatches is an array of VirtualMachineMatch. VirtualMachines satisfying any item on VMMatches are selected(ORed). If not specified, all VirtualMachines are selected.
+                    items:
+                      description: VirtualMachineMatch specifies VirtualMachine match criteria. VirtualMachines must satisfy all fields(ANDed) in VirtualMachineMatch in order to satisfy VirtualMachineMatch.
+                      properties:
+                        vmMatch:
+                          description: VMMatch specifies VirtualMachines to match. If it is not specified, all VirtualMachines are matching.
+                          properties:
+                            matchID:
+                              description: MatchID matches cloud entities' identifier. If not specified, it matches any cloud entities.
+                              type: string
+                            matchName:
+                              description: MatchName matches cloud entities' name. If not specified, it matches any cloud entities.
+                              type: string
+                            matchTags:
+                              additionalProperties:
+                                type: string
+                              description: MatchName matches cloud entities's tags. Tag matches are ANDed. If not specified, it matches any cloud entities.
+                              type: object
+                          type: object
+                        vpcMatch:
+                          description: VpcMatch specifies the virtual private cloud to which VirtualMachines belong. If it is not specified, VirtualMachines may belong to any virtual private cloud,
+                          properties:
+                            matchID:
+                              description: MatchID matches cloud entities' identifier. If not specified, it matches any cloud entities.
+                              type: string
+                            matchName:
+                              description: MatchName matches cloud entities' name. If not specified, it matches any cloud entities.
+                              type: string
+                            matchTags:
+                              additionalProperties:
+                                type: string
+                              description: MatchName matches cloud entities's tags. Tag matches are ANDed. If not specified, it matches any cloud entities.
+                              type: object
+                          type: object
+                      type: object
+                    type: array
+                type: object
+            type: object
+          status:
+            description: CloudEntitySelectorStatus defines the current state of CloudEntitySelector.
+            properties:
+              Status:
+                description: Status is current state of CloudEntitySelector.
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: antreacloud-system/antreacloud-serving-cert
+    controller-gen.kubebuilder.io/version: v0.8.0
+  name: cloudprovideraccounts.crd.cloud.antrea.io
+spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        caBundle: Cg==
+        service:
+          name: antreacloud-cloud-controller-webhook-service
+          namespace: antreacloud-system
+          path: /convert
+      conversionReviewVersions:
+      - v1
+      - v1beta1
+  group: crd.cloud.antrea.io
+  names:
+    kind: CloudProviderAccount
+    listKind: CloudProviderAccountList
+    plural: cloudprovideraccounts
+    shortNames:
+    - cpa
+    singular: cloudprovideraccount
+  preserveUnknownFields: false
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: CloudProviderAccount is the Schema for the cloudprovideraccounts API.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: CloudProviderAccountSpec defines the desired state of CloudProviderAccount.
+            properties:
+              configAWS:
+                description: Cloud provider account config
+                properties:
+                  accessKeyId:
+                    description: Cloud provider account access key ID
+                    type: string
+                  accessKeySecret:
+                    description: Cloud provider account access key secret (TODO Secret needs to be saved using k8 secrets)
+                    type: string
+                  accountID:
+                    description: Cloud provider account identifier
+                    type: string
+                  externalId:
+                    description: Cloud provider external id used in assume role
+                    type: string
+                  region:
+                    description: Cloud provider account region
+                    type: string
+                  roleArn:
+                    description: Cloud provider role arn to be assumed
+                    type: string
+                type: object
+              configAzure:
+                description: Cloud provider account config
+                properties:
+                  clientId:
+                    type: string
+                  clientKey:
+                    type: string
+                  identityClientId:
+                    type: string
+                  region:
+                    type: string
+                  subscriptionId:
+                    type: string
+                  tenantId:
+                    type: string
+                type: object
+              pollIntervalInSeconds:
+                description: PollIntervalInSeconds defines account poll interval (default value is 60, if not specified)
+                type: integer
+              providerType:
+                description: Cloud provider type
+                enum:
+                - Azure
+                - AWS
+                type: string
+            type: object
+          status:
+            description: CloudProviderAccountStatus defines the observed state of CloudProviderAccount.
+            properties:
+              error:
+                description: 'INSERT ADDITIONAL STATUS FIELD - define observed state of cluster Important: Run "make" to regenerate code after modifying this file Error is current error, if any, of the CloudProviderAccount.'
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.8.0
+  creationTimestamp: null
+  name: networkinterfaces.crd.cloud.antrea.io
+spec:
+  group: crd.cloud.antrea.io
+  names:
+    kind: NetworkInterface
+    listKind: NetworkInterfaceList
+    plural: networkinterfaces
+    shortNames:
+    - ni
+    singular: networkinterface
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .metadata.ownerReferences[0].name
+      name: Owner-Id
+      type: string
+    - jsonPath: .metadata.ownerReferences[0].kind
+      name: Owner-Type
+      type: string
+    - jsonPath: .status.ips[?(@.addressType == 'InternalIP')].address
+      name: Internal-IP
+      type: string
+    - jsonPath: .status.ips[?(@.addressType == 'ExternalIP')].address
+      name: External-IP
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: NetworkInterface is the Schema for the networkinterfaces API. A NetworkInterface is generated as part of VirtualMachine resource creation.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: NetworkInterfaceSpec defines the desired state of NetworkInterface It contains user tunable parameters.
+            type: object
+          status:
+            description: NetworkInterfaceStatus contains information pertaining to NetworkInterface.
+            properties:
+              ips:
+                description: IP addresses of this NetworkInterface.
+                items:
+                  properties:
+                    address:
+                      type: string
+                    addressType:
+                      description: AddressType specifies IP address type.
+                      type: string
+                  required:
+                  - address
+                  - addressType
+                  type: object
+                type: array
+              mac:
+                description: Hardware address of the interface.
+                type: string
+              networkPolicies:
+                additionalProperties:
+                  type: string
+                description: NetworkPolicies indicates NetworkPolicy status on this NetworkInterface.
+                type: object
+              tags:
+                additionalProperties:
+                  type: string
+                description: Tags of this interface. A corresponding label is also generated for each tag.
+                type: object
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: antreacloud-system/antreacloud-serving-cert
+    controller-gen.kubebuilder.io/version: v0.8.0
+  name: virtualmachines.crd.cloud.antrea.io
+spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        caBundle: Cg==
+        service:
+          name: antreacloud-cloud-controller-webhook-service
+          namespace: antreacloud-system
+          path: /convert
+      conversionReviewVersions:
+      - v1
+      - v1beta1
+  group: crd.cloud.antrea.io
+  names:
+    kind: VirtualMachine
+    listKind: VirtualMachineList
+    plural: virtualmachines
+    shortNames:
+    - vm
+    singular: virtualmachine
+  preserveUnknownFields: false
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.provider
+      name: Cloud-Provider
+      type: string
+    - jsonPath: .status.virtualPrivateCloud
+      name: Virtual-Private-Cloud
+      type: string
+    - jsonPath: .status.status
+      name: Status
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: VirtualMachine is the Schema for the virtualmachines API A virtualMachine object is created automatically based on matching criteria specification of CloudEntitySelector.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: VirtualMachineSpec defines the desired state of VirtualMachine.
+            type: object
+          status:
+            description: VirtualMachineStatus defines the observed state of VirtualMachine It contains observable parameters.
+            properties:
+              error:
+                description: Error is current error, if any, of the VirtualMachine.
+                type: string
+              networkInterfaces:
+                description: NetworkInterfaces is array of NetworkInterfaces attached to this VirtualMachine.
+                items:
+                  description: NetworkInterfaceReference references to NetworkInterface.
+                  properties:
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+                  type: object
+                type: array
+              networkPolicies:
+                additionalProperties:
+                  type: string
+                description: NetworkPolicies indicates NetworkPolicy status on this VirtualMachine.
+                type: object
+              provider:
+                description: Provider specifies cloud provider of this VirtualMachine.
+                enum:
+                - Azure
+                - AWS
+                type: string
+              status:
+                description: Status indicates current state of the VirtualMachine.
+                type: string
+              tags:
+                additionalProperties:
+                  type: string
+                description: Tags of this VirtualMachine. A corresponding label is also generated for each tag.
+                type: object
+              virtualPrivateCloud:
+                description: VirtualPrivateCloud is the virtual private cloud this VirtualMachine belongs to.
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: antreacloud-leader-election-role
+  namespace: antreacloud-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - configmaps/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: antreacloud-manager-role
+rules:
+- apiGroups:
+  - controlplane.antrea.io
+  resources:
+  - addressgroups
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - controlplane.antrea.io
+  resources:
+  - appliedtogroups
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - controlplane.antrea.io
+  resources:
+  - networkpolicies
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - crd.antrea.io
+  resources:
+  - externalentities
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - crd.antrea.io
+  resources:
+  - externalentities/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - crd.cloud.antrea.io
+  resources:
+  - cloudentityselectors
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - crd.cloud.antrea.io
+  resources:
+  - cloudentityselectors/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - crd.cloud.antrea.io
+  resources:
+  - cloudprovideraccounts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - crd.cloud.antrea.io
+  resources:
+  - cloudprovideraccounts/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - crd.cloud.antrea.io
+  resources:
+  - networkinterfaces
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - crd.cloud.antrea.io
+  resources:
+  - networkinterfaces/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - crd.cloud.antrea.io
+  resources:
+  - virtualmachines
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - crd.cloud.antrea.io
+  resources:
+  - virtualmachines/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
+- apiGroups:
+  - ""
+  resourceNames:
+  - extension-apiserver-authentication
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: antreacloud-resource-viewer-role
+rules:
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses/status
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - services/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: antreacloud-leader-election-rolebinding
+  namespace: antreacloud-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: antreacloud-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: antreacloud-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: antreacloud-manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: antreacloud-manager-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: antreacloud-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: antreacloud-resource-viewer-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: antreacloud-resource-viewer-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: antreacloud-system
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: antreacloud-cloud-controller-webhook-service
+  namespace: antreacloud-system
+spec:
+  ports:
+  - port: 443
+    targetPort: 9443
+  selector:
+    control-plane: antreacloud-cloud-controller
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: antreacloud-cloud-service
+  namespace: antreacloud-system
+spec:
+  ports:
+  - port: 443
+    protocol: TCP
+    targetPort: 5443
+  selector:
+    control-plane: antreacloud-cloud-controller
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    control-plane: antreacloud-cloud-controller
+  name: antreacloud-cloud-controller
+  namespace: antreacloud-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: antreacloud-cloud-controller
+  template:
+    metadata:
+      labels:
+        aadpodidbinding: antrea-plus-azure-service-accessor
+        control-plane: antreacloud-cloud-controller
+    spec:
+      containers:
+      - args:
+        - --enable-leader-election
+        - --enable-debug-log
+        command:
+        - /cloud-controller
+        image: antrea/antrea-cloud:latest
+        imagePullPolicy: IfNotPresent
+        name: antreacloud-cloud-controller
+        ports:
+        - containerPort: 9443
+          name: webhook-server
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 2000Mi
+          requests:
+            cpu: 200m
+            memory: 500Mi
+        volumeMounts:
+        - mountPath: /tmp/k8s-webhook-server/serving-certs
+          name: cert
+          readOnly: true
+        - mountPath: /tmp/k8s-apiserver/serving-certs
+          name: apiserver-cert
+          readOnly: true
+      terminationGracePeriodSeconds: 10
+      volumes:
+      - name: cert
+        secret:
+          defaultMode: 420
+          secretName: serving-cert
+      - name: apiserver-cert
+        secret:
+          defaultMode: 420
+          secretName: serving-cert
+---
+apiVersion: apiregistration.k8s.io/v1
+kind: APIService
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: antreacloud-system/antreacloud-serving-cert
+  name: v1alpha1.controlplane.cloud.antrea.io
+spec:
+  group: controlplane.cloud.antrea.io
+  groupPriorityMinimum: 100
+  service:
+    name: antreacloud-cloud-service
+    namespace: antreacloud-system
+  version: v1alpha1
+  versionPriority: 100
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: antreacloud-serving-cert
+  namespace: antreacloud-system
+spec:
+  dnsNames:
+  - '*.antreacloud-system.svc'
+  - '*.antreacloud-system.svc.cluster.local'
+  issuerRef:
+    kind: Issuer
+    name: antreacloud-selfsigned-issuer
+  secretName: serving-cert
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: antreacloud-selfsigned-issuer
+  namespace: antreacloud-system
+spec:
+  selfSigned: {}
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: antreacloud-system/antreacloud-serving-cert
+  name: antreacloud-cloud-controller-mutating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    caBundle: Cg==
+    service:
+      name: antreacloud-cloud-controller-webhook-service
+      namespace: antreacloud-system
+      path: /mutate-crd-cloud-antrea-io-v1alpha1-virtualmachine
+  failurePolicy: Fail
+  name: mvirtualmachine.kb.io
+  rules:
+  - apiGroups:
+    - crd.cloud.antrea.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - virtualmachines
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    caBundle: Cg==
+    service:
+      name: antreacloud-cloud-controller-webhook-service
+      namespace: antreacloud-system
+      path: /mutate-crd-cloud-antrea-io-v1alpha1-cloudentityselector
+  failurePolicy: Fail
+  name: mcloudentityselector.kb.io
+  rules:
+  - apiGroups:
+    - crd.cloud.antrea.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - cloudentityselectors
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    caBundle: Cg==
+    service:
+      name: antreacloud-cloud-controller-webhook-service
+      namespace: antreacloud-system
+      path: /mutate-crd-cloud-antrea-io-v1alpha1-cloudprovideraccount
+  failurePolicy: Fail
+  name: mcloudprovideraccount.kb.io
+  rules:
+  - apiGroups:
+    - crd.cloud.antrea.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    resources:
+    - cloudprovideraccounts
+  sideEffects: None
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: antreacloud-system/antreacloud-serving-cert
+  name: antreacloud-cloud-controller-validating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    caBundle: Cg==
+    service:
+      name: antreacloud-cloud-controller-webhook-service
+      namespace: antreacloud-system
+      path: /validate-crd-cloud-antrea-io-v1alpha1-virtualmachine
+  failurePolicy: Fail
+  name: vvirtualmachine.kb.io
+  rules:
+  - apiGroups:
+    - crd.cloud.antrea.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - virtualmachines
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    caBundle: Cg==
+    service:
+      name: antreacloud-cloud-controller-webhook-service
+      namespace: antreacloud-system
+      path: /validate-crd-cloud-antrea-io-v1alpha1-cloudentityselector
+  failurePolicy: Fail
+  name: vcloudentityselector.kb.io
+  rules:
+  - apiGroups:
+    - crd.cloud.antrea.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - cloudentityselectors
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    caBundle: Cg==
+    service:
+      name: antreacloud-cloud-controller-webhook-service
+      namespace: antreacloud-system
+      path: /validate-crd-cloud-antrea-io-v1alpha1-cloudprovideraccount
+  failurePolicy: Fail
+  name: vcloudprovideraccount.kb.io
+  rules:
+  - apiGroups:
+    - crd.cloud.antrea.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    resources:
+    - cloudprovideraccounts
+  sideEffects: None

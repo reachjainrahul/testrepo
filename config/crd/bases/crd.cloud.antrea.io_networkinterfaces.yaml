@@ -1,0 +1,99 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.8.0
+  creationTimestamp: null
+  name: networkinterfaces.crd.cloud.antrea.io
+spec:
+  group: crd.cloud.antrea.io
+  names:
+    kind: NetworkInterface
+    listKind: NetworkInterfaceList
+    plural: networkinterfaces
+    shortNames:
+    - ni
+    singular: networkinterface
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .metadata.ownerReferences[0].name
+      name: Owner-Id
+      type: string
+    - jsonPath: .metadata.ownerReferences[0].kind
+      name: Owner-Type
+      type: string
+    - jsonPath: .status.ips[?(@.addressType == 'InternalIP')].address
+      name: Internal-IP
+      type: string
+    - jsonPath: .status.ips[?(@.addressType == 'ExternalIP')].address
+      name: External-IP
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: NetworkInterface is the Schema for the networkinterfaces API.
+          A NetworkInterface is generated as part of VirtualMachine resource creation.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: NetworkInterfaceSpec defines the desired state of NetworkInterface
+              It contains user tunable parameters.
+            type: object
+          status:
+            description: NetworkInterfaceStatus contains information pertaining to
+              NetworkInterface.
+            properties:
+              ips:
+                description: IP addresses of this NetworkInterface.
+                items:
+                  properties:
+                    address:
+                      type: string
+                    addressType:
+                      description: AddressType specifies IP address type.
+                      type: string
+                  required:
+                  - address
+                  - addressType
+                  type: object
+                type: array
+              mac:
+                description: Hardware address of the interface.
+                type: string
+              networkPolicies:
+                additionalProperties:
+                  type: string
+                description: NetworkPolicies indicates NetworkPolicy status on this
+                  NetworkInterface.
+                type: object
+              tags:
+                additionalProperties:
+                  type: string
+                description: Tags of this interface. A corresponding label is also
+                  generated for each tag.
+                type: object
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

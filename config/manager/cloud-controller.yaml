@@ -1,0 +1,65 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloud-service
+  namespace: system
+spec:
+  ports:
+  - port: 443
+    protocol: TCP
+    targetPort: 5443
+  selector:
+    control-plane: antreacloud-cloud-controller
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    control-plane: antreacloud-cloud-controller
+  name: system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-controller
+  namespace: system
+  labels:
+    control-plane: antreacloud-cloud-controller
+spec:
+  selector:
+    matchLabels:
+      control-plane: antreacloud-cloud-controller
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        aadpodidbinding: antrea-plus-azure-service-accessor
+        control-plane: antreacloud-cloud-controller
+    spec:
+      containers:
+      - command:
+        - /cloud-controller
+        args:
+        - --enable-leader-election
+        - --enable-debug-log
+        image: antrea/antrea-cloud:latest
+        imagePullPolicy: IfNotPresent
+        name: antreacloud-cloud-controller
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 2000Mi
+          requests:
+            cpu: 200m
+            memory: 500Mi
+        volumeMounts:
+          - name: apiserver-cert
+            mountPath: /tmp/k8s-apiserver/serving-certs
+            readOnly: true
+      volumes:
+        - name: apiserver-cert
+          secret:
+            defaultMode: 420
+            secretName: serving-cert
+      terminationGracePeriodSeconds: 10

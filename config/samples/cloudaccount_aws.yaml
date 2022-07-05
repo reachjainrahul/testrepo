@@ -1,0 +1,25 @@
+# Add AWS Account and Onboard VPC
+apiVersion: crd.cloud.antrea.io/v1alpha1
+kind: CloudProviderAccount
+metadata:
+  name: cloudprovideraccount-sample
+  namespace: sample-ns
+spec:
+  providerType: "AWS"
+  configAWS:
+    accountID: "id"
+    accessKeyId: "<REPLACE_ME>"
+    accessKeySecret: "<REPLACE_ME>"
+    region: "<REPLACE_ME>"
+---
+apiVersion: crd.cloud.antrea.io/v1alpha1
+kind: CloudEntitySelector
+metadata:
+  name: cloudentityselector-sample01
+  namespace: sample-ns
+spec:
+  accountName: cloudprovideraccount-sample
+  vmSelector:
+    vmMatches:
+      - vpcMatch:
+          matchID: "<REPLACE_ME>"

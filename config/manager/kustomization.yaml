@@ -1,0 +1,3 @@
+resources:
+- cloud-controller.yaml
+- apiservice.yaml

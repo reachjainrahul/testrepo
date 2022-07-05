@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <help_text/>
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLUseCase</id>
+    <coordinates>
+      <x>330</x>
+      <y>70</y>
+      <w>120</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>NetworkPolicy
+Controller</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>100</x>
+      <y>300</y>
+      <w>150</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>Store:
+AddrGrp</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>320</x>
+      <y>300</y>
+      <w>150</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>Store:
+AppliedToGrp</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>570</x>
+      <y>300</y>
+      <w>160</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>Store:
+InternNetworkPolicy</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>60</x>
+      <y>30</y>
+      <w>430</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+Watch
+K8s NetworkPolicy
+Pod
+</panel_attributes>
+    <additional_attributes>280.0;60.0;280.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>150</x>
+      <y>230</y>
+      <w>530</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-&gt;</panel_attributes>
+    <additional_attributes>10.0;70.0;10.0;10.0;510.0;10.0;510.0;70.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>370</x>
+      <y>170</y>
+      <w>110</w>
+      <h>150</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m2=Decompose</panel_attributes>
+    <additional_attributes>10.0;130.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLUseCase</id>
+    <coordinates>
+      <x>320</x>
+      <y>440</y>
+      <w>120</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>Internal
+APIServer</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>140</x>
+      <y>340</y>
+      <w>540</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0;520.0;50.0;520.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>370</x>
+      <y>340</y>
+      <w>140</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=Watch, Get, List</panel_attributes>
+    <additional_attributes>10.0;100.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>50</x>
+      <y>60</y>
+      <w>120</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>K8s APIServer</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>50</x>
+      <y>120</y>
+      <w>300</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+Watch
+AntreaNetworkPolicy
+ExternalEntity
+fg=blue
+</panel_attributes>
+    <additional_attributes>280.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>220</x>
+      <y>460</y>
+      <w>120</w>
+      <h>230</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+
+
+
+
+
+
+
+ 
+</panel_attributes>
+    <additional_attributes>100.0;20.0;10.0;20.0;10.0;210.0</additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>130</x>
+      <y>670</y>
+      <w>160</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>From Antrea Agent</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>70</x>
+      <y>520</y>
+      <w>170</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>Register Watch
+(Select on local NodeName)
+AddrGrp
+AppliedToGrp
+InternNetworkPolicy
+style=wordwrap</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>800</x>
+      <y>10</y>
+      <w>130</w>
+      <h>240</h>
+    </coordinates>
+    <panel_attributes>AddrGrp
+--
+[]NodeName
+[]{
+  PodRef
+  PodIP(in use)
+  Ports
+}
+bg=white
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>810</x>
+      <y>590</y>
+      <w>140</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>InternNetwork
+Policy
+--
+[]NodeName
+[]AppliedToGrp
+[]AddrGrp</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>800</x>
+      <y>270</y>
+      <w>140</w>
+      <h>240</h>
+    </coordinates>
+    <panel_attributes>AppliedToGrp
+--
+[]NodeName
+[]{
+  PodRef (in use)
+  PodIP
+  Ports
+}</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>240</x>
+      <y>0</y>
+      <w>580</w>
+      <h>320</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>560.0;10.0;10.0;300.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>460</x>
+      <y>260</y>
+      <w>360</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>340.0;10.0;10.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>720</x>
+      <y>340</y>
+      <w>110</w>
+      <h>270</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>90.0;250.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>800</x>
+      <y>400</y>
+      <w>140</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>--
+[]TargetName
+[]{
+  EntityRef
+  IP
+  Ports
+}
+fg=blue
+layer=1</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>810</x>
+      <y>680</y>
+      <w>140</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>--
+[]ClientName
+fg=blue</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>430</x>
+      <y>470</y>
+      <w>130</w>
+      <h>220</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+fg=blue</panel_attributes>
+    <additional_attributes>10.0;10.0;110.0;10.0;110.0;200.0</additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>510</x>
+      <y>680</y>
+      <w>170</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>From CloudController
+fg=blue</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>550</x>
+      <y>510</y>
+      <w>220</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>Register Watch
+(Select on Target="cloud"
+AddGrp
+AppliedToGrp
+InternNetworkworkPolicy
+fg=blue</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>800</x>
+      <y>140</y>
+      <w>130</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>--
+[]TargetName
+[]{
+  EntityRef
+  IP
+  Ports
+}
+fg=blue
+layer=1</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>

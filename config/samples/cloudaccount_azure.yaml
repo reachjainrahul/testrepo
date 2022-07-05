@@ -1,0 +1,26 @@
+# Add Azure Account and Onboard VPC
+apiVersion: crd.cloud.antrea.io/v1alpha1
+kind: CloudProviderAccount
+metadata:
+  name: cloudprovideraccount-sample
+  namespace: sample-ns
+spec:
+  providerType: "Azure"
+  configAzure:
+    subscriptionId: "<REPLACE_ME>"
+    clientId: "<REPLACE_ME>"
+    tenantId: "<REPLACE_ME>"
+    clientKey: "<REPLACE_ME>"
+    region: "<REPLACE_ME>"
+---
+apiVersion: crd.cloud.antrea.io/v1alpha1
+kind: CloudEntitySelector
+metadata:
+  name: cloudentityselector-sample01
+  namespace: sample-ns
+spec:
+  accountName: cloudprovideraccount-sample
+  vmSelector:
+    vmMatches:
+      - vpcMatch:
+          matchID: "<REPLACE_ME>"

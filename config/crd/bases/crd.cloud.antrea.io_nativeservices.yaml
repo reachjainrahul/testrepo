@@ -1,0 +1,136 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.8.0
+  creationTimestamp: null
+  name: nativeservices.crd.cloud.antrea.io
+spec:
+  group: crd.cloud.antrea.io
+  names:
+    kind: NativeService
+    listKind: NativeServiceList
+    plural: nativeservices
+    singular: nativeservice
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.provider
+      name: Cloud-Provider
+      type: string
+    - jsonPath: .status.virtualPrivateCloud
+      name: Virtual-Private-Cloud
+      type: string
+    - jsonPath: .status.status
+      name: Status
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: NativeService is the Schema for the nativeservices API.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: NativeServiceSpec defines the desired state of NativeService.
+            type: object
+          status:
+            description: NativeServiceStatus defines the observed state of NativeService.
+            properties:
+              address:
+                description: FQDN or IP addresses of this NativeService.
+                items:
+                  properties:
+                    address:
+                      type: string
+                    addressType:
+                      description: AddressType specifies IP address type.
+                      type: string
+                  required:
+                  - address
+                  - addressType
+                  type: object
+                type: array
+              fqdn:
+                description: FQDN specifies NativeService's fully qualified domain
+                  name.
+                type: string
+              networkInterfaces:
+                description: NetworkInterfaces is array of NetworkInterfaces attached
+                  to this NativeService.
+                items:
+                  description: NetworkInterfaceReference references to NetworkInterface.
+                  properties:
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+                  type: object
+                type: array
+              ports:
+                description: Ports is array of NamedPorts of this NativeService.
+                items:
+                  description: NamedPort describes the port and protocol to match
+                    in a rule.
+                  properties:
+                    name:
+                      description: Name associated with the Port.
+                      type: string
+                    port:
+                      description: The port on the given protocol.
+                      format: int32
+                      type: integer
+                    protocol:
+                      default: TCP
+                      description: The protocol (TCP, UDP, or SCTP) which traffic
+                        must match. If not specified, this field defaults to TCP.
+                      type: string
+                  type: object
+                type: array
+              provider:
+                description: Provider specifies cloud provider of this NativeService.
+                enum:
+                - Azure
+                - AWS
+                type: string
+              providerServiceType:
+                description: ProviderServiceType specifies cloud provider service
+                  type.
+                type: string
+              status:
+                type: string
+              tags:
+                additionalProperties:
+                  type: string
+                description: Tags of this ServiceService.
+                type: object
+              type:
+                description: Type specifies NativeServiceType.
+                type: string
+              virtualPrivateCloud:
+                description: VirtualPrivateCloud is the virtual private cloud this
+                  NativeService belongs to.
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

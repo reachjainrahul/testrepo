@@ -1,0 +1,235 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.8.0
+  creationTimestamp: null
+  name: cloudentityselectors.crd.cloud.antrea.io
+spec:
+  group: crd.cloud.antrea.io
+  names:
+    kind: CloudEntitySelector
+    listKind: CloudEntitySelectorList
+    plural: cloudentityselectors
+    shortNames:
+    - ces
+    singular: cloudentityselector
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: CloudEntitySelector is the Schema for the cloudentityselectors
+          API.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: CloudEntitySelectorSpec defines the desired state of CloudEntitySelector.
+            properties:
+              accountName:
+                description: AccountName specifies cloud account in this CloudProvider.
+                type: string
+              vmSelector:
+                description: VMSelector selects the VirtualMachines the user has modify
+                  privilege. If it is not specified, no VirtualMachines are selected.
+                properties:
+                  vmMatches:
+                    description: VMMatches is an array of VirtualMachineMatch. VirtualMachines
+                      satisfying any item on VMMatches are selected(ORed). If not
+                      specified, all VirtualMachines are selected.
+                    items:
+                      description: VirtualMachineMatch specifies VirtualMachine match
+                        criteria. VirtualMachines must satisfy all fields(ANDed) in
+                        VirtualMachineMatch in order to satisfy VirtualMachineMatch.
+                      properties:
+                        vmMatch:
+                          description: VMMatch specifies VirtualMachines to match.
+                            If it is not specified, all VirtualMachines are matching.
+                          properties:
+                            matchID:
+                              description: MatchID matches cloud entities' identifier.
+                                If not specified, it matches any cloud entities.
+                              type: string
+                            matchIdExpression:
+                              description: MatchIDExpression matches cloud entities'
+                                identifier by EntityPropertyMatch. If not specified,
+                                it matches to any cloud entities.
+                              properties:
+                                operator:
+                                  description: operator represents property's relationship
+                                    to a set of property values. Valid operators are
+                                    In, NotIn, Exists and DoesNotExist
+                                  type: string
+                                values:
+                                  description: Values is array of strings, representing
+                                    matching property values.
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
+                            matchName:
+                              description: MatchName matches cloud entities' name.
+                                If not specified, it matches any cloud entities.
+                              type: string
+                            matchNameExpression:
+                              description: MatchNameExpression matches cloud entities'
+                                name by EntityPropertyMatch. If not specified, it
+                                matches to any cloud entities.
+                              properties:
+                                operator:
+                                  description: operator represents property's relationship
+                                    to a set of property values. Valid operators are
+                                    In, NotIn, Exists and DoesNotExist
+                                  type: string
+                                values:
+                                  description: Values is array of strings, representing
+                                    matching property values.
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
+                            matchTagExpressions:
+                              description: MatchTagsExpression is a list of EntityTagMatch.
+                                Each item is a match condition for one tag. Tag matches
+                                are ANDed. If not specified, it matches any cloud
+                                entities.
+                              items:
+                                description: EntityTagMatch matches one key-value
+                                  pair of cloud entities' tags.
+                                properties:
+                                  key:
+                                    description: Key is the key of the a tag.
+                                    type: string
+                                  operator:
+                                    description: operator represents Key's relationship
+                                      to a set of tag values. Valid operators are
+                                      In, NotIn, Exists and DoesNotExist
+                                    type: string
+                                  values:
+                                    description: Values is array of strings, representing
+                                      matching tag values.
+                                    items:
+                                      type: string
+                                    type: array
+                                type: object
+                              type: array
+                            matchTags:
+                              additionalProperties:
+                                type: string
+                              description: MatchName matches cloud entities's tags.
+                                Tag matches are ANDed. If not specified, it matches
+                                any cloud entities.
+                              type: object
+                          type: object
+                        vpcMatch:
+                          description: VpcMatch specifies the virtual private cloud
+                            to which VirtualMachines belong. If it is not specified,
+                            VirtualMachines may belong to any virtual private cloud,
+                          properties:
+                            matchID:
+                              description: MatchID matches cloud entities' identifier.
+                                If not specified, it matches any cloud entities.
+                              type: string
+                            matchIdExpression:
+                              description: MatchIDExpression matches cloud entities'
+                                identifier by EntityPropertyMatch. If not specified,
+                                it matches to any cloud entities.
+                              properties:
+                                operator:
+                                  description: operator represents property's relationship
+                                    to a set of property values. Valid operators are
+                                    In, NotIn, Exists and DoesNotExist
+                                  type: string
+                                values:
+                                  description: Values is array of strings, representing
+                                    matching property values.
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
+                            matchName:
+                              description: MatchName matches cloud entities' name.
+                                If not specified, it matches any cloud entities.
+                              type: string
+                            matchNameExpression:
+                              description: MatchNameExpression matches cloud entities'
+                                name by EntityPropertyMatch. If not specified, it
+                                matches to any cloud entities.
+                              properties:
+                                operator:
+                                  description: operator represents property's relationship
+                                    to a set of property values. Valid operators are
+                                    In, NotIn, Exists and DoesNotExist
+                                  type: string
+                                values:
+                                  description: Values is array of strings, representing
+                                    matching property values.
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
+                            matchTagExpressions:
+                              description: MatchTagsExpression is a list of EntityTagMatch.
+                                Each item is a match condition for one tag. Tag matches
+                                are ANDed. If not specified, it matches any cloud
+                                entities.
+                              items:
+                                description: EntityTagMatch matches one key-value
+                                  pair of cloud entities' tags.
+                                properties:
+                                  key:
+                                    description: Key is the key of the a tag.
+                                    type: string
+                                  operator:
+                                    description: operator represents Key's relationship
+                                      to a set of tag values. Valid operators are
+                                      In, NotIn, Exists and DoesNotExist
+                                    type: string
+                                  values:
+                                    description: Values is array of strings, representing
+                                      matching tag values.
+                                    items:
+                                      type: string
+                                    type: array
+                                type: object
+                              type: array
+                            matchTags:
+                              additionalProperties:
+                                type: string
+                              description: MatchName matches cloud entities's tags.
+                                Tag matches are ANDed. If not specified, it matches
+                                any cloud entities.
+                              type: object
+                          type: object
+                      type: object
+                    type: array
+                type: object
+            type: object
+          status:
+            description: CloudEntitySelectorStatus defines the current state of CloudEntitySelector.
+            properties:
+              Status:
+                description: Status is current state of CloudEntitySelector.
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
