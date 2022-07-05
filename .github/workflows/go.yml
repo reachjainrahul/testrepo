@@ -11,9 +11,6 @@ on:
     - release-*
     - feature/*
 
-env:
-  go-cache-name: go
-
 jobs:
   check-changes:
     name: Check whether tests need to be run based on diff
