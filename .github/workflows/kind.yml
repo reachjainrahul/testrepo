@@ -1,0 +1,52 @@
+name: Kind
+on:
+  pull_request:
+    branches:
+      - master
+      - release-*
+      - feature/*
+  push:
+    branches:
+      - master
+      - release-*
+      - feature/*
+    
+jobs:
+  check-changes:
+    name: Check whether tests need to be run based on diff
+    runs-on: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: antrea-io/has-changes@v2
+        id: check_diff
+        with:
+          paths-ignore: docs/*
+    outputs:
+      has_changes: ${{ steps.check_diff.outputs.has_changes }}
+      
+  test-integration:
+    name: Integration tests on a Kind cluster on Linux
+    needs: check-changes
+    if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Install Pre-Req
+        run: |
+          apk add -U curl bash unzip git
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.10.0/kind-$(uname)-amd64
+          chmod +x ./kind
+          mv ./kind /usr/local/bin/kind
+          curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.24.1/bin/linux/amd64/kubectl
+          chmod +x ./kubectl && mv ./kubectl /usr/local/bin/kubectl
+          curl -LO https://releases.hashicorp.com/terraform/0.13.5/terraform_0.13.5_linux_amd64.zip
+          unzip ./terraform_0.13.5_linux_amd64.zip
+          chmod +x ./terraform && mv ./terraform /usr/local/bin/terraform
+          
+      - name: Building Image
+        run: hack/build-product.sh
+        
+      - name: Run the test
+        run: |
+          hack/install-cloud-tools.sh
