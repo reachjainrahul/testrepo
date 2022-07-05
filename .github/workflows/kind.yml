@@ -51,3 +51,4 @@ jobs:
       - name: Run the test
         run: |
           hack/install-cloud-tools.sh
+          ci/kind/kind-setup.sh create kind
