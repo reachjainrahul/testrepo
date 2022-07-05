@@ -23,7 +23,7 @@ DOCKERIZE := \
 all: build
 
 # Build binaries
-build-bin: docker-builder generate lint tidy
+build-bin: docker-builder generate tidy
 	$(DOCKERIZE) hack/build-bin.sh
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
