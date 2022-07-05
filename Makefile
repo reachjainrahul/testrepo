@@ -1,6 +1,6 @@
 # Image URL to use all building/pushing image targets
 IMG ?= antrea/antrea-cloud:latest
-BUILDER_IMG ?= antreacloud/gitlab/gitlab-runner:latest
+BUILDER_IMG ?= antrea-cloud/builder:latest
 
 CRD_OPTIONS ?= "crd"
 
@@ -25,11 +25,6 @@ all: build
 # Build binaries
 build-bin: docker-builder generate tidy
 	$(DOCKERIZE) hack/build-bin.sh
-
-# Deploy controller in the configured Kubernetes cluster in ~/.kube/config
-#deploy: manifests
-#	cd config/manager && kustomize edit set image controller=${IMG}
-#	kustomize build config/default | kubectl apply -f -
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: docker-builder
