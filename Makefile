@@ -45,7 +45,7 @@ unit-test: mock
 
 # Run lint against code
 lint: docker-builder
-	$(DOCKERIZE)  golangci-lint run
+	$(DOCKERIZE)  golangci-lint run --timeout 3m --verbose
 
 # Run go mod tidy against code
 tidy: docker-builder
