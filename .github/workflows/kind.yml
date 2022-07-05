@@ -34,7 +34,6 @@ jobs:
     steps:
       - name: Install Pre-Req
         run: |
-          apk add -U curl bash unzip git
           curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.10.0/kind-$(uname)-amd64
           chmod +x ./kind
           mv ./kind /usr/local/bin/kind
