@@ -78,10 +78,8 @@ docker-push:
 
 # create docker container builder
 docker-builder:
-ifeq ($(CI),)
 ifeq (, $(shell docker images -q $(BUILDER_IMG) ))
 	docker build --target builder -f ./build/images/Dockerfile -t $(BUILDER_IMG) .
-endif
 endif
 
 ##@ Build Dependencies
