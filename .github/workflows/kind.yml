@@ -67,6 +67,9 @@ jobs:
         run: |
           hack/install-cloud-tools.sh
           ci/kind/kind-setup.sh create kind
+          kubectl --context kind-kind get all --all-namespaces
+          sleep 60
+          kubectl --context kind-kind get all --all-namespaces
           
       - name: Run integration tests
         env:
