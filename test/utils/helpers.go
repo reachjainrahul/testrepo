@@ -26,7 +26,6 @@ import (
 	"text/template"
 	"time"
 
-	antreanetworking "antrea.io/antrea/pkg/apis/controlplane/v1beta2"
 	v1 "k8s.io/api/apps/v1"
 	v12 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -462,9 +461,11 @@ func CollectCRDs(kubectl *KubeCtl, dir string) error {
 		return err
 	}
 	crdKinds := []string{
-		reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(),
-		reflect.TypeOf(v1alpha1.NetworkInterface{}).Name(),
-		reflect.TypeOf(antreanetworking.NetworkPolicy{}).Name(),
+		"vm",
+		"anp",
+		"ee",
+		"addressgroups",
+		"appliedtogroups",
 	}
 	for _, k := range crdKinds {
 		fName := path.Join(dir, fmt.Sprintf("%s-output", k))
