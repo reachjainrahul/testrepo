@@ -86,9 +86,9 @@ jobs:
         run: |
           hack/install-cloud-tools.sh
           mkdir log
-          eval $(ssh-agent -s)
-          echo "${SSH_KEY}" | tr -d '\r' | ssh-add -
-          ssh-add  -l
+          mkdir -p $HOME/.ssh
+          chmod 700 $HOME/.ssh
+          echo "${SSH_KEY}" | tr -d '\r' |  cat > $HOME/.ssh/id_rsa
           ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*Core-test.*" -kubeconfig=$HOME/.kube/config -cloud-provider=AWS -support-bundle-dir=$(pwd)/log
           
       - name: Tar log files
