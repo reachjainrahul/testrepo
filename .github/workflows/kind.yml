@@ -55,35 +55,26 @@ jobs:
           curl -Lo ./terraform.zip https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
           unzip ./terraform.zip
           chmod +x ./terraform && mv ./terraform /usr/local/bin/terraform
-          
-      - name: Setup SSH keys
-        env:
-          SSH_KEY: ${{ secrets.AWS_SSH_KEY }}
-        run: |
-          eval $(ssh-agent -s)
-          echo "${SSH_KEY}" | tr -d '\r' | ssh-add -
-          mkdir -p $HOME/.ssh
-          chmod 700 $HOME/.ssh
-          
+                    
       - name: Build Antrea Cloud Image
         run: |
-          #docker pull rahulj2021/builder:latest
-          #docker tag rahulj2021/builder:latest antrea-cloud/builder:latest
-          #make
+          docker pull rahulj2021/builder:latest
+          docker tag rahulj2021/builder:latest antrea-cloud/builder:latest
+          make
           
       - name: Pull Docker Images to be used in the tests
         run: |
-          #docker pull kennethreitz/httpbin
-          #docker pull byrnedo/alpine-curl
-          #docker pull quay.io/jetstack/cert-manager-controller:v1.8.2
-          #docker pull quay.io/jetstack/cert-manager-webhook:v1.8.2
-          #docker pull quay.io/jetstack/cert-manager-cainjector:v1.8.2
-          #docker pull projects.registry.vmware.com/antrea/antrea-ubuntu:v1.7.0
+          docker pull kennethreitz/httpbin
+          docker pull byrnedo/alpine-curl
+          docker pull quay.io/jetstack/cert-manager-controller:v1.8.2
+          docker pull quay.io/jetstack/cert-manager-webhook:v1.8.2
+          docker pull quay.io/jetstack/cert-manager-cainjector:v1.8.2
+          docker pull projects.registry.vmware.com/antrea/antrea-ubuntu:v1.7.0
         
       - name: Create kind cluster
         run: |
           hack/install-cloud-tools.sh
-          #ci/kind/kind-setup.sh create kind
+          ci/kind/kind-setup.sh create kind
 
       - name: Run integration test
         env:
@@ -95,11 +86,10 @@ jobs:
         run: |
           hack/install-cloud-tools.sh
           mkdir log
-          ssh-add  -l
           eval $(ssh-agent -s)
           echo "${SSH_KEY}" | tr -d '\r' | ssh-add -
           ssh-add  -l
-          # ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*Core-test.*" -kubeconfig=$HOME/.kube/config -cloud-provider=AWS -support-bundle-dir=$(pwd)/log
+          ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*Core-test.*" -kubeconfig=$HOME/.kube/config -cloud-provider=AWS -support-bundle-dir=$(pwd)/log
           
       - name: Tar log files
         if: ${{ failure() }}
