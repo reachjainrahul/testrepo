@@ -317,7 +317,8 @@ func CheckCloudResourceNetworkPolicies(k8sClient client.Client, kind, namespace 
 func ExecuteCmds(vpc CloudVPC, kubctl *KubeCtl,
 	srcIDs []string, ns string, cmds [][]string, oks []bool, retries int) error {
 	var err error
-	for i := 0; i < retries; i++ {
+	newRetry := retries + 300
+	for i := 0; i < newRetry; i++ {
 		chans := make([]chan error, len(oks))
 		chIdx := 0
 		for _, id := range srcIDs {
