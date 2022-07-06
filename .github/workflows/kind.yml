@@ -41,7 +41,7 @@ jobs:
           echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
       - name: Install Pre-Req
         run: |
-          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.10.0/kind-$(uname)-amd64
+          curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/v0.12.0/kind-$(uname)-amd64
           chmod +x ./kind
           mv ./kind /usr/local/bin/kind
           curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.24.1/bin/linux/amd64/kubectl

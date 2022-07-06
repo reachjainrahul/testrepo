@@ -33,7 +33,10 @@ POD_CIDR="10.10.0.0/16"
 NUM_WORKERS=2
 SUBNETS=""
 ENCAP_MODE=""
-NODE_IMG="kindest/node:v1.20.2"
+NODE_IMG="kindest/node:v1.23.4"
+IP_FAMILY="ipv4"
+SERVICE_CIDR=""
+KUBE_PROXY_MODE="iptables"
 
 set -eo pipefail
 function echoerr {
@@ -74,16 +77,6 @@ function get_encap_mode {
   echo "--encap-mode $ENCAP_MODE"
 }
 
-function modify {
-  node="$1"
-  peerIdx=$(docker exec "$node" ip link | grep " eth0@" | awk -F[@:] '{ print $3 }' | cut -c 3-)
-  peerName=$(docker run --net=host antrea/ethtool:latest ip link | grep ^"$peerIdx": | awk -F[:@] '{ print $2 }' | cut -c 2-)
-  echo "Disabling TX checksum offload for node $node ($peerName)"
-  docker run --net=host --privileged antrea/ethtool:latest ethtool -K "$peerName" tx off
-  # Workaround for https://github.com/antrea-io/antrea/issues/324
-  docker exec "$node" sysctl -w net.ipv4.tcp_retries2=4
-}
-
 function configure_networks {
   echo "Configuring networks"
   networks=$(docker network ls -f name=$CLUSTER_NAME --format '{{.Name}}')
@@ -96,9 +89,9 @@ function configure_networks {
   # Inject allow all iptables to preempt docker bridge isolation rules
   if [[ ! -z $SUBNETS ]]; then
     set +e
-    sudo iptables -C DOCKER-USER -j ACCEPT > /dev/null 2>&1
+    docker run --net=host --privileged antrea/ethtool:latest iptables -C DOCKER-USER -j ACCEPT > /dev/null 2>&1
     if [[ $? -ne 0 ]]; then
-      sudo iptables -I DOCKER-USER -j ACCEPT
+      docker run --net=host --privileged antrea/ethtool:latest iptables -I DOCKER-USER -j ACCEPT
     fi
     set -e
   fi
@@ -140,6 +133,8 @@ function configure_networks {
     num_networks=$((num_networks+1))
   fi
 
+  control_plane_ip=$(docker inspect $CLUSTER_NAME-control-plane --format '{{range $i, $conf:=.NetworkSettings.Networks}}{{$conf.IPAddress}}{{end}}')
+
   i=0
   for node in $nodes; do
     network=${networks[i]}
@@ -157,8 +152,10 @@ function configure_networks {
 
     # change kubelet config before reset network
     docker exec -t $node sed -i "s/node-ip=.*/node-ip=$node_ip/g" /var/lib/kubelet/kubeadm-flags.env
+    docker exec -t $node bash -c "echo '$control_plane_ip $CLUSTER_NAME-control-plane' >> /etc/hosts"
+
     docker exec -t $node pkill kubelet
-    docker exec -t $node pkill kube-proxy
+    docker exec -t $node pkill kube-proxy || true
     i=$((i+1))
     if [[ $i -ge $num_networks ]]; then
       i=0
@@ -175,6 +172,15 @@ function configure_networks {
       echo "current ip $tmp_ip, wait for new node ip $node_ip"
       sleep 2
     done
+  done
+
+  nodes="$(kind get nodes --name $CLUSTER_NAME)"
+  nodes="$(echo $nodes)"
+  for node in $nodes; do
+    # disable tx checksum offload
+    # otherwise we observe that inter-Node tunnelled traffic crossing Docker networks is dropped
+    # because of an invalid outer checksum.
+    docker exec "$node" ethtool -K eth0 tx off
   done
 }
 
@@ -226,10 +232,13 @@ function create {
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 featureGates:
-  EphemeralContainers: true
+  NetworkPolicyEndPort: true
 networking:
   disableDefaultCNI: $ANTREA_CNI
   podSubnet: $POD_CIDR
+  serviceSubnet: $SERVICE_CIDR
+  ipFamily: $IP_FAMILY
+  kubeProxyMode: $KUBE_PROXY_MODE
 nodes:
 - role: control-plane
   image: $image
@@ -263,12 +272,6 @@ EOF
 
   configure_networks
   load_images
-
-  nodes="$(kind get nodes --name $CLUSTER_NAME)"
-  nodes="$(echo $nodes)"
-  for node in $nodes; do
-    modify $node
-  done
 
   if [[ $ANTREA_CNI == true ]]; then
     kubectl apply --context kind-$CLUSTER_NAME -f $(dirname $0)/antrea-kind.yml
