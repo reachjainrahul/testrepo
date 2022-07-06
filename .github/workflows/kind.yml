@@ -10,6 +10,11 @@ on:
       - master
       - release-*
       - feature/*
+      
+env:
+  KIND_VERSION: v0.12.0
+  KUBECTL_VERSION: v1.24.1
+  TERRAFORM_VERSION: 0.13.5
     
 jobs:
   check-changes:
@@ -39,39 +44,39 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
           echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-      - name: Install Pre-Req
+  
+      - name: Install Prerequisites
         run: |
-          curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/v0.12.0/kind-$(uname)-amd64
+          curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-$(uname)-amd64
           chmod +x ./kind
           mv ./kind /usr/local/bin/kind
-          curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.24.1/bin/linux/amd64/kubectl
+          curl -LO https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl
           chmod +x ./kubectl && mv ./kubectl /usr/local/bin/kubectl
-          curl -LO https://releases.hashicorp.com/terraform/0.13.5/terraform_0.13.5_linux_amd64.zip
-          unzip ./terraform_0.13.5_linux_amd64.zip
+          curl -Lo ./terraform.zip https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+          unzip ./terraform.zip
           chmod +x ./terraform && mv ./terraform /usr/local/bin/terraform
+          
+      - name: Build Antrea Cloud Image
+        run: |
+          docker pull rahulj2021/builder:latest
+          docker tag rahulj2021/builder:latest antrea-cloud/builder:latest
+          make
+          
+      - name: Pull Docker Images to be used in the tests
+        run: |
           docker pull kennethreitz/httpbin
           docker pull byrnedo/alpine-curl
           docker pull quay.io/jetstack/cert-manager-controller:v1.8.2
           docker pull quay.io/jetstack/cert-manager-webhook:v1.8.2
           docker pull quay.io/jetstack/cert-manager-cainjector:v1.8.2
           docker pull projects.registry.vmware.com/antrea/antrea-ubuntu:v1.7.0
-      
-      - uses: actions/checkout@v3
-      - name: Building Image
-        run: |
-          docker pull rahulj2021/builder:latest
-          docker tag rahulj2021/builder:latest antrea-cloud/builder:latest
-          make
         
       - name: Create kind cluster
         run: |
           hack/install-cloud-tools.sh
           ci/kind/kind-setup.sh create kind
-          kubectl --context kind-kind get all --all-namespaces
-          sleep 60
-          kubectl --context kind-kind get all --all-namespaces
-          
-      - name: Run integration tests
+
+      - name: Run integration test
         env:
           TF_VAR_aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           TF_VAR_aws_access_key_secret: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
@@ -79,4 +84,17 @@ jobs:
           TF_VAR_owner: "ANTREACLOUD-CI"
         run: |
           hack/install-cloud-tools.sh
-          ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*Core-test.*" -kubeconfig=$HOME/.kube/config -cloud-provider=AWS -support-bundle-dir=$(pwd)/logs
+          mkdir log
+          ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*Core-test.*" -kubeconfig=$HOME/.kube/config -cloud-provider=AWS -support-bundle-dir=$(pwd)/log
+          
+      - name: Tar log files
+        if: ${{ failure() }}
+        run: tar -czf log.tar.gz log
+        
+      - name: Upload test log
+        uses: actions/upload-artifact@v3
+        if: ${{ failure() }}
+        with:
+          name: integration-test.tar.gz
+          path: log.tar.gz
+          retention-days: 2
