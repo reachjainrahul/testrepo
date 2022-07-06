@@ -56,6 +56,15 @@ jobs:
           unzip ./terraform.zip
           chmod +x ./terraform && mv ./terraform /usr/local/bin/terraform
           
+      - name: Setup SSH keys
+        env:
+          SSH_KEY: $ {{ secrets.AWS_SSH_KEY }}
+        run: |
+          eval $(ssh-agent -s)
+          echo ${SSH_KEY} | tr -d '\r' | ssh-add -
+          mkdir -p $HOME/.ssh
+          chmod 700 $HOME/.ssh
+          
       - name: Build Antrea Cloud Image
         run: |
           docker pull rahulj2021/builder:latest
