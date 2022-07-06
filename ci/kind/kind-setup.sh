@@ -21,9 +21,9 @@
 CLUSTER_NAME=""
 ANTREA_IMAGE="projects.registry.vmware.com/antrea/antrea-ubuntu:v1.7.0 "
 ANTREA_IMAGE+="antrea/antrea-cloud:latest "
-ANTREA_IMAGE+="quay.io/jetstack/cert-manager-controller:v1.2.0 "
-ANTREA_IMAGE+="quay.io/jetstack/cert-manager-webhook:v1.2.0 "
-ANTREA_IMAGE+="quay.io/jetstack/cert-manager-cainjector:v1.2.0 "
+ANTREA_IMAGE+="quay.io/jetstack/cert-manager-controller:v1.8.2 "
+ANTREA_IMAGE+="quay.io/jetstack/cert-manager-webhook:v1.8.2 "
+ANTREA_IMAGE+="quay.io/jetstack/cert-manager-cainjector:v1.8.2 "
 ANTREA_IMAGE+="kennethreitz/httpbin "
 ANTREA_IMAGE+="byrnedo/alpine-curl"
 
@@ -285,7 +285,7 @@ EOF
 
   # Deploy cert-manager
   kubectl create namespace cert-manager
-  kubectl apply --validate=false -f "https://github.com/jetstack/cert-manager/releases/download/v1.2.0/cert-manager.yaml"
+  kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.2/cert-manager.yaml
 }
 
 function destroy {
