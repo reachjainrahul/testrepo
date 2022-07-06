@@ -42,7 +42,6 @@ jobs:
           docker pull rahulj2021/builder:latest
           docker tag rahulj2021/builder:latest antrea-cloud/builder:latest
           echo $HOME
-          ls -lRta /tmp/
           ls -lRta $HOME
           
       - name: Run unit tests
