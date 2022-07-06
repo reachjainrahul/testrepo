@@ -16,20 +16,11 @@
 1. You must already have ssh key-pair created. This key pair will be used to access worker node via
    ssh. ([This link](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ec2/import-key-pair.html) shows how to create a Key Pair and configure to use
    it to access your EC2 worker node instances)
-1. You need to have access to jfrog repo `antrea-service-tilt-images` and follow the below steps for auto pulling pod images.
-   Otherwise, you'll need to upload antreaplus and other images manually.
-   ```bash
-   export TF_VAR_jfrog_usr=YOUR_JFROG_USER_NAME
-   export TF_VAR_jfrog_api_key=YOUR_JFROG_API_KEY
-   ```
-   Where
-   - TF_VAR_jfrog_usr should be your jfrog username, same as vmware username
-   - TF_VAR_jfrog_api_key should be your jfrog api key, created [here](https://vmwaresaas.jfrog.io/ui/admin/artifactory/user_profile)
 
 NOTE: For version of third-party tools used refer to cloudcontroller/.gitlab-ci.yaml file
 
 ## Create an EKS cluster via terraform
-Ensures that you have permission to create EKS cluster, and have already
+Ensures that you have permission to create EKS cluster, and have already.
 created EKS cluster role as well as worker node profile.
 ```bash
 export TF_VAR_eks_cluster_iam_role_name=YOUR_EKS_ROLE
