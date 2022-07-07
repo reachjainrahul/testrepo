@@ -50,6 +50,8 @@ jobs:
           TMP_DIR=$(mktemp -d) && cd $TMP_DIR
           GO111MODULE=on go get github.com/golang/mock/mockgen@v1.6.0
           GO111MODULE=on go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.8.0
+          GO111MODULE=on go get sigs.k8s.io/kustomize/kustomize/v3@v3.8.7
+          GO111MODULE=on go get github.com/mgechev/revive@v1.0.9
           cd - && rm -rf $TMP_DIR
           go mod download  
 
