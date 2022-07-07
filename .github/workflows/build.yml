@@ -39,7 +39,18 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
           echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+          
+      - name: Install go modules
+        run: |
+          TMP_DIR=$(mktemp -d) && cd $TMP_DIR
+          GO111MODULE=on go get github.com/golang/mock/mockgen@v1.6.0
+          GO111MODULE=on go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.8.0
+          cd - && rm -rf $TMP_DIR
+          go mod download  
 
-      - name: Build Antrea Cloud Docker image without pushing to registry
+      - name: Build Antrea Cloud
         run: |
           make build-bin
+          make manifests
+          ci/check-gen.sh
+
