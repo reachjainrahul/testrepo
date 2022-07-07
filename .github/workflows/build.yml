@@ -48,6 +48,7 @@ jobs:
       - name: Install go modules
         run: |
           TMP_DIR=$(mktemp -d) && cd $TMP_DIR
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.41.1
           GO111MODULE=on go get github.com/golang/mock/mockgen@v1.6.0
           GO111MODULE=on go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.8.0
           GO111MODULE=on go get sigs.k8s.io/kustomize/kustomize/v3@v3.8.7
