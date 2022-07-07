@@ -9,6 +9,10 @@ DOCKER_GOPATH=/tmp/gopath
 DOCKER_GOCACHE=/tmp/gocache
 CONTROLLER_GEN_LIST={$$(go list ./... | grep apis/crd | paste -s -d, -)}
 
+
+ifneq ($(CI),)
+DOCKERIZE :=
+else
 DOCKERIZE := \
 	 docker run --rm -u $$(id -u):$$(id -g) \
 		-e "GOPATH=$(DOCKER_GOPATH)" \
@@ -19,6 +23,7 @@ DOCKERIZE := \
 		-v $(CURDIR):$(DOCKER_SRC) \
 		-w $(DOCKER_SRC) \
 		$(BUILDER_IMG)
+endif
 
 all: build
 
@@ -69,8 +74,10 @@ docker-push:
 
 # create docker container builder
 docker-builder:
+ifeq ($(CI),)
 ifeq (, $(shell docker images -q $(BUILDER_IMG) ))
 	docker build --target builder -f ./build/images/Dockerfile -t $(BUILDER_IMG) .
+endif
 endif
 
 ##@ Build Dependencies
