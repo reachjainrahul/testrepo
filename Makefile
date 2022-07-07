@@ -28,7 +28,7 @@ endif
 all: build
 
 # Build binaries
-build-bin: docker-builder generate tidy
+build-bin: docker-builder generate lint tidy
 	$(DOCKERIZE) hack/build-bin.sh
 
 # Generate manifests e.g. CRD, RBAC etc.
