@@ -46,7 +46,7 @@ jobs:
 
       - name: Run unit tests
         run: |
-          mkidr -p $(shell go env GOPATH)
-          mkdir -p $(shell go env GOCACHE)
+          mkdir -p $(go env GOPATH)
+          mkdir -p $(go env GOCACHE)
           sudo ls -lrt /home/runner/.cache/
           sudo make unit-test
