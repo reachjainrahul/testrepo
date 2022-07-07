@@ -42,6 +42,7 @@ import (
 
 const (
 	focusCore           = "Core-test"
+	focusTemp           = "Core-temp"
 	focusAzureAgentless = "Extended-azure-agentless"
 	focusAgentEks       = "Extended-test-agent-eks"
 	focusAgentAks       = "Extended-test-agent-aks"
@@ -56,7 +57,7 @@ var (
 	clusters      []string
 	scheme        = runtime.NewScheme()
 	preserveSetup = false
-	testFocus     = []string{focusCore, focusAzureAgentless, focusAgentEks, focusAgentAks}
+	testFocus     = []string{focusCore, focusAzureAgentless, focusAgentEks, focusAgentAks, focusTemp}
 	cloudClusters = []string{focusAgentEks, focusAgentAks}
 	cloudCluster  bool
 

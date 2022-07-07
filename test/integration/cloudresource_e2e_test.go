@@ -40,7 +40,7 @@ var (
 		denyAll bool) *k8stemplates.ToFromParameters
 )
 
-var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCore, focusAzureAgentless), func() {
+var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusTemp), func() {
 	const (
 		apachePort = "8080"
 	)
