@@ -45,4 +45,6 @@ jobs:
           go-version: 1.17
 
       - name: Run unit tests
-        run: make unit-test
+        run: |
+          ls -lrt /home/runner/.cache/
+          sudo make unit-test
