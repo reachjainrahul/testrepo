@@ -40,7 +40,7 @@ unit-test: mock
 
 # Run lint against code
 lint: docker-builder
-	$(DOCKERIZE)  golangci-lint run --timeout 10m --verbose
+	$(DOCKERIZE)  golangci-lint run --timeout 10m
 
 # Run go mod tidy against code
 tidy: docker-builder
@@ -102,19 +102,10 @@ $(CONTROLLER_GEN):
 
 
 # Run integration-tests
-integration-test:
-	ginkgo -v --failFast --focus=".*Core-test.*" test/integration/ -- -manifest-path=../../config/antrea-cloud.yml -preserve-setup-on-fail=true
+integration-test-aws:
+	ginkgo -v --failFast --focus=".*Core-test.*" test/integration/ -- -manifest-path=../../config/antrea-cloud.yml \
+	-preserve-setup-on-fail=true -cloud-provider=Aws
 
-azure-agentless-integration-test:
-	ginkgo -v --failFast --focus=".*Extended-azure-agentless.*" test/integration/ -- \
+integration-test-azure:
+	ginkgo -v --failFast --focus=".*Extended-test-azure.*" test/integration/ -- \
         -manifest-path=../../config/antrea-cloud.yml -preserve-setup-on-fail=true -cloud-provider=Azure
-
-eks-agentless-integration-test:
-	ginkgo -v --failFast --focus=".*Extended-test-agent-eks.*" test/integration/ -- \
-	-manifest-path=../../config/antrea-cloud.yml -preserve-setup-on-fail=true \
-	-cloud-provider=AWS -kubeconfig=$(AGENT_KUBE_CONFIG)
-
-aks-agentless-integration-test:
-	ginkgo -v --failFast --focus=".*Extended-test-agent-aks.*" test/integration/ -- \
-	-manifest-path=../../config/antrea-cloud.yml -preserve-setup-on-fail=true \
-	-cloud-provider=Azure -kubeconfig=$(AGENT_KUBE_CONFIG)

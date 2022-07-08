@@ -76,9 +76,6 @@ jobs:
           hack/install-cloud-tools.sh
           ci/kind/kind-setup.sh create kind
 
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
-
       - name: Run integration test
         env:
           TF_VAR_aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -91,7 +88,6 @@ jobs:
           mkdir log
           eval $(ssh-agent -s)
           echo "${SSH_KEY}" | tr -d '\r' | ssh-add -
-          ssh-add  -l
           ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*Core-temp.*" -kubeconfig=$HOME/.kube/config -cloud-provider=AWS -support-bundle-dir=$(pwd)/log
           
       - name: Tar log files

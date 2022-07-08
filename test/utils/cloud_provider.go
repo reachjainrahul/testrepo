@@ -53,7 +53,8 @@ func NewCloudVPC(provider v1alpha1.CloudProvider) (CloudVPC, error) {
 		return nil, fmt.Errorf("unsupported cloud provider: %v", provider)
 	}
 	if vpc.IsConfigured() {
-		return nil, fmt.Errorf("cannot reuse existing vpc in agented setup because agent service account mismatches")
+		// VPC can be cleanup using ~/terraform/aws-tf|azure-tf destroy.
+		return nil, fmt.Errorf("cannot reuse existing vpc.")
 	}
 	return vpc, nil
 }

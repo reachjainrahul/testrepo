@@ -40,7 +40,7 @@ var (
 		denyAll bool) *k8stemplates.ToFromParameters
 )
 
-var _ = Describe(fmt.Sprintf("%s: NetworkPolicy On Cloud Resources", focusTemp), func() {
+var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCore, focusAzure), func() {
 	const (
 		apachePort = "8080"
 	)
@@ -504,8 +504,73 @@ var _ = Describe(fmt.Sprintf("%s: NetworkPolicy On Cloud Resources", focusTemp),
 		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, false)
 	}
 
+	table.DescribeTable("AppliedTo",
+		func(kind string, diffNS bool) {
+			testAppliedTo(kind, diffNS)
+		},
+		table.Entry("VM In Same Namespace",
+			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
+		table.Entry("VM In Different Namespaces",
+			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
+	)
+
+	table.DescribeTable("Egress",
+		func(kind string, diffNS bool) {
+			testEgress(kind, diffNS)
+		},
+		table.Entry("VM In Same Namespace",
+			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
+		table.Entry("VM In Different Namespaces",
+			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
+	)
+
+	table.DescribeTable("Ingress",
+		func(kind string, diffNS bool) {
+			testIngress(kind, diffNS)
+		},
+		table.Entry("VM In Same Namespaces",
+			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
+		table.Entry("VM In Different Namespaces",
+			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
+	)
+
+	Context("Enforce Before Import", func() {
+		JustBeforeEach(func() {
+			importAfterANP = true
+			abbreviated = true
+		})
+		table.DescribeTable("AppliedTo",
+			func(kind string, diffNS bool) {
+				testAppliedTo(kind, diffNS)
+			},
+			table.Entry("VM In Same Namespace",
+				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
+			table.Entry("VM In Different Namespaces",
+				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
+		)
+
+		table.DescribeTable("Egress",
+			func(kind string, diffNS bool) {
+				testEgress(kind, diffNS)
+			},
+			table.Entry("VM In Same Namespace",
+				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
+			table.Entry("VM In Different Namespaces",
+				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
+		)
+
+		table.DescribeTable("Ingress",
+			func(kind string, diffNS bool) {
+				testIngress(kind, diffNS)
+			},
+			table.Entry("VM In Same Namespaces",
+				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
+			table.Entry("VM In Different Namespaces",
+				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
+		)
+	})
+
 	It("Controllers Restart", func() {
-		Skip("make ingresss as first test")
 		ids := cloudVPC.GetVMs()
 		ips := cloudVPC.GetVMPrivateIPs()
 
@@ -544,7 +609,6 @@ var _ = Describe(fmt.Sprintf("%s: NetworkPolicy On Cloud Resources", focusTemp),
 	})
 
 	It("Reconcile with cloud", func() {
-		Skip("make ingresss as first test")
 		ids := cloudVPC.GetVMs()
 		ips := cloudVPC.GetVMPrivateIPs()
 		kind := reflect.TypeOf(v1alpha1.VirtualMachine{}).Name()
@@ -599,72 +663,5 @@ var _ = Describe(fmt.Sprintf("%s: NetworkPolicy On Cloud Resources", focusTemp),
 		// Add ANP back to satisfy AfterEach
 		err = utils.ConfigureK8s(kubeCtl, anpParams, k8stemplates.CloudAntreaNetworkPolicy, false)
 		Expect(err).ToNot(HaveOccurred())
-	})
-
-	table.DescribeTable("AppliedTo",
-		func(kind string, diffNS bool) {
-			Skip("make ingresss as first test")
-			testAppliedTo(kind, diffNS)
-		},
-		table.Entry(fmt.Sprintf("%s,%s: VM In Same Namespace", focusAgentEks, focusAgentAks),
-			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
-		table.Entry("VM In Different Namespaces",
-			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
-	)
-
-	table.DescribeTable("Egress",
-		func(kind string, diffNS bool) {
-			testEgress(kind, diffNS)
-		},
-		table.Entry(fmt.Sprintf("%s,%s: VM In Same Namespace", focusAgentEks, focusAgentAks),
-			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
-		table.Entry("VM In Different Namespaces",
-			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
-	)
-
-	table.DescribeTable("Ingress",
-		func(kind string, diffNS bool) {
-			testIngress(kind, diffNS)
-		},
-		table.Entry(fmt.Sprintf("%s,%s: VM In Same Namespaces", focusAgentEks, focusAgentAks),
-			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
-		table.Entry("VM In Different Namespaces",
-			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
-	)
-
-	Context("Enforce Before Import", func() {
-		JustBeforeEach(func() {
-			importAfterANP = true
-			abbreviated = true
-		})
-		table.DescribeTable("AppliedTo",
-			func(kind string, diffNS bool) {
-				testAppliedTo(kind, diffNS)
-			},
-			table.Entry(fmt.Sprintf("%s,%s: VM In Same Namespace", focusAgentEks, focusAgentAks),
-				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
-			table.Entry("VM In Different Namespaces",
-				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
-		)
-
-		table.DescribeTable("Egress",
-			func(kind string, diffNS bool) {
-				testEgress(kind, diffNS)
-			},
-			table.Entry(fmt.Sprintf("%s,%s: VM In Same Namespace", focusAgentEks, focusAgentAks),
-				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
-			table.Entry("VM In Different Namespaces",
-				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
-		)
-
-		table.DescribeTable("Ingress",
-			func(kind string, diffNS bool) {
-				testIngress(kind, diffNS)
-			},
-			table.Entry(fmt.Sprintf("%s,%s: VM In Same Namespaces", focusAgentEks, focusAgentAks),
-				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
-			table.Entry("VM In Different Namespaces",
-				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
-		)
 	})
 })

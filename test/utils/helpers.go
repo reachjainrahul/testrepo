@@ -317,8 +317,7 @@ func CheckCloudResourceNetworkPolicies(k8sClient client.Client, kind, namespace 
 func ExecuteCmds(vpc CloudVPC, kubctl *KubeCtl,
 	srcIDs []string, ns string, cmds [][]string, oks []bool, retries int) error {
 	var err error
-	newRetry := retries + 100
-	for i := 0; i < newRetry; i++ {
+	for i := 0; i < retries; i++ {
 		chans := make([]chan error, len(oks))
 		chIdx := 0
 		for _, id := range srcIDs {
@@ -519,16 +518,4 @@ func CollectSupportBundle(kubctl *KubeCtl, dir string) {
 	if err := CollectCRDs(kubctl, dir); err != nil {
 		logf.Log.Error(err, "Failed to collect CRDs")
 	}
-}
-
-// IsCloudCluster check if the test cluster is a cloud cluster
-func IsCloudCluster(currentFocus []string, cloudClusters []string) bool {
-	for _, cloudCluster := range cloudClusters {
-		for _, current := range currentFocus {
-			if strings.Contains(current, cloudCluster) {
-				return true
-			}
-		}
-	}
-	return false
 }

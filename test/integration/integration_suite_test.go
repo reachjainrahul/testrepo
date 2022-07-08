@@ -25,7 +25,6 @@ import (
 	"time"
 
 	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -41,11 +40,8 @@ import (
 )
 
 const (
-	focusCore           = "Core-test"
-	focusTemp           = "Core-temp"
-	focusAzureAgentless = "Extended-azure-agentless"
-	focusAgentEks       = "Extended-test-agent-eks"
-	focusAgentAks       = "Extended-test-agent-aks"
+	focusCore  = "Core-test"
+	focusAzure = "Extended-test-azure"
 )
 
 var (
@@ -57,8 +53,7 @@ var (
 	clusters      []string
 	scheme        = runtime.NewScheme()
 	preserveSetup = false
-	testFocus     = []string{focusCore, focusAzureAgentless, focusAgentEks, focusAgentAks, focusTemp}
-	cloudClusters = []string{focusAgentEks, focusAgentAks}
+	testFocus     = []string{focusCore, focusAzure}
 	cloudCluster  bool
 
 	// flags.
@@ -73,10 +68,11 @@ var (
 func init() {
 	flag.StringVar(&manifest, "manifest-path", "./config/antrea-cloud.yml", "The relative path to manifest.")
 	flag.BoolVar(&preserveSetupOnFail, "preserve-setup-on-fail", false, "Preserve the setup if a test failed.")
-	flag.StringVar(&supportBundleDir, "support-bundle-dir", "", "Support bundles are saved in this dir when specified")
+	flag.StringVar(&supportBundleDir, "support-bundle-dir", "", "Support bundles are saved in this dir when specified.")
 	flag.StringVar(&cloudProviders, "cloud-provider", string(cloudv1alpha1.AWSCloudProvider),
-		"cloud Providers to use, separated by comma. Default is aws")
-	flag.StringVar(&clusterContexts, "cluster-context", "", "cluster context to use, separated by common. Default is empty")
+		"Cloud Providers to use, separated by comma. Default is Aws.")
+	flag.StringVar(&clusterContexts, "cluster-context", "", "Cluster context to use, separated by common. Default is empty.")
+	flag.BoolVar(&cloudCluster, "cloud-cluster", false, "Cluster deployed in public cloud.")
 	rand.Seed(time.Now().Unix())
 }
 
@@ -169,8 +165,6 @@ var _ = BeforeSuite(func(done Done) {
 		By(cluster + ": Check antrea cloud is ready")
 		err = utils.RestartOrWaitDeployment(cl, "antreacloud-cloud-controller", "antreacloud-system", time.Second*120, false)
 		Expect(err).ToNot(HaveOccurred())
-
-		cloudCluster = utils.IsCloudCluster(config.GinkgoConfig.FocusStrings, cloudClusters)
 	}
 	// Check create VPC status.
 	By("Check VM VPCs are ready")
