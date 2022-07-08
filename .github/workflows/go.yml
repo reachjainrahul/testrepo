@@ -10,6 +10,10 @@ on:
     - master
     - release-*
     - feature/*
+  workflow_run:
+    workflows: ["Build"]
+    types:
+      - complete
 
 jobs:
   check-changes:
@@ -32,13 +36,6 @@ jobs:
     runs-on: [ubuntu-latest]
     steps:
       - uses: actions/checkout@v3
-      - name: Login to Docker Hub
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        run: |
-          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-
       - name: Set up Go 1.17
         uses: actions/setup-go@v3
         with:
@@ -48,5 +45,4 @@ jobs:
         run: |
           mkdir -p $(go env GOPATH)
           mkdir -p $(go env GOCACHE)
-          sudo ls -lrt /home/runner/.cache/
           sudo make unit-test

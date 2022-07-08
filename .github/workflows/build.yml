@@ -1,4 +1,4 @@
-name: Build and push latest image if needed
+name: Build
 
 on:
   pull_request:
