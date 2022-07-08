@@ -505,6 +505,7 @@ var _ = Describe(fmt.Sprintf("%s: NetworkPolicy On Cloud Resources", focusTemp),
 	}
 
 	It("Controllers Restart", func() {
+		Skip("make ingresss as first test")
 		ids := cloudVPC.GetVMs()
 		ips := cloudVPC.GetVMPrivateIPs()
 
@@ -543,6 +544,7 @@ var _ = Describe(fmt.Sprintf("%s: NetworkPolicy On Cloud Resources", focusTemp),
 	})
 
 	It("Reconcile with cloud", func() {
+		Skip("make ingresss as first test")
 		ids := cloudVPC.GetVMs()
 		ips := cloudVPC.GetVMPrivateIPs()
 		kind := reflect.TypeOf(v1alpha1.VirtualMachine{}).Name()
@@ -601,6 +603,7 @@ var _ = Describe(fmt.Sprintf("%s: NetworkPolicy On Cloud Resources", focusTemp),
 
 	table.DescribeTable("AppliedTo",
 		func(kind string, diffNS bool) {
+			Skip("make ingresss as first test")
 			testAppliedTo(kind, diffNS)
 		},
 		table.Entry(fmt.Sprintf("%s,%s: VM In Same Namespace", focusAgentEks, focusAgentAks),
