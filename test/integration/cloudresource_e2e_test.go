@@ -43,6 +43,7 @@ var (
 var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCore, focusAzure), func() {
 	const (
 		apachePort = "8080"
+		retries    = 12
 	)
 	var (
 		namespace      *v1.Namespace
@@ -226,7 +227,7 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCor
 		for i := range oks {
 			oks[i] = true
 		}
-		err = utils.ExecuteCmds(cloudVPC, nil, cloudVPC.GetVMs(), "", [][]string{{"ls"}}, oks, 30)
+		err = utils.ExecuteCmds(cloudVPC, nil, cloudVPC.GetVMs(), "", [][]string{{"ls"}}, oks, 12)
 		Expect(err).ToNot(HaveOccurred())
 	}
 
@@ -260,12 +261,12 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCor
 			}
 		}
 		if len(appliedIPs) > 0 {
-			err = utils.ExecuteCurlCmds(cloudVPC, nil, []string{srcVM}, "", appliedIPs, apachePort, oks, 30)
+			err = utils.ExecuteCurlCmds(cloudVPC, nil, []string{srcVM}, "", appliedIPs, apachePort, oks, retries)
 			Expect(err).ToNot(HaveOccurred())
 		}
 		if len(notAppliedIPs) > 0 {
 			oks = make([]bool, len(notAppliedIPs))
-			err = utils.ExecuteCurlCmds(cloudVPC, nil, []string{srcVM}, "", notAppliedIPs, apachePort, oks, 30)
+			err = utils.ExecuteCurlCmds(cloudVPC, nil, []string{srcVM}, "", notAppliedIPs, apachePort, oks, retries)
 			Expect(err).ToNot(HaveOccurred())
 		}
 	}
@@ -282,7 +283,7 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCor
 		err = utils.CheckCloudResourceNetworkPolicies(k8sClient, kind, namespace.Name, []string{id}, np)
 		Expect(err).ToNot(HaveOccurred())
 
-		err = utils.ExecuteCurlCmds(cloudVPC, nil, []string{srcVM}, "", dstIPs, apachePort, oks, 30)
+		err = utils.ExecuteCurlCmds(cloudVPC, nil, []string{srcVM}, "", dstIPs, apachePort, oks, retries)
 		Expect(err).ToNot(HaveOccurred())
 	}
 
@@ -301,7 +302,7 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCor
 		err = utils.CheckCloudResourceNetworkPolicies(k8sClient, kind, namespace.Name, []string{id}, np)
 		Expect(err).ToNot(HaveOccurred())
 
-		err = utils.ExecuteCurlCmds(cloudVPC, nil, srcVMs, "", []string{ip}, apachePort, oks, 30)
+		err = utils.ExecuteCurlCmds(cloudVPC, nil, srcVMs, "", []string{ip}, apachePort, oks, retries)
 		Expect(err).ToNot(HaveOccurred())
 	}
 
@@ -658,7 +659,7 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCor
 		Expect(err).NotTo(HaveOccurred())
 		err = utils.CheckCloudResourceNetworkPolicies(k8sClient, kind, namespace.Name, ids, []string{anpSetupParams.Name})
 		Expect(err).ToNot(HaveOccurred())
-		err = utils.ExecuteCurlCmds(cloudVPC, nil, srcVMs, "", []string{ids[appliedIdx]}, apachePort, oks, 30)
+		err = utils.ExecuteCurlCmds(cloudVPC, nil, srcVMs, "", []string{ids[appliedIdx]}, apachePort, oks, retries)
 		Expect(err).ToNot(HaveOccurred())
 		// Add ANP back to satisfy AfterEach
 		err = utils.ConfigureK8s(kubeCtl, anpParams, k8stemplates.CloudAntreaNetworkPolicy, false)

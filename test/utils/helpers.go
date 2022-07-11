@@ -330,7 +330,7 @@ func ExecuteCmds(vpc CloudVPC, kubctl *KubeCtl,
 				go func() {
 					var err error
 					if vpc != nil {
-						_, err = vpc.VMCmd(iid, cmd, time.Second*5)
+						_, err = vpc.VMCmd(iid, cmd, time.Second*10)
 					} else {
 						_, err = kubctl.PodCmd(&types.NamespacedName{Name: iid, Namespace: ns}, cmd, time.Second*5)
 					}
