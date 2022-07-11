@@ -504,9 +504,9 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCor
 		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, false)
 	}
 
-	table.DescribeTable("AppliedTo",
+	table.DescribeTable("Egress",
 		func(kind string, diffNS bool) {
-			testAppliedTo(kind, diffNS)
+			testEgress(kind, diffNS)
 		},
 		table.Entry("VM In Same Namespace",
 			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
@@ -514,9 +514,9 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCor
 			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
 	)
 
-	table.DescribeTable("Egress",
+	table.DescribeTable("AppliedTo",
 		func(kind string, diffNS bool) {
-			testEgress(kind, diffNS)
+			testAppliedTo(kind, diffNS)
 		},
 		table.Entry("VM In Same Namespace",
 			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
