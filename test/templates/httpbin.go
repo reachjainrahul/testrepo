@@ -74,7 +74,6 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       containers:
         - image: kennethreitz/httpbin
-          imagePullPolicy: Never
           name: {{.Name}}
           ports:
             - containerPort: 80

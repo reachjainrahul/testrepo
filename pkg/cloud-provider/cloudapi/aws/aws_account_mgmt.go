@@ -107,7 +107,6 @@ func compareAccountCredentials(accountName string, existing interface{}, new int
 func (c *awsCloud) getVpcAccount(vpcID string) internal.CloudAccountInterface {
 	accCfgs := c.cloudCommon.GetCloudAccounts()
 	if len(accCfgs) == 0 {
-		awsPluginLogger().Info("no account configs found", "vpcID", vpcID)
 		return nil
 	}
 

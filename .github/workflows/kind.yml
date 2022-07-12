@@ -57,10 +57,7 @@ jobs:
           chmod +x ./terraform && mv ./terraform /usr/local/bin/terraform
                     
       - name: Build Antrea Cloud Image
-        run: |
-          docker pull rahulj2021/builder:latest
-          docker tag rahulj2021/builder:latest antrea-cloud/builder:latest
-          make
+        run: make
           
       - name: Pull Docker Images to be used in the tests
         run: |
