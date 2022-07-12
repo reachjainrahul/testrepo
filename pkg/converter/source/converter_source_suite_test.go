@@ -49,7 +49,6 @@ var (
 	}
 
 	externalEntitySources map[string]target.ExternalEntitySource
-	networkInterfaces     []*cloud.NetworkInterface
 )
 
 var _ = BeforeSuite(func() {
@@ -63,7 +62,7 @@ func commonInitTest() {
 	// common setup valid for all tests.
 	mockCtrl = mock.NewController(GinkgoT())
 	mockClient = controllerruntimeclient.NewMockClient(mockCtrl)
-	externalEntitySources, networkInterfaces = testing2.SetupExternalEntitySources(networkInterfaceIPAddresses, namedports, testNamespace)
+	externalEntitySources = testing2.SetupExternalEntitySources(networkInterfaceIPAddresses, namedports, testNamespace)
 }
 
 // Testing converting source crd to target crd

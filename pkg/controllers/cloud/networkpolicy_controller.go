@@ -47,8 +47,7 @@ const (
 	networkPolicyIndexerByAppliedToGrp          = "AppliedToGrp"
 	cloudResourceNPTrackerIndexerByAppliedToGrp = "AppliedToGrp"
 	virtualMachineIndexerByCloudID              = "metadata.annotations.cloud-assigned-id"
-	networkInterfaceIndexerByCloudID            = "metadata.annotations.cloud-assigned-id"
-	networkInterfaceIndexerByOwnerReference     = "metadata.ownerReference"
+	virtualMachineIndexerByCloudName            = "metadata.annotations.cloud-assigned-name"
 
 	operationCount    = 15
 	cloudSyncInterval = 0xff // 256 Seconds
@@ -547,26 +546,6 @@ func (r *NetworkPolicyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			vm := obj.(*cloud.VirtualMachine)
 			cloudID := vm.Annotations[common.AnnotationCloudAssignedIDKey]
 			return []string{cloudID}
-		}); err != nil {
-		return err
-	}
-	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &cloud.NetworkInterface{}, networkInterfaceIndexerByCloudID,
-		func(obj client.Object) []string {
-			nic := obj.(*cloud.NetworkInterface)
-			cloudID := nic.Annotations[common.AnnotationCloudAssignedIDKey]
-			return []string{cloudID}
-		}); err != nil {
-		return err
-	}
-	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &cloud.NetworkInterface{}, networkInterfaceIndexerByOwnerReference,
-		func(obj client.Object) []string {
-			nic := obj.(*cloud.NetworkInterface)
-			for _, owner := range nic.OwnerReferences {
-				if owner.Controller != nil && *owner.Controller {
-					return []string{owner.Name}
-				}
-			}
-			return []string{}
 		}); err != nil {
 		return err
 	}

@@ -60,16 +60,16 @@ func (c *azureCloud) ProviderType() cloudcommon.ProviderType {
 // 	ComputeInterface Implementation
 // /////////////////////////////////////////////.
 // Instances returns VM status for all virtualMachines across all accounts of a cloud provider.
-func (c *azureCloud) Instances() ([]*v1alpha1.VirtualMachine, []*v1alpha1.NetworkInterface, error) {
-	vmCRDs, vmIntfCRDs, err := c.cloudCommon.GetAllCloudAccountsComputeResourceCRDs()
-	return vmCRDs, vmIntfCRDs, err
+func (c *azureCloud) Instances() ([]*v1alpha1.VirtualMachine, error) {
+	vmCRDs, err := c.cloudCommon.GetAllCloudAccountsComputeResourceCRDs()
+	return vmCRDs, err
 }
 
 // InstancesGivenProviderAccount returns VM CRD for all virtualMachines of a given cloud provider account.
 func (c *azureCloud) InstancesGivenProviderAccount(accountNamespacedName *types.NamespacedName) ([]*v1alpha1.VirtualMachine,
-	[]*v1alpha1.NetworkInterface, error) {
-	vmCRDs, vmIntfCRDs, err := c.cloudCommon.GetCloudAccountComputeResourceCRDs(accountNamespacedName)
-	return vmCRDs, vmIntfCRDs, err
+	error) {
+	vmCRDs, err := c.cloudCommon.GetCloudAccountComputeResourceCRDs(accountNamespacedName)
+	return vmCRDs, err
 }
 
 // IsVirtualPrivateCloudPresent returns true if given ID is managed by the cloud, else false.

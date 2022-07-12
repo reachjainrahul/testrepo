@@ -119,13 +119,11 @@ func (cfg *CloudServiceCommon) resetCachedState() {
 }
 
 type CloudServiceResourceCRDs struct {
-	virtualMachines                 []*cloudv1alpha1.VirtualMachine
-	virtualMachineNetworkInterfaces []*cloudv1alpha1.NetworkInterface
+	virtualMachines []*cloudv1alpha1.VirtualMachine
 }
 
-func (s *CloudServiceResourceCRDs) SetComputeResourceCRDs(vms []*cloudv1alpha1.VirtualMachine, vmIntfs []*cloudv1alpha1.NetworkInterface) {
+func (s *CloudServiceResourceCRDs) SetComputeResourceCRDs(vms []*cloudv1alpha1.VirtualMachine) {
 	s.virtualMachines = vms
-	s.virtualMachineNetworkInterfaces = vmIntfs
 }
 
 // CloudServiceResourcesCache is cache used by all services. Each service can maintain its resources specific cache by

@@ -221,15 +221,6 @@ func ConfigureEntitySelectorAndWait(
 				return false, nil
 			}
 			return true, nil
-		} else if kind == reflect.TypeOf(v1alpha1.NetworkInterface{}).Name() {
-			nicList := &v1alpha1.NetworkInterfaceList{}
-			if err := k8sClient.List(context.TODO(), nicList, &client.ListOptions{Namespace: namespace}); err != nil {
-				return false, err
-			}
-			if len(nicList.Items) != num {
-				return false, nil
-			}
-			return true, nil
 		}
 		return false, fmt.Errorf("unknown kind %v", kind)
 	}); err != nil {
@@ -258,31 +249,11 @@ func CheckCloudResourceNetworkPolicies(k8sClient client.Client, kind, namespace 
 		return v.Status.NetworkPolicies, nil
 	}
 
-	getNICANPs := func(id string) (map[string]string, error) {
-		nicList := &v1alpha1.NetworkInterfaceList{}
-		if err := k8sClient.List(context.TODO(), nicList, &client.ListOptions{Namespace: namespace}); err != nil {
-			return nil, err
-		}
-		var v *v1alpha1.NetworkInterface
-		for _, nic := range nicList.Items {
-			if nic.Name == id {
-				v = &nic
-				break
-			}
-		}
-		if v == nil {
-			return nil, fmt.Errorf("nic %v not found in namespace %v", id, namespace)
-		}
-		return v.Status.NetworkPolicies, nil
-	}
-
 	logf.Log.V(1).Info("Check NetworkPolicy on resources", "resources", ids, "nps", anps)
 	if err := wait.Poll(time.Second*2, time.Second*300, func() (bool, error) {
 		var getter func(id string) (map[string]string, error)
 		if kind == reflect.TypeOf(v1alpha1.VirtualMachine{}).Name() {
 			getter = getVMANPs
-		} else if kind == reflect.TypeOf(v1alpha1.NetworkInterface{}).Name() {
-			getter = getNICANPs
 		} else {
 			return false, fmt.Errorf("unknown kind %v", kind)
 		}

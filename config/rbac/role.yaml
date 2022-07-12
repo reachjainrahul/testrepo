@@ -92,26 +92,6 @@ rules:
 - apiGroups:
   - crd.cloud.antrea.io
   resources:
-  - networkinterfaces
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - crd.cloud.antrea.io
-  resources:
-  - networkinterfaces/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - crd.cloud.antrea.io
-  resources:
   - virtualmachines
   verbs:
   - create

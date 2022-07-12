@@ -202,7 +202,7 @@ var _ = Describe(fmt.Sprintf("%s: NetworkPolicy On Pods", focusCore), func() {
 			}
 			podANPVerify(kind, "", cloudVPC.GetCRDVPCID(), "", "", oks, pods[0], false, diffNS)
 
-			if kind != reflect.TypeOf(cloud.NetworkInterface{}).Name() {
+			if kind == reflect.TypeOf(cloud.VirtualMachine{}).Name() {
 				By(kind + " reachable via tag label selector")
 				for i := range oks {
 					oks[i] = false

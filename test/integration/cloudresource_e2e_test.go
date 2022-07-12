@@ -108,9 +108,6 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCor
 		err = utils.CheckCloudResourceNetworkPolicies(k8sClient, reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), namespace.Name,
 			cloudVPC.GetVMs(), nil)
 		Expect(err).ToNot(HaveOccurred())
-		err = utils.CheckCloudResourceNetworkPolicies(k8sClient, reflect.TypeOf(v1alpha1.NetworkInterface{}).Name(), namespace.Name,
-			cloudVPC.GetNICs(), nil)
-		Expect(err).ToNot(HaveOccurred())
 
 	})
 
@@ -313,10 +310,6 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCor
 		if kind == reflect.TypeOf(v1alpha1.VirtualMachine{}).Name() {
 			ids = cloudVPC.GetVMs()
 			ips = cloudVPC.GetVMPrivateIPs()
-		} else if kind == reflect.TypeOf(v1alpha1.NetworkInterface{}).Name() {
-			ids = cloudVPC.GetNICs()
-			ips = cloudVPC.GetVMPrivateIPs()
-			tagTest = false
 		} else {
 			Fail("Unsupported type")
 		}
@@ -373,10 +366,6 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCor
 		if kind == reflect.TypeOf(v1alpha1.VirtualMachine{}).Name() {
 			ids = cloudVPC.GetVMs()
 			ips = cloudVPC.GetVMPrivateIPs()
-		} else if kind == reflect.TypeOf(v1alpha1.NetworkInterface{}).Name() {
-			ids = cloudVPC.GetNICs()
-			ips = cloudVPC.GetVMPrivateIPs()
-			testTag = false
 		} else {
 			Fail("Unsupported type")
 		}
@@ -442,10 +431,6 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCor
 		if kind == reflect.TypeOf(v1alpha1.VirtualMachine{}).Name() {
 			ids = cloudVPC.GetVMs()
 			ips = cloudVPC.GetVMPrivateIPs()
-		} else if kind == reflect.TypeOf(v1alpha1.NetworkInterface{}).Name() {
-			ids = cloudVPC.GetNICs()
-			ips = cloudVPC.GetVMPrivateIPs()
-			testTag = false
 		} else {
 			Fail("Unsupported type")
 		}

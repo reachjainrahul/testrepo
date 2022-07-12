@@ -18,7 +18,6 @@ import (
 	"strings"
 
 	"antrea.io/antreacloud/apis/crd/v1alpha1"
-	cloudcommon "antrea.io/antreacloud/pkg/cloud-provider/cloudapi/common"
 	"antrea.io/antreacloud/pkg/cloud-provider/securitygroup"
 	"antrea.io/antreacloud/pkg/cloud-provider/utils"
 )
@@ -34,6 +33,53 @@ func computeInstanceToVirtualMachineCRD(instance *virtualMachineTable, namespace
 		}
 		tags[key] = *value
 	}
+
+	//Network interface associated with Virtual machine
+	instNetworkInterfaces := instance.NetworkInterfaces
+	networkInterfaces := make([]v1alpha1.NetworkInterface, 0, len(instNetworkInterfaces))
+	for _, nwInf := range instNetworkInterfaces {
+		var ipAddressCRDs []v1alpha1.IPAddress
+		if len(nwInf.PrivateIps) > 0 {
+			for _, ipAddress := range nwInf.PrivateIps {
+				ipAddressCRD := v1alpha1.IPAddress{
+					AddressType: v1alpha1.AddressTypeInternalIP,
+					Address:     *ipAddress,
+				}
+				ipAddressCRDs = append(ipAddressCRDs, ipAddressCRD)
+			}
+		}
+		if len(nwInf.PublicIps) > 0 {
+			for _, publicIP := range nwInf.PublicIps {
+				ipAddressCRD := v1alpha1.IPAddress{
+					AddressType: v1alpha1.AddressTypeInternalIP,
+					Address:     *publicIP,
+				}
+				ipAddressCRDs = append(ipAddressCRDs, ipAddressCRD)
+			}
+		}
+		macAddress := ""
+		if nwInf.MacAddress != nil {
+			macAddress = *nwInf.MacAddress
+		}
+
+		nw_tags := make(map[string]string)
+		for key, value := range nwInf.Tags {
+			// skip any tags added by antreacloud for internal processing
+			_, hasAGPrefix, hasATPrefix := securitygroup.IsAntreaCloudCreatedSecurityGroup(key)
+			if hasAGPrefix || hasATPrefix {
+				continue
+			}
+			nw_tags[key] = *value
+		}
+		networkInterface := v1alpha1.NetworkInterface{
+			Name: *nwInf.ID,
+			Tags: nw_tags,
+			MAC:  macAddress,
+			IPs:  ipAddressCRDs,
+		}
+		networkInterfaces = append(networkInterfaces, networkInterface)
+	}
+
 	cloudNetworkID := strings.ToLower(*instance.VnetID)
 	cloudID := strings.ToLower(*instance.ID)
 	cloudName := strings.ToLower(*instance.Name)
@@ -47,51 +93,5 @@ func computeInstanceToVirtualMachineCRD(instance *virtualMachineTable, namespace
 	cloudNetworkShortID := utils.GenerateShortResourceIdentifier(cloudNetworkID, nwResName)
 	return utils.GenerateVirtualMachineCRD(crdName, strings.ToLower(cloudName), strings.ToLower(cloudID), namespace,
 		strings.ToLower(cloudNetworkID), cloudNetworkShortID,
-		*instance.Status, tags, providerType)
-}
-
-func virtualMachineToNetworkInterfaceCRD(networkInterfaces []*networkInterface, owner *v1alpha1.VirtualMachine,
-	namespace string) []*v1alpha1.NetworkInterface {
-	networkInterfaceCRDs := make([]*v1alpha1.NetworkInterface, 0, len(networkInterfaces))
-	for _, nwInf := range networkInterfaces {
-		var privateIPs []string
-		var publicIPs []string
-
-		if len(nwInf.PrivateIps) > 0 {
-			for _, privateIP := range nwInf.PrivateIps {
-				privateIPs = append(privateIPs, *privateIP)
-			}
-		}
-
-		if len(nwInf.PublicIps) > 0 {
-			for _, publicIP := range nwInf.PublicIps {
-				publicIPs = append(publicIPs, *publicIP)
-			}
-		}
-
-		cloudID := strings.ToLower(*nwInf.ID)
-		cloudName := strings.ToLower(*nwInf.Name)
-		cloudNetwork := strings.ToLower(*nwInf.VnetID)
-		crdName := utils.GenerateShortResourceIdentifier(cloudID, cloudName)
-
-		macAddress := ""
-		if nwInf.MacAddress != nil {
-			macAddress = *nwInf.MacAddress
-		}
-		tags := make(map[string]string)
-		for key, value := range nwInf.Tags {
-			// skip any tags added by antreacloud for internal processing
-			_, hasAGPrefix, hasATPrefix := securitygroup.IsAntreaCloudCreatedSecurityGroup(key)
-			if hasAGPrefix || hasATPrefix {
-				continue
-			}
-			tags[key] = *value
-		}
-
-		networkInterfaceCRD := utils.GenerateNetworkInterfaceCRD(crdName, cloudName, cloudID, namespace, cloudNetwork,
-			privateIPs, publicIPs, macAddress, tags, owner.Name, owner.UID, cloudcommon.VirtualMachineCRDKind)
-		networkInterfaceCRDs = append(networkInterfaceCRDs, networkInterfaceCRD)
-	}
-
-	return networkInterfaceCRDs
+		*instance.Status, tags, networkInterfaces, providerType)
 }

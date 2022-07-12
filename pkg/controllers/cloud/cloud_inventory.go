@@ -159,6 +159,8 @@ func (i *CloudInventory) GetNetworkInterface(ns, name string) (*controlplane.Net
 	}
 }
 
+//TODO: Merge Network interface objects in VM CRD, disabling Network interface related code for now.
+/*
 // CopyNic Copy from CRD Nic to ControlPlane Nic. It should be removed
 func (i *CloudInventory) copyNic(nic *crd.NetworkInterface) *controlplane.NetworkInterface {
 	newNic := controlplane.NetworkInterface{
@@ -203,3 +205,4 @@ func (i *CloudInventory) UpdateNetworkInterface(nic *crd.NetworkInterface) {
 		i.logger.Error(err, "Failed to Update Network Interface", "vm", nic.Name)
 	}
 }
+*/

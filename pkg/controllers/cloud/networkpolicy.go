@@ -254,9 +254,6 @@ func vpcsFromGroupMembers(members []antreanetworking.GroupMember, r *NetworkPoli
 		if kind == converter.GetExternalEntityLabelKind(&cloud.VirtualMachine{}) {
 			cloudRsc.Type = securitygroup.CloudResourceTypeVM
 			readAnnotations = true
-		} else if kind == converter.GetExternalEntityLabelKind(&cloud.NetworkInterface{}) {
-			cloudRsc.Type = securitygroup.CloudResourceTypeNIC
-			readAnnotations = true
 		}
 		if readAnnotations {
 			ownerAnnotations, err := getOwnerAnnotations(e, r)
@@ -304,13 +301,6 @@ func getOwnerAnnotations(e *antreanetcore.ExternalEntity, r *NetworkPolicyReconc
 			return nil, err
 		}
 		return vm.Annotations, nil
-	} else if owner.Kind == cloudcommon.NetworkInterfaceCRDKind {
-		intf := &cloud.NetworkInterface{}
-		if err := r.Get(context.TODO(), key, intf); err != nil {
-			r.Log.Error(err, "Client get NetworkInterface", "key", key)
-			return nil, err
-		}
-		return intf.Annotations, nil
 	}
 	return nil, fmt.Errorf("unsupported cloud owner kind")
 }

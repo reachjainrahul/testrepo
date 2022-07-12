@@ -30,7 +30,6 @@ import (
 	"antrea.io/antreacloud/apis/crd/v1alpha1"
 	cloudcommon "antrea.io/antreacloud/pkg/cloud-provider/cloudapi/common"
 	"antrea.io/antreacloud/pkg/cloud-provider/cloudapi/internal"
-	"antrea.io/antreacloud/pkg/cloud-provider/utils"
 )
 
 type ec2ServiceConfig struct {
@@ -260,25 +259,17 @@ func (ec2Cfg *ec2ServiceConfig) SetResourceFilters(selector *v1alpha1.CloudEntit
 func (ec2Cfg *ec2ServiceConfig) GetResourceCRDs(namespace string) *internal.CloudServiceResourceCRDs {
 	instances := ec2Cfg.getCachedInstances()
 	vmCRDs := make([]*v1alpha1.VirtualMachine, 0, len(instances))
-	nwInfCRDs := make([]*v1alpha1.NetworkInterface, 0)
 	for _, instance := range instances {
 		// build VirtualMachine CRD
 		vmCRD := ec2InstanceToVirtualMachineCRD(instance, namespace)
 		vmCRDs = append(vmCRDs, vmCRD)
-
-		// build NetworkInterface CRD
-		vmNwInfCRDs := ec2InstanceToNetworkInterfaceCRD(instance.NetworkInterfaces, vmCRD, namespace)
-		nwInfCRDs = append(nwInfCRDs, vmNwInfCRDs...)
-
-		// update VirtualMachine CRD with network interfaces
-		utils.UpdateVirtualMachineCRDWithNetworkInterfaceRef(vmCRD, vmNwInfCRDs)
 	}
 
 	awsPluginLogger().Info("CRDs", "service", awsComputeServiceNameEC2, "account", ec2Cfg.accountName,
-		"virtual-machine CRDs", len(vmCRDs), "network-interface CRDs", len(nwInfCRDs))
+		"virtual-machine CRDs", len(vmCRDs))
 
 	serviceResourceCRDs := &internal.CloudServiceResourceCRDs{}
-	serviceResourceCRDs.SetComputeResourceCRDs(vmCRDs, nwInfCRDs)
+	serviceResourceCRDs.SetComputeResourceCRDs(vmCRDs)
 
 	return serviceResourceCRDs
 }

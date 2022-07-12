@@ -15,14 +15,12 @@
 package cloud
 
 import (
-	"context"
-	"fmt"
-
-	"k8s.io/apimachinery/pkg/watch"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	"antrea.io/antreacloud/apis/crd/v1alpha1"
 	"antrea.io/antreacloud/pkg/cloud-provider/securitygroup"
+	"context"
+	"fmt"
+	"k8s.io/apimachinery/pkg/watch"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // sync synchronizes securityGroup memberships with cloud.
@@ -222,9 +220,6 @@ func (r *NetworkPolicyReconciler) syncWithCloud() {
 		if _, ok, _ := indexer.GetByKey(content.Resource.String()); !ok {
 			state := securityGroupStateCreated
 			_ = sgNew(&content.Resource, []*securitygroup.CloudResource{}, &state).delete(r)
-			for _, rsc := range content.Members {
-				r.getCloudResourceNPTracker(&rsc, true).markDirty()
-			}
 			continue
 		}
 		// copy channel reference content to a local variable because we use pointer to
@@ -283,22 +278,28 @@ func (r *NetworkPolicyReconciler) processBookMark(event watch.EventType) bool {
 // getNICsOfCloudResources returns NICs of cloud resources if available.
 func (r *NetworkPolicyReconciler) getNICsOfCloudResources(resources []*securitygroup.CloudResource) (
 	[]*securitygroup.CloudResource, error) {
+	log := r.Log.WithName("CloudSync")
 	if len(resources) == 0 {
 		return nil, nil
 	}
 	if resources[0].Type == securitygroup.CloudResourceTypeNIC {
 		return resources, nil
 	}
+
 	nics := make([]*securitygroup.CloudResource, 0, len(resources))
 	for _, rsc := range resources {
 		name := rsc.Name.Name
-		nicList := &v1alpha1.NetworkInterfaceList{}
-		if err := r.List(context.TODO(), nicList, client.MatchingFields{networkInterfaceIndexerByOwnerReference: name}); err != nil {
+		vmList := &v1alpha1.VirtualMachineList{}
+		if err := r.List(context.TODO(), vmList, client.MatchingFields{virtualMachineIndexerByCloudName: name}); err != nil {
 			return resources, err
 		}
-		for _, nic := range nicList.Items {
-			nics = append(nics, &securitygroup.CloudResource{Name: securitygroup.CloudResourceID{
-				Name: nic.Name, Vpc: rsc.Name.Vpc}, Type: securitygroup.CloudResourceTypeNIC})
+		for _, vm := range vmList.Items {
+			log.Info("Sync:getNICsOfCloudResources", "vm name", vm.Name)
+			for _, nic := range vm.Status.NetworkInterfaces {
+				log.Info("Sync:getNICsOfCloudResources", "nic name", nic.Name)
+				nics = append(nics, &securitygroup.CloudResource{Name: securitygroup.CloudResourceID{
+					Name: nic.Name, Vpc: rsc.Name.Vpc}, Type: securitygroup.CloudResourceTypeNIC})
+			}
 		}
 	}
 	return nics, nil

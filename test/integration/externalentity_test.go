@@ -17,6 +17,7 @@ package integration
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"math/rand"
 	"path"
 	"strings"
@@ -27,13 +28,10 @@ import (
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
-	cloudv1alpha1 "antrea.io/antreacloud/apis/crd/v1alpha1"
 	"antrea.io/antreacloud/pkg/controllers/config"
 	"antrea.io/antreacloud/pkg/converter/target"
 	"antrea.io/antreacloud/pkg/testing"
@@ -49,7 +47,6 @@ var _ = Describe(fmt.Sprintf("%s: ExternalEntity", focusCore), func() {
 			{Name: "https", Protocol: v1.ProtocolTCP, Port: 443},
 		}
 		externalEntitySources map[string]target.ExternalEntitySource
-		networkInterfaces     []*cloudv1alpha1.NetworkInterface
 		namespace             *v1.Namespace
 		expectedEndpoints     []antreatypes.Endpoint
 		restartController     bool
@@ -65,7 +62,7 @@ var _ = Describe(fmt.Sprintf("%s: ExternalEntity", focusCore), func() {
 		err := k8sClient.Create(context.TODO(), namespace)
 		Expect(err).ToNot(HaveOccurred())
 		logf.Log.Info("Created namespace", "namespace", namespace.Name)
-		externalEntitySources, networkInterfaces = testing.SetupExternalEntitySources(ipAddresses, namedPorts, namespace.Name)
+		externalEntitySources = testing.SetupExternalEntitySources(ipAddresses, namedPorts, namespace.Name)
 		restartController = false
 
 		expectedEndpoints = nil
@@ -103,7 +100,6 @@ var _ = Describe(fmt.Sprintf("%s: ExternalEntity", focusCore), func() {
 			return &ee.Spec
 		}, 30, 1).Should(Equal(spec))
 	}
-
 	checkRemoved := func(key client.ObjectKey, ee *antreatypes.ExternalEntity) {
 		Eventually(func() bool {
 			err := k8sClient.Get(context.TODO(), key, ee)
@@ -113,7 +109,6 @@ var _ = Describe(fmt.Sprintf("%s: ExternalEntity", focusCore), func() {
 			return false
 		}, 30, 1).Should(BeTrue())
 	}
-
 	tester := func(kind string, epNum int, hasNic, hasPort bool) {
 		// TODO: remove set resource version and copy status in another way
 		externalEntitySource := externalEntitySources[kind].EmbedType()
@@ -126,21 +121,7 @@ var _ = Describe(fmt.Sprintf("%s: ExternalEntity", focusCore), func() {
 		err = k8sClient.Status().Update(ctx, externalEntitySource)
 		Expect(err).ToNot(HaveOccurred())
 
-		if hasNic {
-			nicOwner := externalEntitySource.(metav1.Object)
-			for _, nic := range networkInterfaces {
-				_ = ctrl.SetControllerReference(nicOwner, nic, scheme)
-				nicStatus := nic.Status
-				err := k8sClient.Create(ctx, nic)
-				Expect(err).ToNot(HaveOccurred())
-				nic.Status = nicStatus
-				err = k8sClient.Status().Update(ctx, nic)
-				Expect(err).ToNot(HaveOccurred())
-			}
-		}
-
-		kind = strings.ToLower(kind)
-		eeFetchKey := client.ObjectKey{Name: kind + "-" + externalEntitySource.(metav1.Object).GetName(),
+		eeFetchKey := client.ObjectKey{Name: strings.ToLower(kind) + "-" + externalEntitySource.(metav1.Object).GetName(),
 			Namespace: externalEntitySource.(metav1.Object).GetNamespace()}
 		externalEntity := &antreatypes.ExternalEntity{}
 		var expectPorts []antreatypes.NamedPort
@@ -164,9 +145,8 @@ var _ = Describe(fmt.Sprintf("%s: ExternalEntity", focusCore), func() {
 
 		if hasNic {
 			By("ExternalEntity can be changed when source CRD changes")
-			nic := networkInterfaces[0]
-			nic.Status.IPs = nil
-			err = k8sClient.Status().Update(ctx, nic)
+			source := testing.SetNetworkInterfaceIP(kind, externalEntitySource, "nic0", "")
+			err = k8sClient.Status().Update(ctx, source)
 			Expect(err).ToNot(HaveOccurred())
 			spec := &antreatypes.ExternalEntitySpec{
 				Endpoints:    expectedEndpoints[1:],
@@ -176,17 +156,16 @@ var _ = Describe(fmt.Sprintf("%s: ExternalEntity", focusCore), func() {
 			checkEndpoints(eeFetchKey, spec)
 
 			By("ExternalEntity can be removed when source has no IP")
-			nic = networkInterfaces[1]
-			nic.Status.IPs = nil
-			err = k8sClient.Status().Update(ctx, nic)
+			source = testing.SetNetworkInterfaceIP(kind, externalEntitySource, "nic1", "")
+			err = k8sClient.Status().Update(ctx, source)
 			Expect(err).ToNot(HaveOccurred())
 			checkRemoved(eeFetchKey, externalEntity)
 
 			By("ExternalEntity can be re-created when source recovers IP")
 			for i, ip := range ipAddresses {
-				nic = networkInterfaces[i]
-				nic.Status.IPs = []cloudv1alpha1.IPAddress{{Address: ip}}
-				err = k8sClient.Status().Update(ctx, nic)
+				name := "nic" + fmt.Sprintf("%d", i)
+				source = testing.SetNetworkInterfaceIP(kind, externalEntitySource, name, ip)
+				err = k8sClient.Status().Update(ctx, source)
 				Expect(err).ToNot(HaveOccurred())
 			}
 			spec = &antreatypes.ExternalEntitySpec{
@@ -201,7 +180,6 @@ var _ = Describe(fmt.Sprintf("%s: ExternalEntity", focusCore), func() {
 		err = k8sClient.Delete(ctx, externalEntitySource)
 		Expect(err).ToNot(HaveOccurred())
 		checkRemoved(eeFetchKey, externalEntity)
-
 	}
 	table.DescribeTable("Test ExternalEntity Life cycle",
 		func(kind string, hasNic, hasPort bool) {

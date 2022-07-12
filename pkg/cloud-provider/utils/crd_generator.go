@@ -19,7 +19,6 @@ import (
 	"strings"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/uuid"
 
 	cloudv1alpha1 "antrea.io/antreacloud/apis/crd/v1alpha1"
@@ -27,12 +26,14 @@ import (
 )
 
 func GenerateVirtualMachineCRD(crdName string, cloudName string, cloudID string, namespace string, cloudNetwork string,
-	shortNetworkID string, status string, tags map[string]string, provider cloudcommon.ProviderType) *cloudv1alpha1.VirtualMachine {
+	shortNetworkID string, status string, tags map[string]string, networkInterfaces []cloudv1alpha1.NetworkInterface,
+	provider cloudcommon.ProviderType) *cloudv1alpha1.VirtualMachine {
 	vmStatus := &cloudv1alpha1.VirtualMachineStatus{
 		Provider:            cloudv1alpha1.CloudProvider(provider),
 		VirtualPrivateCloud: shortNetworkID,
 		Tags:                tags,
 		Status:              status,
+		NetworkInterfaces:   networkInterfaces,
 	}
 	annotationsMap := map[string]string{
 		cloudcommon.AnnotationCloudAssignedIDKey:    cloudID,
@@ -56,80 +57,6 @@ func GenerateVirtualMachineCRD(crdName string, cloudName string, cloudID string,
 	}
 
 	return vmCrd
-}
-
-func UpdateVirtualMachineCRDWithNetworkInterfaceRef(virtualMachine *cloudv1alpha1.VirtualMachine,
-	networkInterfaces []*cloudv1alpha1.NetworkInterface) {
-	for _, networkInterface := range networkInterfaces {
-		networkInterfaceReference := cloudv1alpha1.NetworkInterfaceReference{
-			Name:      networkInterface.GetName(),
-			Namespace: networkInterface.GetNamespace(),
-		}
-		virtualMachine.Status.NetworkInterfaces = append(virtualMachine.Status.NetworkInterfaces, networkInterfaceReference)
-	}
-}
-
-func GenerateNetworkInterfaceCRD(crdName string, cloudName string, cloudID string, namespace string, network string,
-	privateIPs []string, publicIPs []string, macAddr string, tags map[string]string, ownerName string, ownerUID types.UID,
-	ownerKind string) *cloudv1alpha1.NetworkInterface {
-	var ipAddressCRDs []cloudv1alpha1.IPAddress
-
-	if len(privateIPs) > 0 {
-		for _, ipAddress := range privateIPs {
-			ipAddressCRD := cloudv1alpha1.IPAddress{
-				AddressType: cloudv1alpha1.AddressTypeInternalIP,
-				Address:     ipAddress,
-			}
-			ipAddressCRDs = append(ipAddressCRDs, ipAddressCRD)
-
-			if len(publicIPs) > 0 {
-				for _, publicIP := range publicIPs {
-					ipAddressCRD := cloudv1alpha1.IPAddress{
-						AddressType: cloudv1alpha1.AddressTypeExternalIP,
-						Address:     publicIP,
-					}
-					ipAddressCRDs = append(ipAddressCRDs, ipAddressCRD)
-				}
-			}
-		}
-	}
-
-	var trueVar = true
-	ownerRef := v1.OwnerReference{
-		APIVersion:         cloudcommon.APIVersion,
-		Kind:               ownerKind,
-		Name:               ownerName,
-		UID:                ownerUID,
-		Controller:         nil,
-		BlockOwnerDeletion: &trueVar,
-	}
-	annotationsMap := map[string]string{
-		cloudcommon.AnnotationCloudAssignedIDKey:    strings.ToLower(cloudID),
-		cloudcommon.AnnotationCloudAssignedNameKey:  strings.ToLower(cloudName),
-		cloudcommon.AnnotationCloudAssignedVPCIDKey: strings.ToLower(network),
-	}
-
-	networkInterfaceCRD := &cloudv1alpha1.NetworkInterface{
-		TypeMeta: v1.TypeMeta{
-			Kind:       cloudcommon.NetworkInterfaceCRDKind,
-			APIVersion: cloudcommon.APIVersion,
-		},
-		ObjectMeta: v1.ObjectMeta{
-			Name:            crdName,
-			Namespace:       namespace,
-			UID:             uuid.NewUUID(),
-			OwnerReferences: []v1.OwnerReference{ownerRef},
-			Annotations:     annotationsMap,
-		},
-		Spec: cloudv1alpha1.NetworkInterfaceSpec{},
-		Status: cloudv1alpha1.NetworkInterfaceStatus{
-			Tags: tags,
-			MAC:  macAddr,
-			IPs:  ipAddressCRDs,
-		},
-	}
-
-	return networkInterfaceCRD
 }
 
 func GenerateShortResourceIdentifier(id string, prefixToAdd string) string {

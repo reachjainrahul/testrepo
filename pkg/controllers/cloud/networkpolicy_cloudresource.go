@@ -35,8 +35,7 @@ const (
 var (
 	crdNPSetter = map[securitygroup.CloudResourceType]func(tracker *cloudResourceNPTracker,
 		reconciler *NetworkPolicyReconciler) (bool, error){
-		securitygroup.CloudResourceTypeVM:  vmCRDNPSetter,
-		securitygroup.CloudResourceTypeNIC: nicCRDNPSetter,
+		securitygroup.CloudResourceTypeVM: vmCRDNPSetter,
 	}
 )
 
@@ -89,46 +88,6 @@ func vmCRDNPSetter(tracker *cloudResourceNPTracker, r *NetworkPolicyReconciler) 
 				time.Sleep(timeout)
 			}
 			tracker.markDirty()
-		}(tracker)
-	}
-	return updated, nil
-}
-
-func nicCRDNPSetter(tracker *cloudResourceNPTracker, r *NetworkPolicyReconciler) (bool, error) {
-	log := r.Log.WithName("NPTracker")
-	status := tracker.computeNPStatus(r)
-	updated := false
-	nicList := &cloud.NetworkInterfaceList{}
-	if err := r.List(context.TODO(), nicList,
-		client.MatchingFields{networkInterfaceIndexerByCloudID: tracker.cloudResource.Name.Name}); err != nil {
-		return false, err
-	}
-	log.V(1).Info("Update NIC", "crd", tracker.cloudResource, "status", status)
-	for _, nic := range nicList.Items {
-		npStatus, ok := status[nic.Namespace]
-		if len(status[""]) > 0 {
-			if npStatus == nil {
-				npStatus = make(map[string]string)
-			}
-			for k, v := range status[""] {
-				npStatus[k] = v
-			}
-		}
-		if !ok && len(nic.Status.NetworkPolicies) == 0 {
-			continue
-		}
-		if ok && reflect.DeepEqual(npStatus, nic.Status.NetworkPolicies) {
-			continue
-		}
-		obj := nic.DeepCopy()
-		obj.Status.NetworkPolicies = npStatus
-		updated = true
-		// Update is blocking call, running in background.
-		go func(tracker *cloudResourceNPTracker) {
-			if err := r.Status().Update(context.TODO(), obj, &client.UpdateOptions{}); err != nil {
-				log.Error(err, "K8s client get NetworkInterface", "vm", obj)
-				tracker.markDirty()
-			}
 		}(tracker)
 	}
 	return updated, nil

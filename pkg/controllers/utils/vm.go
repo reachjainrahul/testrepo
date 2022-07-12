@@ -16,7 +16,6 @@ package utils
 
 import (
 	"antrea.io/antreacloud/apis/crd/v1alpha1"
-	"context"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -28,13 +27,8 @@ func GetVMIPAddresses(vm *v1alpha1.VirtualMachine, cl client.Client) []v1alpha1.
 		return nil
 	}
 	ips := make([]v1alpha1.IPAddress, 0, ipLen)
-	for _, ref := range vm.Status.NetworkInterfaces {
-		fetchKey := client.ObjectKey{Namespace: ref.Namespace, Name: ref.Name}
-		networkInterface := &v1alpha1.NetworkInterface{}
-		if err := cl.Get(context.Background(), fetchKey, networkInterface); err != nil {
-			continue
-		}
-		ips = append(ips, networkInterface.Status.IPs...)
+	for _, value := range vm.Status.NetworkInterfaces {
+		ips = append(ips, value.IPs...)
 	}
 	return ips
 }

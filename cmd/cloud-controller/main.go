@@ -87,14 +87,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.NetworkInterfaceReconciler{
-		Client: mgr.GetClient(),
-		Log:    logging.GetLogger("controllers").WithName("NetworkInterface"),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "NetworkInterface")
-		os.Exit(1)
-	}
 	if err = (&controllers.CloudProviderAccountReconciler{
 		Client: mgr.GetClient(),
 		Log:    logging.GetLogger("controllers").WithName("CloudProviderAccount"),

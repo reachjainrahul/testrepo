@@ -68,6 +68,6 @@ func (r *VirtualMachineReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 	go r.converter.Start()
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&cloudv1alpha1.VirtualMachine{}).Owns(&cloudv1alpha1.NetworkInterface{}).
+		For(&cloudv1alpha1.VirtualMachine{}).
 		Complete(r)
 }

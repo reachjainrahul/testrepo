@@ -16,6 +16,9 @@ package testing
 
 import (
 	"fmt"
+	"reflect"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strings"
 
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
 	cloud "antrea.io/antreacloud/apis/crd/v1alpha1"
@@ -26,8 +29,7 @@ import (
 func SetupVirtualMachine(vm *cloud.VirtualMachine, name, namespace string, nics ...*cloud.NetworkInterface) {
 	vm.Status.NetworkInterfaces = nil
 	for _, nic := range nics {
-		ref := cloud.NetworkInterfaceReference{Name: nic.Name, Namespace: nic.Namespace}
-		vm.Status.NetworkInterfaces = append(vm.Status.NetworkInterfaces, ref)
+		vm.Status.NetworkInterfaces = append(vm.Status.NetworkInterfaces, *nic)
 	}
 	vm.Name = name
 	vm.Namespace = namespace
@@ -40,21 +42,17 @@ func SetupVirtualMachineOwnerOf(vm *source.VirtualMachineSource, name, namespace
 	SetupVirtualMachine(&vm.VirtualMachine, name, namespace, nics...)
 }
 
-func SetupNetworkInterface(nic *cloud.NetworkInterface, name, namespace string, ips []string) {
+func SetupNetworkInterface(nic *cloud.NetworkInterface, name string, ips []string) {
 	nic.Name = name
-	nic.Namespace = namespace
-	nic.Status.Tags = map[string]string{"test-nic-tag": "test-nic-key"}
-	nic.Status.IPs = nil
+	nic.Tags = map[string]string{"test-nic-tag": "test-nic-key"}
+	nic.IPs = nil
 	for _, ip := range ips {
-		nic.Status.IPs = append(nic.Status.IPs, cloud.IPAddress{Address: ip})
+		nic.IPs = append(nic.IPs, cloud.IPAddress{Address: ip})
 	}
 }
 
 // SetupExternalEntitySources returns externalEntitySource resources for testing.
-func SetupExternalEntitySources(ips []string, ports []antreatypes.NamedPort, namespace string) (
-	map[string]target.ExternalEntitySource,
-	[]*cloud.NetworkInterface,
-) {
+func SetupExternalEntitySources(ips []string, ports []antreatypes.NamedPort, namespace string) map[string]target.ExternalEntitySource {
 	sources := make(map[string]target.ExternalEntitySource)
 	virtualMachine := &source.VirtualMachineSource{}
 	sources["VirtualMachine"] = virtualMachine
@@ -63,9 +61,30 @@ func SetupExternalEntitySources(ips []string, ports []antreatypes.NamedPort, nam
 	for i, ip := range ips {
 		name := "nic" + fmt.Sprintf("%d", i)
 		nic := &cloud.NetworkInterface{}
-		SetupNetworkInterface(nic, name, namespace, []string{ip})
+		SetupNetworkInterface(nic, name, []string{ip})
 		networkInterfaces = append(networkInterfaces, nic)
 	}
 	SetupVirtualMachineOwnerOf(virtualMachine, "test-vm", namespace, networkInterfaces...)
-	return sources, networkInterfaces
+
+	return sources
+}
+
+func SetNetworkInterfaceIP(kind string, source client.Object, name string, ip string) client.Object {
+	if kind == reflect.TypeOf(cloud.VirtualMachine{}).Name() {
+		vm := (source).(*cloud.VirtualMachine)
+		nics := &vm.Status.NetworkInterfaces
+		//assign ip address to the nic passed to the function
+		for i, nic := range *nics {
+			if strings.Compare(nic.Name, name) == 0 {
+				if strings.Compare(ip, "") == 0 {
+					nic.IPs = nil
+				} else {
+					nic.IPs = []cloud.IPAddress{{Address: ip}}
+				}
+			}
+			(*nics)[i] = nic
+		}
+		return vm
+	}
+	return nil
 }

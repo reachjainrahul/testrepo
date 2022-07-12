@@ -32,7 +32,6 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
-	cloud "antrea.io/antreacloud/apis/crd/v1alpha1"
 	cloudv1alpha1 "antrea.io/antreacloud/apis/crd/v1alpha1"
 	"antrea.io/antreacloud/pkg/controllers/config"
 	"antrea.io/antreacloud/pkg/converter/source"
@@ -117,7 +116,7 @@ var _ = Describe("VirtualmachineConverter", func() {
 			isRetry              bool
 		)
 
-		tester := func(name string, op string, nicIdx int) {
+		tester := func(name string, op string) {
 			finished := make(chan struct{}, 1)
 			outstandingExpects := 0
 			externalEntitySource := externalEntitySources[name]
@@ -127,23 +126,6 @@ var _ = Describe("VirtualmachineConverter", func() {
 
 			fetchKey := target.GetObjectKeyFromSource(externalEntitySource)
 			orderedCalls := make([]*mock.Call, 0)
-
-			// Determine ExternalEntity source shall be deleted.
-			for _, in := range networkInterfaces[:nicIdx] {
-				nic := in
-				intfKey := client.ObjectKey{Name: nic.Name, Namespace: testNamespace}
-				orderedCalls = append(orderedCalls,
-					mockClient.EXPECT().Get(mock.Any(), intfKey, mock.Any()).
-						Return(nil).
-						Do(func(_ context.Context, key client.ObjectKey, iface *cloud.NetworkInterface) {
-							nic.DeepCopyInto(iface)
-							outstandingExpects--
-							if outstandingExpects == 0 {
-								finished <- struct{}{}
-							}
-						}),
-				)
-			}
 
 			// Determine ExternalEntity source exits.
 			orderedCalls = append(orderedCalls,
@@ -157,22 +139,6 @@ var _ = Describe("VirtualmachineConverter", func() {
 						}
 					}))
 
-			// Populate ExternalEntity.
-			for _, in := range networkInterfaces[:nicIdx] {
-				nic := in
-				intfKey := client.ObjectKey{Name: nic.Name, Namespace: testNamespace}
-				orderedCalls = append(orderedCalls,
-					mockClient.EXPECT().Get(mock.Any(), intfKey, mock.Any()).
-						Return(nil).
-						Do(func(_ context.Context, key client.ObjectKey, iface *cloud.NetworkInterface) {
-							nic.DeepCopyInto(iface)
-							outstandingExpects--
-							if outstandingExpects == 0 {
-								finished <- struct{}{}
-							}
-						}),
-				)
-			}
 			if expectExternalEntityOp {
 				if op == "create" {
 					orderedCalls = append(orderedCalls,
@@ -243,19 +209,19 @@ var _ = Describe("VirtualmachineConverter", func() {
 				externalEntityGetErr = errors.NewNotFound(schema.GroupResource{}, "")
 			})
 			table.DescribeTable("When source is",
-				func(name string, nicIdx int) {
-					tester(name, "create", nicIdx)
+				func(name string) {
+					tester(name, "create")
 				},
-				table.Entry("VirtualMachineSource", "VirtualMachine", 2),
+				table.Entry("VirtualMachineSource", "VirtualMachine"),
 			)
 		})
 
 		Context("Should patch when ExternalEntity is found", func() {
 			table.DescribeTable("When source is",
-				func(name string, nicIdx int) {
-					tester(name, "patch", nicIdx)
+				func(name string) {
+					tester(name, "patch")
 				},
-				table.Entry("VirtualMachineSource", "VirtualMachine", 2),
+				table.Entry("VirtualMachineSource", "VirtualMachine"),
 			)
 		})
 
@@ -264,10 +230,10 @@ var _ = Describe("VirtualmachineConverter", func() {
 				isEmptyEvent = true
 			})
 			table.DescribeTable("When source is",
-				func(name string, nicIdx int) {
-					tester(name, "delete", nicIdx)
+				func(name string) {
+					tester(name, "delete")
 				},
-				table.Entry("VirtualMachineSource", "VirtualMachine", 0),
+				table.Entry("VirtualMachineSource", "VirtualMachine"),
 			)
 		})
 
@@ -277,10 +243,10 @@ var _ = Describe("VirtualmachineConverter", func() {
 				isEmptyEvent = true
 			})
 			table.DescribeTable("When source is",
-				func(name string, nicIdx int) {
-					tester(name, "", nicIdx)
+				func(name string) {
+					tester(name, "")
 				},
-				table.Entry("VirtualMachineSource", "VirtualMachine", 0),
+				table.Entry("VirtualMachineSource", "VirtualMachine"),
 			)
 		})
 
@@ -295,31 +261,31 @@ var _ = Describe("VirtualmachineConverter", func() {
 					externalEntityGetErr = errors.NewNotFound(schema.GroupResource{}, "")
 				})
 				table.DescribeTable("When source is",
-					func(name string, nicIdx int) {
-						tester(name, "create", nicIdx)
-						tester(name, "create", nicIdx)
-						tester(name, "create", nicIdx)
+					func(name string) {
+						tester(name, "create")
+						tester(name, "create")
+						tester(name, "create")
 
 						// a single successful retry cancels all previous failures.
 						externalEntityOpError = nil
 						generateEvent = false
 						expectWaiTime = source.RetryInterval + time.Second*10
-						tester(name, "create", nicIdx)
+						tester(name, "create")
 					},
-					table.Entry("VirtualMachineSource", "VirtualMachine", 2),
+					table.Entry("VirtualMachineSource", "VirtualMachine"),
 				)
 			})
 			Context("Should patch when ExternalEntity is found", func() {
 				table.DescribeTable("When source is",
-					func(name string, nicIdx int) {
-						tester(name, "patch", nicIdx)
+					func(name string) {
+						tester(name, "patch")
 
 						externalEntityOpError = nil
 						generateEvent = false
 						expectWaiTime = source.RetryInterval + time.Second*10
-						tester(name, "patch", nicIdx)
+						tester(name, "patch")
 					},
-					table.Entry("VirtualMachineSource", "VirtualMachine", 2),
+					table.Entry("VirtualMachineSource", "VirtualMachine"),
 				)
 			})
 
@@ -328,15 +294,15 @@ var _ = Describe("VirtualmachineConverter", func() {
 					isEmptyEvent = true
 				})
 				table.DescribeTable("When source is",
-					func(name string, nicIdx int) {
-						tester(name, "delete", nicIdx)
+					func(name string) {
+						tester(name, "delete")
 
 						externalEntityOpError = nil
 						generateEvent = false
 						expectWaiTime = source.RetryInterval + time.Second*10
-						tester(name, "delete", nicIdx)
+						tester(name, "delete")
 					},
-					table.Entry("VirtualMachineSource", "VirtualMachine", 0),
+					table.Entry("VirtualMachineSource", "VirtualMachine"),
 				)
 			})
 		})

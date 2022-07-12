@@ -18,6 +18,33 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type AddressType string
+
+const (
+	// Address type is host name.
+	AddressTypeHostName AddressType = "HostName"
+	// Address type is internal IP.
+	AddressTypeInternalIP AddressType = "InternalIP"
+	// Address type is external IP.
+	AddressTypeExternalIP AddressType = "ExternalIP"
+)
+
+type IPAddress struct {
+	AddressType AddressType `json:"addressType"`
+	Address     string      `json:"address"`
+}
+
+// NetworkInterface contains information pertaining to NetworkInterface.
+type NetworkInterface struct {
+	Name string `json:"name,omitempty"`
+	// Tags of this interface. A corresponding label is also generated for each tag.
+	Tags map[string]string `json:"tags,omitempty"`
+	// Hardware address of the interface.
+	MAC string `json:"mac,omitempty"`
+	// IP addresses of this NetworkInterface.
+	IPs []IPAddress `json:"ips,omitempty"`
+}
+
 // VirtualMachineSpec defines the desired state of VirtualMachine.
 type VirtualMachineSpec struct {
 }
@@ -32,7 +59,7 @@ type VirtualMachineStatus struct {
 	// Tags of this VirtualMachine. A corresponding label is also generated for each tag.
 	Tags map[string]string `json:"tags,omitempty"`
 	// NetworkInterfaces is array of NetworkInterfaces attached to this VirtualMachine.
-	NetworkInterfaces []NetworkInterfaceReference `json:"networkInterfaces,omitempty"`
+	NetworkInterfaces []NetworkInterface `json:"networkInterfaces,omitempty"`
 	// Status indicates current state of the VirtualMachine.
 	Status string `json:"status,omitempty"`
 	// NetworkPolicies indicates NetworkPolicy status on this VirtualMachine.

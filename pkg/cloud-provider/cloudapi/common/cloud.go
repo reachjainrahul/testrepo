@@ -68,9 +68,9 @@ type AccountMgmtInterface interface {
 // ComputeInterface is an abstract providing set of methods to get Instance details to be implemented by cloud providers.
 type ComputeInterface interface {
 	// Instances returns VirtualMachineStatus across all accounts for a cloud provider.
-	Instances() ([]*v1alpha1.VirtualMachine, []*v1alpha1.NetworkInterface, error)
+	Instances() ([]*v1alpha1.VirtualMachine, error)
 	// InstancesGivenProviderAccount returns VirtualMachineStatus for a given account of a cloud provider.
-	InstancesGivenProviderAccount(namespacedName *types.NamespacedName) ([]*v1alpha1.VirtualMachine, []*v1alpha1.NetworkInterface, error)
+	InstancesGivenProviderAccount(namespacedName *types.NamespacedName) ([]*v1alpha1.VirtualMachine, error)
 	// IsVirtualPrivateCloudPresent returns true if given virtual private cloud uniqueIdentifier is managed by the cloud, else false.
 	IsVirtualPrivateCloudPresent(uniqueIdentifier string) bool
 }

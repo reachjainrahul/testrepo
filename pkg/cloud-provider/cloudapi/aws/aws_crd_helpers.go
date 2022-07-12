@@ -18,7 +18,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 
 	"antrea.io/antreacloud/apis/crd/v1alpha1"
-	cloudcommon "antrea.io/antreacloud/pkg/cloud-provider/cloudapi/common"
 	"antrea.io/antreacloud/pkg/cloud-provider/utils"
 )
 
@@ -34,41 +33,44 @@ func ec2InstanceToVirtualMachineCRD(instance *ec2.Instance, namespace string) *v
 		}
 	}
 
+	//Network interface associated with Virtual machine
+	instNetworkInterfaces := instance.NetworkInterfaces
+	networkInterfaces := make([]v1alpha1.NetworkInterface, 0, len(instNetworkInterfaces))
+
+	for _, nwInf := range instNetworkInterfaces {
+		var ipAddressCRDs []v1alpha1.IPAddress
+		privateIPAddresses := nwInf.PrivateIpAddresses
+		if len(privateIPAddresses) > 0 {
+			for _, ipAddress := range privateIPAddresses {
+				ipAddressCRD := v1alpha1.IPAddress{
+					AddressType: v1alpha1.AddressTypeInternalIP,
+					Address:     *ipAddress.PrivateIpAddress,
+				}
+				ipAddressCRDs = append(ipAddressCRDs, ipAddressCRD)
+
+				association := ipAddress.Association
+				if association != nil {
+					ipAddressCRD := v1alpha1.IPAddress{
+						AddressType: v1alpha1.AddressTypeExternalIP,
+						Address:     *association.PublicIp,
+					}
+					ipAddressCRDs = append(ipAddressCRDs, ipAddressCRD)
+				}
+			}
+		}
+		networkInterface := v1alpha1.NetworkInterface{
+			Name: *nwInf.NetworkInterfaceId,
+			Tags: nil,
+			MAC:  *nwInf.MacAddress,
+			IPs:  ipAddressCRDs,
+		}
+		networkInterfaces = append(networkInterfaces, networkInterface)
+	}
+
 	cloudName := tags[ResourceNameTagKey]
 	cloudID := *instance.InstanceId
 	cloudNetwork := *instance.VpcId
 
 	return utils.GenerateVirtualMachineCRD(cloudID, cloudName, cloudID, namespace, cloudNetwork, cloudNetwork,
-		*instance.State.Name, tags, providerType)
-}
-
-//  ec2InstanceToNetworkInterfaceCRD converts ec2 instance to NetworkInterface CRDs with VM as owner.
-func ec2InstanceToNetworkInterfaceCRD(networkInterfaces []*ec2.InstanceNetworkInterface, owner *v1alpha1.VirtualMachine,
-	namespace string) []*v1alpha1.NetworkInterface {
-	networkInterfaceCRDs := make([]*v1alpha1.NetworkInterface, 0, len(networkInterfaces))
-	for _, nwInf := range networkInterfaces {
-		var privateIPs []string
-		var publicIPs []string
-
-		privateIPAddresses := nwInf.PrivateIpAddresses
-		if len(privateIPAddresses) > 0 {
-			for _, ipAddress := range privateIPAddresses {
-				privateIPs = append(privateIPs, *ipAddress.PrivateIpAddress)
-				association := ipAddress.Association
-				if association != nil {
-					publicIPs = append(publicIPs, *association.PublicIp)
-				}
-			}
-		}
-
-		cloudID := *nwInf.NetworkInterfaceId
-		macAddress := *nwInf.MacAddress
-		cloudNetwork := *nwInf.VpcId
-
-		networkInterfaceCRD := utils.GenerateNetworkInterfaceCRD(cloudID, "", cloudID, namespace, cloudNetwork,
-			privateIPs, publicIPs, macAddress, nil, owner.Name, owner.UID, cloudcommon.VirtualMachineCRDKind)
-		networkInterfaceCRDs = append(networkInterfaceCRDs, networkInterfaceCRD)
-	}
-
-	return networkInterfaceCRDs
+		*instance.State.Name, tags, networkInterfaces, providerType)
 }

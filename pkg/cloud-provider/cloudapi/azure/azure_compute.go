@@ -27,7 +27,6 @@ import (
 	"antrea.io/antreacloud/apis/crd/v1alpha1"
 	cloudcommon "antrea.io/antreacloud/pkg/cloud-provider/cloudapi/common"
 	"antrea.io/antreacloud/pkg/cloud-provider/cloudapi/internal"
-	"antrea.io/antreacloud/pkg/cloud-provider/utils"
 )
 
 type computeServiceConfig struct {
@@ -238,26 +237,18 @@ func (computeCfg *computeServiceConfig) SetResourceFilters(selector *v1alpha1.Cl
 func (computeCfg *computeServiceConfig) GetResourceCRDs(namespace string) *internal.CloudServiceResourceCRDs {
 	virtualMachines := computeCfg.getCachedVirtualMachines()
 	vmCRDs := make([]*v1alpha1.VirtualMachine, 0, len(virtualMachines))
-	nwInfCRDs := make([]*v1alpha1.NetworkInterface, 0)
 
 	for _, virtualMachine := range virtualMachines {
 		// build VirtualMachine CRD
 		vmCRD := computeInstanceToVirtualMachineCRD(virtualMachine, namespace)
 		vmCRDs = append(vmCRDs, vmCRD)
-
-		// build NetworkInterface CRD
-		vmNwInfCRDs := virtualMachineToNetworkInterfaceCRD(virtualMachine.NetworkInterfaces, vmCRD, namespace)
-		nwInfCRDs = append(nwInfCRDs, vmNwInfCRDs...)
-
-		// update VirtualMachine CRD with network interfaces
-		utils.UpdateVirtualMachineCRDWithNetworkInterfaceRef(vmCRD, vmNwInfCRDs)
 	}
 
 	azurePluginLogger().Info("CRDs", "service", azureComputeServiceNameCompute, "account", computeCfg.accountName,
-		"virtual-machine CRDs", len(vmCRDs), "network-interface CRDs", len(nwInfCRDs))
+		"virtual-machine CRDs", len(vmCRDs))
 
 	serviceResourceCRDs := &internal.CloudServiceResourceCRDs{}
-	serviceResourceCRDs.SetComputeResourceCRDs(vmCRDs, nwInfCRDs)
+	serviceResourceCRDs.SetComputeResourceCRDs(vmCRDs)
 
 	return serviceResourceCRDs
 }

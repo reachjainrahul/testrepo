@@ -42,8 +42,8 @@ type CloudCommonInterface interface {
 	GetCloudAccounts() map[types.NamespacedName]CloudAccountInterface
 
 	GetCloudAccountComputeResourceCRDs(namespacedName *types.NamespacedName) ([]*cloudv1alpha1.VirtualMachine,
-		[]*cloudv1alpha1.NetworkInterface, error)
-	GetAllCloudAccountsComputeResourceCRDs() ([]*cloudv1alpha1.VirtualMachine, []*cloudv1alpha1.NetworkInterface, error)
+		error)
+	GetAllCloudAccountsComputeResourceCRDs() ([]*cloudv1alpha1.VirtualMachine, error)
 
 	AddCloudAccount(account *cloudv1alpha1.CloudProviderAccount, credentials interface{}) error
 	RemoveCloudAccount(namespacedName *types.NamespacedName)
@@ -130,46 +130,42 @@ func (c *cloudCommon) GetCloudAccounts() map[types.NamespacedName]CloudAccountIn
 }
 
 func (c *cloudCommon) GetCloudAccountComputeResourceCRDs(accountNamespacedName *types.NamespacedName) ([]*cloudv1alpha1.VirtualMachine,
-	[]*cloudv1alpha1.NetworkInterface, error) {
+	error) {
 	accCfg, found := c.GetCloudAccountByName(accountNamespacedName)
 	if !found {
-		return nil, nil, fmt.Errorf("unable to find cloud account:%v", *accountNamespacedName)
+		return nil, fmt.Errorf("unable to find cloud account:%v", *accountNamespacedName)
 	}
 	namespace := accCfg.GetNamespacedName().Namespace
 
 	var computeCRDs []*cloudv1alpha1.VirtualMachine
-	var computeInterfaceCRDs []*cloudv1alpha1.NetworkInterface
 	serviceConfigs := accCfg.GetServiceConfigs()
 	for _, serviceConfig := range serviceConfigs {
 		if serviceConfig.getType() == CloudServiceTypeCompute {
 			resourceCRDs := serviceConfig.getResourceCRDs(namespace)
 			computeCRDs = append(computeCRDs, resourceCRDs.virtualMachines...)
-			computeInterfaceCRDs = append(computeInterfaceCRDs, resourceCRDs.virtualMachineNetworkInterfaces...)
 		}
 	}
 
 	c.logger().Info("account CRDs", "account", accountNamespacedName, "service-type", CloudServiceTypeCompute,
-		"compute", len(computeCRDs), "network-interfaces", len(computeInterfaceCRDs))
+		"compute", len(computeCRDs))
 
-	return computeCRDs, computeInterfaceCRDs, nil
+	return computeCRDs, nil
 }
 
 func (c *cloudCommon) GetAllCloudAccountsComputeResourceCRDs() ([]*cloudv1alpha1.VirtualMachine,
-	[]*cloudv1alpha1.NetworkInterface, error) {
+	error) {
 	var err error
 	var computeCRDs []*cloudv1alpha1.VirtualMachine
-	var computeInterfaceCRDs []*cloudv1alpha1.NetworkInterface
 	for namespacedName := range c.GetCloudAccounts() {
-		accountComputeCRDs, accountComputeIntfCRDs, e := c.GetCloudAccountComputeResourceCRDs(&namespacedName)
+		accountComputeCRDs, e := c.GetCloudAccountComputeResourceCRDs(&namespacedName)
 		if e == nil {
 			computeCRDs = append(computeCRDs, accountComputeCRDs...)
-			computeInterfaceCRDs = append(computeInterfaceCRDs, accountComputeIntfCRDs...)
 		} else {
 			err = multierr.Append(err, e)
 		}
 	}
 
-	return computeCRDs, computeInterfaceCRDs, err
+	return computeCRDs, err
 }
 
 func (c *cloudCommon) AddSelector(accountNamespacedName *types.NamespacedName, selector *cloudv1alpha1.CloudEntitySelector) error {

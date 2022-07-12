@@ -17,14 +17,12 @@ package target_test
 import (
 	converter "antrea.io/antreacloud/pkg/converter/target"
 	"context"
-	"fmt"
-	"reflect"
-
 	mock "github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/api/core/v1"
+	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
@@ -45,7 +43,6 @@ var _ = Describe("Externalentity", func() {
 		namespace = "test-externalentity-sources-namespace"
 
 		// Test Tunables
-		nicGetError                 error
 		networkInterfaceIPAddresses = []string{"1.1.1.1", "2.2.2.2"}
 		namedports                  = []antreatypes.NamedPort{
 			{Name: "http", Protocol: v1.ProtocolTCP, Port: 80},
@@ -53,38 +50,20 @@ var _ = Describe("Externalentity", func() {
 		}
 
 		externalEntitySources map[string]converter.ExternalEntitySource
-		networkInterfaces     []*cloud.NetworkInterface
 	)
 
 	BeforeEach(func() {
 		mockCtrl = mock.NewController(GinkgoT())
 		mockclient = controllerruntimeclient.NewMockClient(mockCtrl)
-		nicGetError = nil
-		externalEntitySources, networkInterfaces = testing.SetupExternalEntitySources(networkInterfaceIPAddresses, namedports, namespace)
+		externalEntitySources = testing.SetupExternalEntitySources(networkInterfaceIPAddresses, namedports, namespace)
 	})
 
 	AfterEach(func() {
 		mockCtrl.Finish()
 	})
 
-	getEndPointAddressesTester := func(name string, hasNic bool) {
+	getEndPointAddressesTester := func(name string) {
 		externalEntitySource := externalEntitySources[name]
-		if hasNic {
-			orderedCalls := make([]*mock.Call, 0)
-			for _, in := range networkInterfaces {
-				// Need to explicit return NetworkInterface objects so that its IPs may be retrieved.
-				nic := in
-				key := client.ObjectKey{Name: nic.Name, Namespace: namespace}
-				orderedCalls = append(orderedCalls,
-					mockclient.EXPECT().Get(mock.Any(), key, mock.Any()).
-						Return(nicGetError).
-						Do(func(_ context.Context, key client.ObjectKey, iface *cloud.NetworkInterface) {
-							nic.DeepCopyInto(iface)
-						}))
-			}
-			mock.InOrder(orderedCalls...)
-		}
-
 		ips, err := externalEntitySource.GetEndPointAddresses(mockclient)
 		Expect(err).ToNot(HaveOccurred())
 		// As Equal and []string{} == nil
@@ -145,10 +124,10 @@ var _ = Describe("Externalentity", func() {
 
 	Context("Source has required information", func() {
 		table.DescribeTable("GetEndPointAddresses",
-			func(name string, hasNic bool) {
-				getEndPointAddressesTester(name, hasNic)
+			func(name string) {
+				getEndPointAddressesTester(name)
 			},
-			table.Entry("VirtualMachine", "VirtualMachine", true))
+			table.Entry("VirtualMachine", "VirtualMachine"))
 
 		table.DescribeTable("GetEndPointPort",
 			func(name string, hasPort bool) {
@@ -181,18 +160,18 @@ var _ = Describe("Externalentity", func() {
 			table.Entry("VirtualMachine", "VirtualMachine", &cloud.VirtualMachine{}))
 	})
 
-	Context("Source has not required information", func() {
+	Context("Source does not have required information", func() {
 		JustBeforeEach(func() {
 			networkInterfaceIPAddresses = nil
-			nicGetError = fmt.Errorf("dummy")
 			namedports = nil
+			externalEntitySources = testing.SetupExternalEntitySources([]string{}, namedports, namespace)
 		})
 
 		table.DescribeTable("GetEndPointAddresses",
-			func(name string, hasNic bool) {
-				getEndPointAddressesTester(name, hasNic)
+			func(name string) {
+				getEndPointAddressesTester(name)
 			},
-			table.Entry("VirtualMachine", "VirtualMachine", true))
+			table.Entry("VirtualMachine", "VirtualMachine"))
 
 		table.DescribeTable("GetEndPointPort",
 			func(name string, hasPort bool) {

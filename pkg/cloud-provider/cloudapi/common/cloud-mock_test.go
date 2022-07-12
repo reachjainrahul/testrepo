@@ -138,13 +138,12 @@ func (mr *MockCloudInterfaceMockRecorder) GetEnforcedSecurity() *gomock.Call {
 }
 
 // Instances mocks base method.
-func (m *MockCloudInterface) Instances() ([]*v1alpha1.VirtualMachine, []*v1alpha1.NetworkInterface, error) {
+func (m *MockCloudInterface) Instances() ([]*v1alpha1.VirtualMachine, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Instances")
 	ret0, _ := ret[0].([]*v1alpha1.VirtualMachine)
-	ret1, _ := ret[1].([]*v1alpha1.NetworkInterface)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Instances indicates an expected call of Instances.
@@ -154,13 +153,12 @@ func (mr *MockCloudInterfaceMockRecorder) Instances() *gomock.Call {
 }
 
 // InstancesGivenProviderAccount mocks base method.
-func (m *MockCloudInterface) InstancesGivenProviderAccount(namespacedName *types.NamespacedName) ([]*v1alpha1.VirtualMachine, []*v1alpha1.NetworkInterface, error) {
+func (m *MockCloudInterface) InstancesGivenProviderAccount(namespacedName *types.NamespacedName) ([]*v1alpha1.VirtualMachine, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "InstancesGivenProviderAccount", namespacedName)
 	ret0, _ := ret[0].([]*v1alpha1.VirtualMachine)
-	ret1, _ := ret[1].([]*v1alpha1.NetworkInterface)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // InstancesGivenProviderAccount indicates an expected call of InstancesGivenProviderAccount.
@@ -363,13 +361,12 @@ func (m *MockComputeInterface) EXPECT() *MockComputeInterfaceMockRecorder {
 }
 
 // Instances mocks base method.
-func (m *MockComputeInterface) Instances() ([]*v1alpha1.VirtualMachine, []*v1alpha1.NetworkInterface, error) {
+func (m *MockComputeInterface) Instances() ([]*v1alpha1.VirtualMachine, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Instances")
 	ret0, _ := ret[0].([]*v1alpha1.VirtualMachine)
-	ret1, _ := ret[1].([]*v1alpha1.NetworkInterface)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Instances indicates an expected call of Instances.
@@ -379,13 +376,12 @@ func (mr *MockComputeInterfaceMockRecorder) Instances() *gomock.Call {
 }
 
 // InstancesGivenProviderAccount mocks base method.
-func (m *MockComputeInterface) InstancesGivenProviderAccount(namespacedName *types.NamespacedName) ([]*v1alpha1.VirtualMachine, []*v1alpha1.NetworkInterface, error) {
+func (m *MockComputeInterface) InstancesGivenProviderAccount(namespacedName *types.NamespacedName) ([]*v1alpha1.VirtualMachine, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "InstancesGivenProviderAccount", namespacedName)
 	ret0, _ := ret[0].([]*v1alpha1.VirtualMachine)
-	ret1, _ := ret[1].([]*v1alpha1.NetworkInterface)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // InstancesGivenProviderAccount indicates an expected call of InstancesGivenProviderAccount.
