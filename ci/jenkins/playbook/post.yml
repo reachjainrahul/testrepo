@@ -1,0 +1,11 @@
+---
+- hosts: controlplane
+  roles:
+  - kubeconfig
+- hosts: jumper
+  roles:
+  - kubeconfig
+  - e2e
+- hosts: all
+  roles:
+  - sshconfig
