@@ -2,6 +2,7 @@
 set -e
 
 tesbted_name="$1"
+vc_passwd="$2"
 var_file="terraform.tfstate.d/${tesbted_name}/vars.tfvars"
 
 if [ -z "${tesbted_name}" ]; then
@@ -21,7 +22,7 @@ fi
 echo ====== Deleting ${tesbted_name} from Local Workspace ======
 terraform workspace "select" "${tesbted_name}"
 source ${var_file}
-terraform destroy -lock=false -auto-approve -var-file=terraform-${vsphere_server}.tfvars "-var-file=${var_file}" -parallelism=20
+terraform destroy -lock=false -auto-approve -var vsphere_password=${vc_passwd} -var-file=terraform-${vsphere_server}.tfvars "-var-file=${var_file}" -parallelism=20
 terraform workspace "select" default
 terraform workspace delete "${tesbted_name}"
 echo ====== Deleted ${tesbted_name} from Local Workspace ======

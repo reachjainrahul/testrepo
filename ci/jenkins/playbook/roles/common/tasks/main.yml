@@ -1,16 +1,4 @@
 ---
-- name: Add APT Proxy
-  copy:
-    dest: /etc/apt/apt.conf.d/80proxy
-    owner: root
-    group: root
-    mode: 0644
-    content: |
-      Acquire {
-        HTTP::proxy "http://proxy.vmware.com:3128";
-        HTTPS::proxy "http://proxy.vmware.com:3128";
-      }
-
 - name: Ensure /usr/lib/systemd/timesyncd.conf.d Exists
   file:
     path: /usr/lib/systemd/timesyncd.conf.d
