@@ -21,6 +21,10 @@ if [ -e "../terraform.tfstate.d/current/${tesbted_name}" ]; then
   fi
 fi
 
+if [ ! -e "../terraform.tfstate.d/current/" ]; then
+  mkdir -p ../terraform.tfstate.d/current/
+fi
+
 echo ====== Checking in ${tesbted_name} to Shared Workspace ======
 cp -rf "terraform.tfstate.d/${tesbted_name}" "../terraform.tfstate.d/current/"
 echo ====== Done ======

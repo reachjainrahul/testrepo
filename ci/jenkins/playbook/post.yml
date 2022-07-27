@@ -1,10 +1,9 @@
 ---
 - hosts: controlplane
   roles:
-  - kubeconfig
+  - e2e
 - hosts: jumper
   roles:
-  - kubeconfig
   - e2e
 - hosts: all
   roles:
