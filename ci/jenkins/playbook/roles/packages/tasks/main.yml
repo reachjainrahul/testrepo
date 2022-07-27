@@ -1,0 +1,75 @@
+---
+- name: terraform install
+  unarchive:
+    src: https://releases.hashicorp.com/terraform/1.2.2/terraform_1.2.2_linux_amd64.zip
+    dest: /usr/lcoal/bin
+    remote_src: True
+
+- name: kubectl install
+  unarhive:
+    src: https://storage.googleapis.com/kubernetes-release/release/v1.24.1/kubernetes-client-linux-amd64.tar.gz
+    dest: /usr/local/bin/
+    remote_src: True
+
+- name: Download KinD binary
+  get_url:
+    url: https://github.com/kubernetes-sigs/kind/releases/download/v0.12.0/kind-linux-amd64
+    dest: "/usr/local/bin/kind"
+    mode: "0755"
+  become: yes
+  when: kind_result.rc != 0
+  register: downloaded_kind
+
+- name: install golang
+  become: yes
+  become_method: sudo
+  gather_facts: yes
+  vars:
+    home_dir: "/home/ubuntu"
+    file_owner: root
+    go_version: 1.17.3
+
+  tasks:
+  - debug: msg="home={{ home_dir }}"
+  - debug: msg="continuing with installation"
+
+  - name: download golang tar
+    get_url:
+      url: "https://storage.googleapis.com/golang/go{{go_version}}.linux-amd64.tar.gz"
+      dest: "{{home_dir}}"
+      mode: 0440
+
+  - name: Remove old installation of Go
+    file:
+      path: /usr/local/go
+      state: absent
+    become: yes
+
+  - name: Extract the Go tarball
+    unarchive:
+      src: "{{home_dir}}/go{{new_go_version}}.linux-amd64.tar.gz"
+      dest: /usr/local
+      copy: no
+    become: yes
+
+  - name: create go directories in home
+    file:
+      path: "{{item}}"
+      state: directory
+      owner: "{{file_owner}}"
+      group: "{{file_owner}}"
+      mode: 0775
+    with_items:
+    - "{{home_dir}}/go"
+    - "{{home_dir}}/go/bin"
+
+  - name: modify .bashrc
+    blockinfile:
+      dest: "{{home_dir}}/.bashrc"
+      block: |
+        export GOPATH=$HOME/go
+        export GOBIN=$GOPATH/bin
+        export PATH=$GOBIN:$PATH:/usr/local/go/bin
+      marker: '# {mark} ANSIBLE MANAGED BLOCK - changes for golang'
+      insertafter: EOF
+      create: yes
