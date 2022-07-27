@@ -1,0 +1,43 @@
+- project:
+    name: antrea-cloud
+        jobs:
+              - '{name}-{test_name}-for-pull-request':
+                  test_name: sample
+                  node: 'antrea-private-cloud'
+                  description: 'This is the {test_name} test for {name}.'
+                  branches:
+                      - ${{sha1}}
+                  builders:
+                      - run-test-aws
+                  trigger_phrase: .*/cloud-test-all.*
+                  white_list_target_branches: [ ]
+                  allow_whitelist_orgs_as_admins: true
+                  admin_list: '{testrepo_admin_list}'
+                  org_list: '{testrepo_org_list}'
+                  white_list: '{testrepo_white_list}'
+                  only_trigger_phrase: true
+                  trigger_permit_all: true
+                  status_context: antrea-cloud-e2e-test
+                  status_url: --none--
+                  success_status: Build finished.
+                  failure_status: Failed. Add comment /cloud-test-all to re-trigger.
+                  error_status: Failed. Add comment /cloud-test-all to re-trigger.
+                  triggered_status: null
+                  started_status: null
+                  wrappers:
+                      - timeout:
+                            fail: true
+                            timeout: 120
+                            type: absolute
+                      - credentials-binding:
+                            - text:
+                                  credential-id: TEST_USERNAME
+                                  variable: TEST_USERNAME
+                  publishers:
+                      - archive:
+                            allow-empty: true
+                            artifacts: 'test.log.tar.gz'
+                            case-sensitive: true
+                            default-excludes: true
+                            fingerprint: false
+                            only-if-success: false

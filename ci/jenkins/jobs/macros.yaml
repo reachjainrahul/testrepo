@@ -1,0 +1,8 @@
+- builder:
+    name: run-test-aws
+    builders:
+            - shell: |-
+                    #!/bin/bash
+                    set -ex
+                    ./ci/jenkins/test-aws.sh
+                    tar zvcv test.log.tar.gz test.log
