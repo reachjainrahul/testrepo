@@ -43,6 +43,10 @@ variable "testbed_name" {
   type = string
 }
 
+variable "smee_channel" {
+  type = string
+}
+
 locals {
   public_key_content  = file("${path.module}/id_rsa.pub")
   private_key_content = file("${path.module}/id_rsa")
@@ -178,4 +182,8 @@ output "vm_masters" {
 
 output "vm_jumper" {
   value = [vsphere_virtual_machine.vms[0].name]
+}
+
+output "smee_channel" {
+  value = var.smee_channel
 }

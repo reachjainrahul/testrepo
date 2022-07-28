@@ -7,4 +7,31 @@
     - make
     - openjdk-8-jre-headless
     - zip
+    - nodejs
+    - npm
 
+- name: Install smee-client
+  npm:
+    global: yes
+    name: smee-client
+
+- name: Add smee Service file
+  template:
+    dest: /lib/systemd/system/smee-antrea-bot.service
+    force: yes
+    owner: root
+    group: root
+    mode: 0644
+    src: smee.service.j2
+  register: add_smee_result
+
+- when: add_smee_result.changed
+  block:
+    - name: Reload Systemd
+      command: systemctl daemon-reload
+
+    - name: Start and Enable smee Service
+      service:
+        name: smee-antrea-bot
+        state: restarted
+        enabled: yes
