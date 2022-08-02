@@ -27,7 +27,8 @@ jobs:
       - uses: antrea-io/has-changes@v2
         id: check_diff
         with:
-          paths-ignore: docs/*
+          # Ignore all for now.. Will reenable it
+          paths-ignore: .
     outputs:
       has_changes: ${{ steps.check_diff.outputs.has_changes }}
       
