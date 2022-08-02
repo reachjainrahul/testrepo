@@ -134,7 +134,7 @@ docker.io/YOUR_DOCKER_ID/vmagent,
 docker tag antrea/vmagent YOUR_DOCKER_ID/vmagent
 docker push YOUR_DOCKER_ID/vmagent
 ```
-* Instantiate AWS VPC with ec2 instances as decribed in [cloud](cloud.md). In addtion, you will
+* Instantiate AWS VPC with ec2 instances as described in [cloud](cloud.md). In addition, you will
  need to have the following environment variables set.
 ```
 export TF_VAR_aws_docker_usr=YOUR_DOCKER_ID

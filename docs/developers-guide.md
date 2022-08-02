@@ -266,7 +266,7 @@ make vm-agent-aks-integration-test
 In a KinD cluster, we can attach debug running containers as described
  [here](https://kubernetes.io/docs/tasks/debug-application-cluster/debug-running-pod/).
 
-you must used kubectl version 1.18 or later. For instance, the folowing command attaches a
+you must used kubectl version 1.18 or later. For instance, the following command attaches a
 busybox into antrea-plus-cloud-controllers namespace.
  ```bash
 kubectl debug -it antrea-plus-cloud-controller-59b4fc6bbf-kdqd2  --image=busybox -n antrea-plus-system --target=antrea-plus-cloud-controller

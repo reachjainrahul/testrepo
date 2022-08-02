@@ -223,7 +223,7 @@ resources used by Antrea Plus.
  | VM/NIC | CloudController | AntreaPlusController | K8sAPIServer|
  | CloudProviderAccount | User | CloudController | K8sAPIServer with Webhook |
  | CloudEntitySelector  | User | CloudController | K8sAPIServer with Webhook |
- | ExternalEntity | AntreaPlusController | AntreaController | K8sAPIServer wtih webhook |
+ | ExternalEntity | AntreaPlusController | AntreaController | K8sAPIServer with webhook |
  | ANP | User | AntreaController | K8sAPIServer |
  | Internal ANP/AddrGrp/AppliedGrp | AntreaController | Agents/CloudController | AggrAPIServer |
  | VirtualMachineRuntimeInfo | VM Agent | CloudController | AggrAPIServer |  

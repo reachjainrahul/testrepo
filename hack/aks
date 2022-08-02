@@ -51,7 +51,7 @@ function validate {
   for env in ${ENV_ARRAY[@]}; do
      printenv $env > /dev/null 2>&1
      if [ $? -ne 0 ]; then
-       echo required enviroment variable $env is not set.
+       echo required environment variable $env is not set.
        exit 1
      fi
   done
