@@ -48,6 +48,3 @@ jobs:
       - name: Build Antrea Cloud
         run: |
           make build-bin
-          make manifests
-          ci/check-gen.sh
-

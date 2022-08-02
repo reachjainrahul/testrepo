@@ -23,7 +23,7 @@ DOCKERIZE := \
 all: build
 
 # Build binaries
-build-bin: docker-builder generate lint tidy
+build-bin: docker-builder generate tidy
 	$(DOCKERIZE) hack/build-bin.sh
 
 # Generate manifests e.g. CRD, RBAC etc.
@@ -39,7 +39,7 @@ unit-test: mock
 	$(DOCKERIZE) go test -v -cover -count 1 $$(go list antrea.io/antreacloud/pkg/...) --ginkgo.v
 
 # Run lint against code
-lint: docker-builder
+golangci-lint: docker-builder
 	$(DOCKERIZE)  golangci-lint run --timeout 10m
 
 # Run go mod tidy against code
