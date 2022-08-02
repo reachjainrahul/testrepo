@@ -55,6 +55,11 @@ check-copyright:
 add-copyright:
 	$(DOCKERIZE) hack/add-license.sh --add
 
+.PHONY: verify
+verify:
+	@echo "===> Verifying spellings <==="
+	GO=$(GO) $(CURDIR)/hack/verify-spelling.sh
+
 # Generate code
 generate: docker-builder
 	$(DOCKERIZE) controller-gen object:headerFile="hack/boilerplate.go.txt" paths=$(CONTROLLER_GEN_LIST)

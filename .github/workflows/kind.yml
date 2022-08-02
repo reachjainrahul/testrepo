@@ -28,7 +28,7 @@ jobs:
         id: check_diff
         with:
           # Ignore all for now.. Will reenable it
-          paths-ignore: .
+          paths-ignore: */*
     outputs:
       has_changes: ${{ steps.check_diff.outputs.has_changes }}
       

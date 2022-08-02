@@ -33,6 +33,7 @@ jobs:
   test-unit:
     needs: check-changes
     if: ${{ needs.check-changes.outputs.has_changes == 'yes' || github.event_name == 'push' }}
+    name: Unit test
     runs-on: [ubuntu-latest]
     steps:
       - uses: actions/checkout@v3
@@ -50,11 +51,8 @@ jobs:
   golangci-lint:
     needs: check-changes
     if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
-    name: Golangci-lint
-    strategy:
-      matrix:
-        platform: [ubuntu-latest]
-    runs-on: ${{ matrix.platform }}
+    name: Check lint
+    runs-on: [ubuntu-latest]
     steps:
     - name: Set up Go 1.17
       uses: actions/setup-go@v3
@@ -63,12 +61,15 @@ jobs:
     - name: Check-out code
       uses: actions/checkout@v3
     - name: Run golangci-lint
-      run: make golangci-lint
+      run: |
+        mkdir -p $(go env GOPATH)
+        mkdir -p $(go env GOCACHE)
+        make golangci-lint
 
   check-gen:
     needs: check-changes
     if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
-    name: Check tidy and manifest
+    name: Check generation
     runs-on: [ubuntu-latest]
     steps:
     - name: Set up Go 1.17
@@ -81,3 +82,16 @@ jobs:
       run: ./ci/check-gen.sh
     - name: Check copyright
       run: ./ci/check-copyright.sh
+
+  verify:
+    name: Verify spelling
+    runs-on: [ubuntu-latest]
+    steps:
+    - name: Set up Go 1.17
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.17
+    - name: Check-out code
+      uses: actions/checkout@v3
+    - name: Run verify scripts
+      run: make verify
