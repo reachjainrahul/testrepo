@@ -18,25 +18,25 @@ import (
 	"strings"
 )
 
-func IsAntreaCloudCreatedSecurityGroup(cloudSgName string) (string, bool, bool) {
-	var antreaCloudName string
-	isAntreaCloudCreatedAddressGroup := false
-	isAntreaCloudCreatedAppliedToGroup := false
+func IsCloudControllerCreatedSG(cloudSgName string) (string, bool, bool) {
+	var sgName string
+	isCloudControllerCreatedAddressGroup := false
+	isCloudControllerCreatedAppliedToGroup := false
 
-	suffix := strings.TrimPrefix(cloudSgName, AntreaCloudAddressGroupPrefix)
+	suffix := strings.TrimPrefix(cloudSgName, CloudControllerAddressGroupPrefix)
 	if len(suffix) < len(cloudSgName) {
-		isAntreaCloudCreatedAddressGroup = true
-		antreaCloudName = strings.ToLower(suffix)
+		isCloudControllerCreatedAddressGroup = true
+		sgName = strings.ToLower(suffix)
 	}
 
-	if !isAntreaCloudCreatedAddressGroup {
-		suffix := strings.TrimPrefix(cloudSgName, AntreaCloudAppliedToPrefix)
+	if !isCloudControllerCreatedAddressGroup {
+		suffix := strings.TrimPrefix(cloudSgName, CloudControllerAppliedToPrefix)
 		if len(suffix) < len(cloudSgName) {
-			isAntreaCloudCreatedAppliedToGroup = true
-			antreaCloudName = strings.ToLower(suffix)
+			isCloudControllerCreatedAppliedToGroup = true
+			sgName = strings.ToLower(suffix)
 		}
 	}
-	return antreaCloudName, isAntreaCloudCreatedAddressGroup, isAntreaCloudCreatedAppliedToGroup
+	return sgName, isCloudControllerCreatedAddressGroup, isCloudControllerCreatedAppliedToGroup
 }
 
 func FindResourcesBasedOnKind(cloudResources []*CloudResource) (map[string]struct{}, map[string]struct{}) {

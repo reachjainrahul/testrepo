@@ -27,8 +27,8 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	"antrea.io/antreacloud/apis/crd/v1alpha1"
-	"antrea.io/antreacloud/pkg/cloud-provider/securitygroup"
+	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	"antrea.io/cloudcontroller/pkg/cloud-provider/securitygroup"
 )
 
 var _ = Describe("AWS Cloud Security", func() {
@@ -75,12 +75,10 @@ var _ = Describe("AWS Cloud Security", func() {
 			},
 			Spec: v1alpha1.CloudEntitySelectorSpec{
 				AccountName: testAccountNamespacedName.Name,
-				VMSelector: &v1alpha1.VirtualMachineSelector{
-					VMMatches: []v1alpha1.VirtualMachineMatch{
-						{
-							VpcMatch: &v1alpha1.EntityMatch{
-								MatchID: testVpcID01,
-							},
+				VMSelector: []v1alpha1.VirtualMachineSelector{
+					{
+						VpcMatch: &v1alpha1.EntityMatch{
+							MatchID: testVpcID01,
 						},
 					},
 				},

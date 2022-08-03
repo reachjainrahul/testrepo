@@ -15,13 +15,11 @@
 package utils
 
 import (
-	"antrea.io/antreacloud/apis/crd/v1alpha1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
 )
 
-// GetVMIPAddresses returns IP addresses of VMs. It returns most appropriate IP is single is true;
-// otherwise it turns all IPs.
-func GetVMIPAddresses(vm *v1alpha1.VirtualMachine, cl client.Client) []v1alpha1.IPAddress {
+// GetVMIPAddresses returns IP addresses of all network interfaces attached to the vm.
+func GetVMIPAddresses(vm *v1alpha1.VirtualMachine) []v1alpha1.IPAddress {
 	ipLen := len(vm.Status.NetworkInterfaces)
 	if ipLen == 0 {
 		return nil

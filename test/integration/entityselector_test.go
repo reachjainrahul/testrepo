@@ -15,7 +15,7 @@
 package integration
 
 import (
-	"antrea.io/antreacloud/test/utils"
+	"antrea.io/cloudcontroller/test/utils"
 	"context"
 	"errors"
 	"fmt"
@@ -32,7 +32,7 @@ import (
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
-	"antrea.io/antreacloud/apis/crd/v1alpha1"
+	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
 )
 
 var _ = Describe(fmt.Sprintf("%s: Entity selector test", focusCore), func() {
@@ -91,32 +91,42 @@ var _ = Describe(fmt.Sprintf("%s: Entity selector test", focusCore), func() {
 		logf.Log.Info("Apply entity selector with", matchKey, matchValue)
 		switch matchKey {
 		case vpcIDMatch:
-			if len(selector.Spec.VMSelector.VMMatches) == 0 {
-				selector.Spec.VMSelector.VMMatches = append(selector.Spec.VMSelector.VMMatches,
-					v1alpha1.VirtualMachineMatch{VpcMatch: &v1alpha1.EntityMatch{MatchID: matchValue}})
+			if len(selector.Spec.VMSelector) == 0 {
+				selector.Spec.VMSelector = append(selector.Spec.VMSelector,
+					v1alpha1.VirtualMachineSelector{VpcMatch: &v1alpha1.EntityMatch{MatchID: matchValue}})
 			} else {
-				selector.Spec.VMSelector.VMMatches[0].VpcMatch.MatchID = matchValue
+				selector.Spec.VMSelector[0].VpcMatch.MatchID = matchValue
 			}
 		case vpcNameMatch:
-			if len(selector.Spec.VMSelector.VMMatches) == 0 {
-				selector.Spec.VMSelector.VMMatches = append(selector.Spec.VMSelector.VMMatches,
-					v1alpha1.VirtualMachineMatch{VpcMatch: &v1alpha1.EntityMatch{MatchName: matchValue}})
+			if len(selector.Spec.VMSelector) == 0 {
+				selector.Spec.VMSelector = append(selector.Spec.VMSelector,
+					v1alpha1.VirtualMachineSelector{VpcMatch: &v1alpha1.EntityMatch{MatchName: matchValue}})
 			} else {
-				selector.Spec.VMSelector.VMMatches[0].VpcMatch.MatchName = matchValue
+				selector.Spec.VMSelector[0].VpcMatch.MatchName = matchValue
 			}
 		case vmIDMatch:
-			if len(selector.Spec.VMSelector.VMMatches) == 0 {
-				selector.Spec.VMSelector.VMMatches = append(selector.Spec.VMSelector.VMMatches,
-					v1alpha1.VirtualMachineMatch{VMMatch: &v1alpha1.EntityMatch{MatchID: matchValue}})
+			if len(selector.Spec.VMSelector) == 0 {
+				selector.Spec.VMSelector = append(selector.Spec.VMSelector,
+					v1alpha1.VirtualMachineSelector{
+						VMMatch: []v1alpha1.EntityMatch{
+							{
+								MatchID: matchValue,
+							},
+						}})
 			} else {
-				selector.Spec.VMSelector.VMMatches[0].VMMatch.MatchID = matchValue
+				selector.Spec.VMSelector[0].VMMatch[0].MatchID = matchValue
 			}
 		case vmNameMatch:
-			if len(selector.Spec.VMSelector.VMMatches) == 0 {
-				selector.Spec.VMSelector.VMMatches = append(selector.Spec.VMSelector.VMMatches,
-					v1alpha1.VirtualMachineMatch{VMMatch: &v1alpha1.EntityMatch{MatchName: matchValue}})
+			if len(selector.Spec.VMSelector) == 0 {
+				selector.Spec.VMSelector = append(selector.Spec.VMSelector,
+					v1alpha1.VirtualMachineSelector{
+						VMMatch: []v1alpha1.EntityMatch{
+							{
+								MatchName: matchValue,
+							},
+						}})
 			} else {
-				selector.Spec.VMSelector.VMMatches[0].VMMatch.MatchName = matchValue
+				selector.Spec.VMSelector[0].VMMatch[0].MatchName = matchValue
 			}
 		default:
 			logf.Log.Error(errors.New("invalid matchKey"), "matchKey", matchKey)
@@ -257,9 +267,7 @@ var _ = Describe(fmt.Sprintf("%s: Entity selector test", focusCore), func() {
 			},
 			Spec: v1alpha1.CloudEntitySelectorSpec{
 				AccountName: testAccountName,
-				VMSelector: &v1alpha1.VirtualMachineSelector{
-					VMMatches: []v1alpha1.VirtualMachineMatch{},
-				},
+				VMSelector:  []v1alpha1.VirtualMachineSelector{},
 			},
 		}
 		createNS()
@@ -320,9 +328,9 @@ var _ = Describe(fmt.Sprintf("%s: Entity selector test", focusCore), func() {
 			By("Change match key back to valid value again")
 			tester(matchKey, matchValue, true, 2, expectedResult)
 		},
-		table.Entry(focusAzure+":"+"VPC id match", vpcIDMatch),
-		table.Entry(focusAzure+":"+"VM id match", vmIDMatch),
-		table.Entry(focusAzure+":"+"VM name match", vmNameMatch),
+		table.Entry(focusAzureAgentless+":"+"VPC id match", vpcIDMatch),
+		table.Entry(focusAzureAgentless+":"+"VM id match", vmIDMatch),
+		table.Entry(focusAzureAgentless+":"+"VM name match", vmNameMatch),
 		// vpcNameMatch test apply only to aws for now
 		table.Entry("VPC name match", vpcNameMatch),
 	)

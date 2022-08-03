@@ -1,4 +1,4 @@
-# Add Azure Account and Onboard VPC
+# Add Azure Account and Onboard VNET
 apiVersion: crd.cloud.antrea.io/v1alpha1
 kind: CloudProviderAccount
 metadata:
@@ -16,11 +16,11 @@ spec:
 apiVersion: crd.cloud.antrea.io/v1alpha1
 kind: CloudEntitySelector
 metadata:
-  name: cloudentityselector-sample01
+  name: cloudentityselector-sample
   namespace: sample-ns
 spec:
   accountName: cloudprovideraccount-sample
   vmSelector:
     vmMatches:
       - vpcMatch:
-          matchID: "<REPLACE_ME>"
+          matchID: "<VNET_ID>"

@@ -29,9 +29,9 @@ import (
 	v1 "k8s.io/api/core/v1"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
-	"antrea.io/antreacloud/apis/crd/v1alpha1"
-	k8stemplates "antrea.io/antreacloud/test/templates"
-	"antrea.io/antreacloud/test/utils"
+	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	k8stemplates "antrea.io/cloudcontroller/test/templates"
+	"antrea.io/cloudcontroller/test/utils"
 )
 
 var (
@@ -40,10 +40,9 @@ var (
 		denyAll bool) *k8stemplates.ToFromParameters
 )
 
-var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCore, focusAzure), func() {
+var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCore, focusAzureAgentless), func() {
 	const (
 		apachePort = "8080"
-		retries    = 12
 	)
 	var (
 		namespace      *v1.Namespace
@@ -100,7 +99,6 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCor
 		}()
 
 		// Explicitly remove ANP before delete namespace.
-		// See https://gitlab.eng.vmware.com/manep/cloudcontroller/issues/16.
 		err = utils.ConfigureK8s(kubeCtl, anpSetupParams, k8stemplates.CloudAntreaNetworkPolicy, true)
 		Expect(err).ToNot(HaveOccurred())
 		err = utils.ConfigureK8s(kubeCtl, anpParams, k8stemplates.CloudAntreaNetworkPolicy, true)
@@ -224,7 +222,7 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCor
 		for i := range oks {
 			oks[i] = true
 		}
-		err = utils.ExecuteCmds(cloudVPC, nil, cloudVPC.GetVMs(), "", [][]string{{"ls"}}, oks, 12)
+		err = utils.ExecuteCmds(cloudVPC, nil, cloudVPC.GetVMs(), "", [][]string{{"ls"}}, oks, 30)
 		Expect(err).ToNot(HaveOccurred())
 	}
 
@@ -258,12 +256,12 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCor
 			}
 		}
 		if len(appliedIPs) > 0 {
-			err = utils.ExecuteCurlCmds(cloudVPC, nil, []string{srcVM}, "", appliedIPs, apachePort, oks, retries)
+			err = utils.ExecuteCurlCmds(cloudVPC, nil, []string{srcVM}, "", appliedIPs, apachePort, oks, 30)
 			Expect(err).ToNot(HaveOccurred())
 		}
 		if len(notAppliedIPs) > 0 {
 			oks = make([]bool, len(notAppliedIPs))
-			err = utils.ExecuteCurlCmds(cloudVPC, nil, []string{srcVM}, "", notAppliedIPs, apachePort, oks, retries)
+			err = utils.ExecuteCurlCmds(cloudVPC, nil, []string{srcVM}, "", notAppliedIPs, apachePort, oks, 30)
 			Expect(err).ToNot(HaveOccurred())
 		}
 	}
@@ -280,7 +278,7 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCor
 		err = utils.CheckCloudResourceNetworkPolicies(k8sClient, kind, namespace.Name, []string{id}, np)
 		Expect(err).ToNot(HaveOccurred())
 
-		err = utils.ExecuteCurlCmds(cloudVPC, nil, []string{srcVM}, "", dstIPs, apachePort, oks, retries)
+		err = utils.ExecuteCurlCmds(cloudVPC, nil, []string{srcVM}, "", dstIPs, apachePort, oks, 30)
 		Expect(err).ToNot(HaveOccurred())
 	}
 
@@ -299,7 +297,7 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCor
 		err = utils.CheckCloudResourceNetworkPolicies(k8sClient, kind, namespace.Name, []string{id}, np)
 		Expect(err).ToNot(HaveOccurred())
 
-		err = utils.ExecuteCurlCmds(cloudVPC, nil, srcVMs, "", []string{ip}, apachePort, oks, retries)
+		err = utils.ExecuteCurlCmds(cloudVPC, nil, srcVMs, "", []string{ip}, apachePort, oks, 30)
 		Expect(err).ToNot(HaveOccurred())
 	}
 
@@ -490,72 +488,6 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCor
 		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, false)
 	}
 
-	table.DescribeTable("Egress",
-		func(kind string, diffNS bool) {
-			testEgress(kind, diffNS)
-		},
-		table.Entry("VM In Same Namespace",
-			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
-		table.Entry("VM In Different Namespaces",
-			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
-	)
-
-	table.DescribeTable("AppliedTo",
-		func(kind string, diffNS bool) {
-			testAppliedTo(kind, diffNS)
-		},
-		table.Entry("VM In Same Namespace",
-			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
-		table.Entry("VM In Different Namespaces",
-			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
-	)
-
-	table.DescribeTable("Ingress",
-		func(kind string, diffNS bool) {
-			testIngress(kind, diffNS)
-		},
-		table.Entry("VM In Same Namespaces",
-			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
-		table.Entry("VM In Different Namespaces",
-			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
-	)
-
-	Context("Enforce Before Import", func() {
-		JustBeforeEach(func() {
-			importAfterANP = true
-			abbreviated = true
-		})
-		table.DescribeTable("AppliedTo",
-			func(kind string, diffNS bool) {
-				testAppliedTo(kind, diffNS)
-			},
-			table.Entry("VM In Same Namespace",
-				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
-			table.Entry("VM In Different Namespaces",
-				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
-		)
-
-		table.DescribeTable("Egress",
-			func(kind string, diffNS bool) {
-				testEgress(kind, diffNS)
-			},
-			table.Entry("VM In Same Namespace",
-				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
-			table.Entry("VM In Different Namespaces",
-				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
-		)
-
-		table.DescribeTable("Ingress",
-			func(kind string, diffNS bool) {
-				testIngress(kind, diffNS)
-			},
-			table.Entry("VM In Same Namespaces",
-				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
-			table.Entry("VM In Different Namespaces",
-				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
-		)
-	})
-
 	It("Controllers Restart", func() {
 		ids := cloudVPC.GetVMs()
 		ips := cloudVPC.GetVMPrivateIPs()
@@ -588,7 +520,7 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCor
 			[]string{apachePort}, false)
 		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, false)
 		By("Restarting controllers now...")
-		err = utils.RestartOrWaitDeployment(k8sClient, "antreacloud-cloud-controller", "antreacloud-system", time.Second*200, true)
+		err = utils.RestartOrWaitDeployment(k8sClient, "cloud-controller", "kube-system", time.Second*200, true)
 		Expect(err).ToNot(HaveOccurred())
 		time.Sleep(time.Second * 30)
 		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, true)
@@ -606,7 +538,7 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCor
 		var err error
 
 		By("New NetworkPolicy")
-		replicas, err = utils.StopDeployment(k8sClient, "antreacloud-cloud-controller", "antreacloud-system", time.Second*120)
+		replicas, err = utils.StopDeployment(k8sClient, "cloud-controller", "kube-system", time.Second*120)
 		Expect(err).NotTo(HaveOccurred())
 		anpParams.AppliedTo = configANPApplyTo(kind, ids[appliedIdx], "", "", "")
 		oks := make([]bool, len(ids)-1)
@@ -615,12 +547,15 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCor
 			[]string{apachePort}, false)
 		err = utils.ConfigureK8s(kubeCtl, anpParams, k8stemplates.CloudAntreaNetworkPolicy, false)
 		Expect(err).ToNot(HaveOccurred())
-		err = utils.StartOrWaitDeployment(k8sClient, "antreacloud-cloud-controller", "antreacloud-system", replicas, time.Second*120)
+		err = utils.StartOrWaitDeployment(k8sClient, "cloud-controller", "kube-system", replicas, time.Second*120)
+		Expect(err).NotTo(HaveOccurred())
+		// wait for aggregated api server to ready.
+		err = utils.WaitApiServer(k8sClient, time.Second*60)
 		Expect(err).NotTo(HaveOccurred())
 		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, true)
 
 		By("Changed NetworkPolicy")
-		replicas, err = utils.StopDeployment(k8sClient, "antreacloud-cloud-controller", "antreacloud-system", time.Second*120)
+		replicas, err = utils.StopDeployment(k8sClient, "cloud-controller", "kube-system", time.Second*120)
 		Expect(err).NotTo(HaveOccurred())
 		oks = make([]bool, len(ids)-1)
 		for i := range oks {
@@ -630,24 +565,94 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusCor
 			[]string{apachePort}, false)
 		err = utils.ConfigureK8s(kubeCtl, anpParams, k8stemplates.CloudAntreaNetworkPolicy, false)
 		Expect(err).ToNot(HaveOccurred())
-		err = utils.StartOrWaitDeployment(k8sClient, "antreacloud-cloud-controller", "antreacloud-system", replicas, time.Second*120)
+		err = utils.StartOrWaitDeployment(k8sClient, "cloud-controller", "kube-system", replicas, time.Second*120)
+		Expect(err).NotTo(HaveOccurred())
+		err = utils.WaitApiServer(k8sClient, time.Second*60)
 		Expect(err).NotTo(HaveOccurred())
 		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, true)
 
 		By("Stale NetworkPolicy")
-		replicas, err = utils.StopDeployment(k8sClient, "antreacloud-cloud-controller", "antreacloud-system", time.Second*120)
+		replicas, err = utils.StopDeployment(k8sClient, "cloud-controller", "kube-system", time.Second*120)
 		Expect(err).NotTo(HaveOccurred())
 		oks = make([]bool, len(ids)-1)
 		err = utils.ConfigureK8s(kubeCtl, anpParams, k8stemplates.CloudAntreaNetworkPolicy, true)
 		Expect(err).ToNot(HaveOccurred())
-		err = utils.StartOrWaitDeployment(k8sClient, "antreacloud-cloud-controller", "antreacloud-system", replicas, time.Second*120)
+		err = utils.StartOrWaitDeployment(k8sClient, "cloud-controller", "kube-system", replicas, time.Second*120)
+		Expect(err).NotTo(HaveOccurred())
+		err = utils.WaitApiServer(k8sClient, time.Second*60)
 		Expect(err).NotTo(HaveOccurred())
 		err = utils.CheckCloudResourceNetworkPolicies(k8sClient, kind, namespace.Name, ids, []string{anpSetupParams.Name})
 		Expect(err).ToNot(HaveOccurred())
-		err = utils.ExecuteCurlCmds(cloudVPC, nil, srcVMs, "", []string{ids[appliedIdx]}, apachePort, oks, retries)
+		err = utils.ExecuteCurlCmds(cloudVPC, nil, srcVMs, "", []string{ids[appliedIdx]}, apachePort, oks, 30)
 		Expect(err).ToNot(HaveOccurred())
 		// Add ANP back to satisfy AfterEach
 		err = utils.ConfigureK8s(kubeCtl, anpParams, k8stemplates.CloudAntreaNetworkPolicy, false)
 		Expect(err).ToNot(HaveOccurred())
+	})
+
+	table.DescribeTable("AppliedTo",
+		func(kind string, diffNS bool) {
+			testAppliedTo(kind, diffNS)
+		},
+		table.Entry(fmt.Sprintf("%s,%s: VM In Same Namespace", focusAgentEks, focusAgentAks),
+			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
+		table.Entry("VM In Different Namespaces",
+			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
+	)
+
+	table.DescribeTable("Egress",
+		func(kind string, diffNS bool) {
+			testEgress(kind, diffNS)
+		},
+		table.Entry(fmt.Sprintf("%s,%s: VM In Same Namespace", focusAgentEks, focusAgentAks),
+			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
+		table.Entry("VM In Different Namespaces",
+			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
+	)
+
+	table.DescribeTable("Ingress",
+		func(kind string, diffNS bool) {
+			testIngress(kind, diffNS)
+		},
+		table.Entry(fmt.Sprintf("%s,%s: VM In Same Namespaces", focusAgentEks, focusAgentAks),
+			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
+		table.Entry("VM In Different Namespaces",
+			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
+	)
+
+	Context("Enforce Before Import", func() {
+		JustBeforeEach(func() {
+			importAfterANP = true
+			abbreviated = true
+		})
+		table.DescribeTable("AppliedTo",
+			func(kind string, diffNS bool) {
+				testAppliedTo(kind, diffNS)
+			},
+			table.Entry(fmt.Sprintf("%s,%s: VM In Same Namespace", focusAgentEks, focusAgentAks),
+				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
+			table.Entry("VM In Different Namespaces",
+				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
+		)
+
+		table.DescribeTable("Egress",
+			func(kind string, diffNS bool) {
+				testEgress(kind, diffNS)
+			},
+			table.Entry(fmt.Sprintf("%s,%s: VM In Same Namespace", focusAgentEks, focusAgentAks),
+				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
+			table.Entry("VM In Different Namespaces",
+				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
+		)
+
+		table.DescribeTable("Ingress",
+			func(kind string, diffNS bool) {
+				testIngress(kind, diffNS)
+			},
+			table.Entry(fmt.Sprintf("%s,%s: VM In Same Namespaces", focusAgentEks, focusAgentAks),
+				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
+			table.Entry("VM In Different Namespaces",
+				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
+		)
 	})
 })

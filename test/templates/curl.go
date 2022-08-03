@@ -51,6 +51,7 @@ spec:
       containers:
         - name: {{.Name}}
           image: byrnedo/alpine-curl
+          imagePullPolicy: Never
           command:
             - "sh"
             - "-c"

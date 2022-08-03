@@ -16,7 +16,6 @@ package cloud
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 
@@ -25,29 +24,24 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/client-go/tools/cache"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	cloudv1alpha1 "antrea.io/antreacloud/apis/crd/v1alpha1"
-	cloudprovider "antrea.io/antreacloud/pkg/cloud-provider"
-	"antrea.io/antreacloud/pkg/cloud-provider/cloudapi/common"
+	cloudv1alpha1 "antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	cloudprovider "antrea.io/cloudcontroller/pkg/cloud-provider"
+	"antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/common"
 )
 
 const (
-	externalEntitySelectorMatchIndexerByID  = "externalEntity.selector.id"
-	externalEntitySelectorMatchIndexerByTag = "externalEntity.selector.tag"
-	externalEntitySelectorMatchIndexerByVPC = "externalEntity.selector.vpc"
-	virtualMachineIndexerByCloudAccount     = "virtualmachine.cloudaccount"
+	virtualMachineIndexerByCloudAccount = "virtualmachine.cloudaccount"
 )
 
 // CloudEntitySelectorReconciler reconciles a CloudEntitySelector object.
 // nolint:golint
 type CloudEntitySelectorReconciler struct {
 	client.Client
-	Log            logr.Logger
-	Scheme         *runtime.Scheme
-	CloudInventory *CloudInventory
+	Log    logr.Logger
+	Scheme *runtime.Scheme
 
 	mutex      sync.Mutex
 	accPollers map[types.NamespacedName]*accountPoller
@@ -97,14 +91,6 @@ func (r *CloudEntitySelectorReconciler) processCreateOrUpdate(selector *cloudv1a
 	accPoller, preExists := r.addAccountPoller(selector)
 
 	if selector.Spec.VMSelector != nil {
-		var vmMatches []interface{}
-		for i := range selector.Spec.VMSelector.VMMatches {
-			vmMatches = append(vmMatches, &selector.Spec.VMSelector.VMMatches[i])
-		}
-		if err := accPoller.vmMatches.Replace(vmMatches, ""); err != nil {
-			r.Log.Error(err, "Unable to replace external entity selector matches", "Name", selector.Name)
-		}
-
 		vmList := &cloudv1alpha1.VirtualMachineList{}
 		if err := r.List(context.TODO(), vmList, client.MatchingFields{
 			virtualMachineIndexerByCloudAccount: selector.Name}, client.InNamespace(selector.Namespace)); err != nil {
@@ -188,43 +174,7 @@ func (r *CloudEntitySelectorReconciler) addAccountPoller(selector *cloudv1alpha1
 		namespacedName:    accountNamespacedName,
 		selector:          selector.DeepCopy(),
 		ch:                make(chan struct{}),
-		cloudInventory:    r.CloudInventory,
 	}
-
-	poller.vmMatches = cache.NewIndexer(
-		func(obj interface{}) (string, error) {
-			_ = obj.(*cloudv1alpha1.VirtualMachineMatch)
-			// The key is not important, re-write indexer each time cloud account is updated.
-			poller.vmMatchKey++
-			return fmt.Sprintf("%x", poller.vmMatchKey), nil
-		},
-		cache.Indexers{
-			externalEntitySelectorMatchIndexerByID: func(obj interface{}) ([]string, error) {
-				m := obj.(*cloudv1alpha1.VirtualMachineMatch)
-				if m.VMMatch != nil && len(m.VMMatch.MatchID) > 0 {
-					return []string{m.VMMatch.MatchID}, nil
-				}
-				return nil, nil
-			},
-			externalEntitySelectorMatchIndexerByTag: func(obj interface{}) ([]string, error) {
-				m := obj.(*cloudv1alpha1.VirtualMachineMatch)
-				if m.VMMatch == nil {
-					return nil, nil
-				}
-				var tags []string
-				for t := range m.VMMatch.MatchTags {
-					tags = append(tags, t)
-				}
-				return tags, nil
-			},
-			externalEntitySelectorMatchIndexerByVPC: func(obj interface{}) ([]string, error) {
-				m := obj.(*cloudv1alpha1.VirtualMachineMatch)
-				if m.VpcMatch != nil && len(m.VpcMatch.MatchID) > 0 {
-					return []string{m.VpcMatch.MatchID}, nil
-				}
-				return nil, nil
-			},
-		})
 	r.accPollers[*selectorNamespacedName] = poller
 
 	r.Log.Info("poller will be created", "selector", selectorNamespacedName)

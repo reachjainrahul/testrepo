@@ -64,16 +64,16 @@ spec:
   - externalEntitySelector:
       matchLabels:
 {{- if .AppliedTo.Kind }}
-        kind.crd.cloud.antrea.io: {{.AppliedTo.Kind}}
+        kind.cloudcontroller: {{.AppliedTo.Kind}}
 {{ end }}
 {{- if .AppliedTo.CloudInstanceName }}
-        name.crd.cloud.antrea.io: {{.AppliedTo.CloudInstanceName }}
+        name.cloudcontroller: {{.AppliedTo.CloudInstanceName }}
 {{ end }}
 {{- if .AppliedTo.VPC }}
-        vpc.crd.cloud.antrea.io: {{ .AppliedTo.VPC }}
+        vpc.cloudcontroller: {{ .AppliedTo.VPC }}
 {{ end }}
 {{- range $k, $v := .AppliedTo.Tags }}
-        {{$k}}.tag.crd.cloud.antrea.io: {{$v}}
+        {{$k}}.tag.cloudcontroller: {{$v}}
 {{ end }}
 {{ end }} {{- /* .AppliedTo */}}
 {{- if .From }}
@@ -92,16 +92,16 @@ spec:
       - externalEntitySelector:
           matchLabels:
 {{- if .From.Entity.Kind }}
-            kind.crd.cloud.antrea.io: {{.From.Entity.Kind}}
+            kind.cloudcontroller: {{.From.Entity.Kind}}
 {{ end }}
 {{- if .From.Entity.CloudInstanceName }}
-            name.crd.cloud.antrea.io: {{ .From.Entity.CloudInstanceName }}
+            name.cloudcontroller: {{ .From.Entity.CloudInstanceName }}
 {{ end }}
 {{- if .From.Entity.VPC }}
-            vpc.crd.cloud.antrea.io: {{ .From.Entity.VPC }}
+            vpc.cloudcontroller: {{ .From.Entity.VPC }}
 {{ end }}
 {{- range $k, $v := .From.Entity.Tags }}
-            {{$k}}.tag.crd.cloud.antrea.io: {{$v}}
+            {{$k}}.tag.cloudcontroller: {{$v}}
 {{ end }}
 {{ end }} {{/*.From.Entity */}}
 {{- if .From.Namespace }}
@@ -135,16 +135,16 @@ spec:
       - externalEntitySelector:
 {{- if .To.Entity.Kind }}
           matchLabels:
-            kind.crd.cloud.antrea.io: {{.To.Entity.Kind}}
+            kind.cloudcontroller: {{.To.Entity.Kind}}
 {{ end }}
 {{- if .To.Entity.CloudInstanceName }}
-            name.crd.cloud.antrea.io: {{ .To.Entity.CloudInstanceName }}
+            name.cloudcontroller: {{ .To.Entity.CloudInstanceName }}
 {{ end }}
 {{- if .To.Entity.VPC }}
-            vpc.crd.cloud.antrea.io: {{ .To.Entity.VPC }}
+            vpc.cloudcontroller: {{ .To.Entity.VPC }}
 {{ end }}
 {{- range $k, $v := .To.Entity.Tags }}
-            {{$k}}.tag.crd.cloud.antrea.io: {{$v}}
+            {{$k}}.tag.cloudcontroller: {{$v}}
 {{ end }}
 {{ end }} {{/* .To.Entity */}}
 {{- if .To.Namespace }}

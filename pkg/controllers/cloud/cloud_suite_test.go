@@ -27,9 +27,9 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	cloud "antrea.io/antreacloud/apis/crd/v1alpha1"
-	cloudtest "antrea.io/antreacloud/pkg/testing/cloudsecurity"
-	"antrea.io/antreacloud/pkg/testing/controllerruntimeclient"
+	cloud "antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	cloudtest "antrea.io/cloudcontroller/pkg/testing/cloudsecurity"
+	"antrea.io/cloudcontroller/pkg/testing/controllerruntimeclient"
 )
 
 var (

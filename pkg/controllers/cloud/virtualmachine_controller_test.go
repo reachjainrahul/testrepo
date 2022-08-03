@@ -29,11 +29,11 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
-	cloud "antrea.io/antreacloud/apis/crd/v1alpha1"
-	"antrea.io/antreacloud/pkg/converter/source"
-	"antrea.io/antreacloud/pkg/converter/target"
-	testing2 "antrea.io/antreacloud/pkg/testing"
-	"antrea.io/antreacloud/pkg/testing/controllerruntimeclient"
+	cloud "antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	"antrea.io/cloudcontroller/pkg/converter/source"
+	"antrea.io/cloudcontroller/pkg/converter/target"
+	testing2 "antrea.io/cloudcontroller/pkg/testing"
+	"antrea.io/cloudcontroller/pkg/testing/controllerruntimeclient"
 )
 
 var (

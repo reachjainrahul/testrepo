@@ -43,61 +43,52 @@ spec:
                 type: string
               vmSelector:
                 description: VMSelector selects the VirtualMachines the user has modify
-                  privilege. If it is not specified, no VirtualMachines are selected.
-                properties:
-                  vmMatches:
-                    description: VMMatches is an array of VirtualMachineMatch. VirtualMachines
-                      satisfying any item on VMMatches are selected(ORed). If not
-                      specified, all VirtualMachines are selected.
-                    items:
-                      description: VirtualMachineMatch specifies VirtualMachine match
-                        criteria. VirtualMachines must satisfy all fields(ANDed) in
-                        VirtualMachineMatch in order to satisfy VirtualMachineMatch.
+                  privilege. If VMSelector is not specified, no VirtualMachines are
+                  selected. It is an array, VirtualMachines satisfying any item on
+                  VMSelector are selected(ORed). If any item under VMSelector is not
+                  specified, all VirtualMachines are selected.
+                items:
+                  description: VirtualMachineSelector specifies VirtualMachine match
+                    criteria. VirtualMachines must satisfy all fields(ANDed) in VirtualMachineSelector
+                    in order to satisfy match.
+                  properties:
+                    vmMatch:
+                      description: VMMatch specifies VirtualMachines to match. It
+                        is an array, match satisfying any item on VMMatch is selected(ORed).
+                        If it is not specified, all VirtualMachines matching VpcMatch
+                        are selected.
+                      items:
+                        description: EntityMatch specifies match conditions to cloud
+                          entities. Cloud entities must satisfy all fields(ANDed)
+                          in EntityMatch to satisfy EntityMatch.
+                        properties:
+                          matchID:
+                            description: MatchID matches cloud entities' identifier.
+                              If not specified, it matches any cloud entities.
+                            type: string
+                          matchName:
+                            description: MatchName matches cloud entities' name. If
+                              not specified, it matches any cloud entities.
+                            type: string
+                        type: object
+                      type: array
+                    vpcMatch:
+                      description: VpcMatch specifies the virtual private cloud to
+                        which VirtualMachines belong. VpcMatch is ANDed with VMMatch.
+                        If it is not specified, VirtualMachines may belong to any
+                        virtual private cloud.
                       properties:
-                        vmMatch:
-                          description: VMMatch specifies VirtualMachines to match.
-                            If it is not specified, all VirtualMachines are matching.
-                          properties:
-                            matchID:
-                              description: MatchID matches cloud entities' identifier.
-                                If not specified, it matches any cloud entities.
-                              type: string
-                            matchName:
-                              description: MatchName matches cloud entities' name.
-                                If not specified, it matches any cloud entities.
-                              type: string
-                            matchTags:
-                              additionalProperties:
-                                type: string
-                              description: MatchName matches cloud entities's tags.
-                                Tag matches are ANDed. If not specified, it matches
-                                any cloud entities.
-                              type: object
-                          type: object
-                        vpcMatch:
-                          description: VpcMatch specifies the virtual private cloud
-                            to which VirtualMachines belong. If it is not specified,
-                            VirtualMachines may belong to any virtual private cloud,
-                          properties:
-                            matchID:
-                              description: MatchID matches cloud entities' identifier.
-                                If not specified, it matches any cloud entities.
-                              type: string
-                            matchName:
-                              description: MatchName matches cloud entities' name.
-                                If not specified, it matches any cloud entities.
-                              type: string
-                            matchTags:
-                              additionalProperties:
-                                type: string
-                              description: MatchName matches cloud entities's tags.
-                                Tag matches are ANDed. If not specified, it matches
-                                any cloud entities.
-                              type: object
-                          type: object
+                        matchID:
+                          description: MatchID matches cloud entities' identifier.
+                            If not specified, it matches any cloud entities.
+                          type: string
+                        matchName:
+                          description: MatchName matches cloud entities' name. If
+                            not specified, it matches any cloud entities.
+                          type: string
                       type: object
-                    type: array
-                type: object
+                  type: object
+                type: array
             type: object
           status:
             description: CloudEntitySelectorStatus defines the current state of CloudEntitySelector.

@@ -15,8 +15,8 @@
 package cloud
 
 import (
-	"antrea.io/antreacloud/apis/crd/v1alpha1"
-	"antrea.io/antreacloud/pkg/cloud-provider/securitygroup"
+	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	"antrea.io/cloudcontroller/pkg/cloud-provider/securitygroup"
 	"context"
 	"fmt"
 	"k8s.io/apimachinery/pkg/watch"
@@ -247,7 +247,7 @@ func (r *NetworkPolicyReconciler) syncWithCloud() {
 		sg.sync(cloudAppliedToSGs[sg.getID()], r)
 	}
 	// For cloud resource with any non-antrea+ SG, tricking plug-in to remove them by explicitly
-	// updating a single instance of associated security group..
+	// updating a single instance of associated security group.
 	for rsc := range rscWithUnknownSGs {
 		i, ok, _ := r.cloudResourceNPTrackerIndexer.GetByKey(rsc.String())
 		if !ok {
@@ -278,7 +278,6 @@ func (r *NetworkPolicyReconciler) processBookMark(event watch.EventType) bool {
 // getNICsOfCloudResources returns NICs of cloud resources if available.
 func (r *NetworkPolicyReconciler) getNICsOfCloudResources(resources []*securitygroup.CloudResource) (
 	[]*securitygroup.CloudResource, error) {
-	log := r.Log.WithName("CloudSync")
 	if len(resources) == 0 {
 		return nil, nil
 	}
@@ -294,11 +293,9 @@ func (r *NetworkPolicyReconciler) getNICsOfCloudResources(resources []*securityg
 			return resources, err
 		}
 		for _, vm := range vmList.Items {
-			log.Info("Sync:getNICsOfCloudResources", "vm name", vm.Name)
 			for _, nic := range vm.Status.NetworkInterfaces {
-				log.Info("Sync:getNICsOfCloudResources", "nic name", nic.Name)
-				nics = append(nics, &securitygroup.CloudResource{Name: securitygroup.CloudResourceID{
-					Name: nic.Name, Vpc: rsc.Name.Vpc}, Type: securitygroup.CloudResourceTypeNIC})
+				nics = append(nics, &securitygroup.CloudResource{Type: securitygroup.CloudResourceTypeNIC,
+					Name: securitygroup.CloudResourceID{Name: nic.Name, Vpc: rsc.Name.Vpc}})
 			}
 		}
 	}

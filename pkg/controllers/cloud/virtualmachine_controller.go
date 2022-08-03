@@ -15,9 +15,9 @@
 package cloud
 
 import (
-	cloudv1alpha1 "antrea.io/antreacloud/apis/crd/v1alpha1"
-	converter "antrea.io/antreacloud/pkg/converter/source"
-	"antrea.io/antreacloud/pkg/logging"
+	cloudv1alpha1 "antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	converter "antrea.io/cloudcontroller/pkg/converter/source"
+	"antrea.io/cloudcontroller/pkg/logging"
 	"context"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/errors"

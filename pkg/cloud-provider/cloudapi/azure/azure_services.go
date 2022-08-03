@@ -21,7 +21,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"k8s.io/apimachinery/pkg/types"
 
-	"antrea.io/antreacloud/pkg/cloud-provider/cloudapi/internal"
+	"antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/internal"
 )
 
 const (

@@ -37,8 +37,6 @@ type IPAddress struct {
 // NetworkInterface contains information pertaining to NetworkInterface.
 type NetworkInterface struct {
 	Name string `json:"name,omitempty"`
-	// Tags of this interface. A corresponding label is also generated for each tag.
-	Tags map[string]string `json:"tags,omitempty"`
 	// Hardware address of the interface.
 	MAC string `json:"mac,omitempty"`
 	// IP addresses of this NetworkInterface.
@@ -62,8 +60,6 @@ type VirtualMachineStatus struct {
 	NetworkInterfaces []NetworkInterface `json:"networkInterfaces,omitempty"`
 	// Status indicates current state of the VirtualMachine.
 	Status string `json:"status,omitempty"`
-	// NetworkPolicies indicates NetworkPolicy status on this VirtualMachine.
-	NetworkPolicies map[string]string `json:"networkPolicies,omitempty"`
 	// Error is current error, if any, of the VirtualMachine.
 	Error string `json:"error,omitempty"`
 }

@@ -47,16 +47,16 @@ spec:
     - externalEntitySelector:
         matchLabels:
 {{ if .To.Entity.Kind }}
-          kind.crd.cloud.antrea.io: {{.To.Entity.Kind}}
+          kind.cloudcontroller: {{.To.Entity.Kind}}
 {{ end }}
 {{ if .To.Entity.CloudInstanceName }}
-          name.crd.cloud.antrea.io: {{ .To.Entity.CloudInstanceName }}
+          name.cloudcontroller: {{ .To.Entity.CloudInstanceName }}
 {{ end }}
 {{ if .To.Entity.VPC }}
-          vpc.crd.cloud.antrea.io: {{ .To.Entity.VPC }}
+          vpc.cloudcontroller: {{ .To.Entity.VPC }}
 {{ end }}
 {{ range $k, $v := .To.Entity.Tags }}
-          {{$k}}.tag.crd.cloud.antrea.io: {{$v}}
+          {{$k}}.tag.cloudcontroller: {{$v}}
 {{ end }}
 {{ end }}{{/* .To.Entity */}}
 {{ if .To.Namespace }}

@@ -21,15 +21,14 @@ import (
 	"go.uber.org/multierr"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/tools/cache"
 	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"strings"
 
-	cloudv1alpha1 "antrea.io/antreacloud/apis/crd/v1alpha1"
-	cloudprovider "antrea.io/antreacloud/pkg/cloud-provider"
-	"antrea.io/antreacloud/pkg/cloud-provider/cloudapi/common"
+	cloudv1alpha1 "antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	cloudprovider "antrea.io/cloudcontroller/pkg/cloud-provider"
+	"antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/common"
 )
 
 const (
@@ -48,9 +47,6 @@ type accountPoller struct {
 	namespacedName    *types.NamespacedName
 	selector          *cloudv1alpha1.CloudEntitySelector
 	ch                chan struct{}
-	cloudInventory    *CloudInventory
-	vmMatches         cache.Indexer
-	vmMatchKey        uint64
 }
 
 func (p *accountPoller) doAccountPoller() {
@@ -130,7 +126,6 @@ func (p *accountPoller) doVirtualMachineOperations(virtualMachines []*cloudv1alp
 				err = multierr.Append(err, e)
 				continue
 			}
-			p.cloudInventory.AddVirtualMachine(vm)
 		}
 	}
 
@@ -146,7 +141,6 @@ func (p *accountPoller) doVirtualMachineOperations(virtualMachines []*cloudv1alp
 				}
 			}
 			p.log.Info("deleted", "vm-name", vm.Name)
-			p.cloudInventory.DeleteVirtualMachine(vm)
 		}
 	}
 
@@ -175,12 +169,13 @@ func (p *accountPoller) doVirtualMachineOperations(virtualMachines []*cloudv1alp
 				continue
 			}
 			p.log.Info("updated", "vm-name", vm.Name)
-			p.cloudInventory.UpdateVirtualMachine(vm)
 		}
 	}
 
-	p.log.Info("virtual-machine crd statistics", "account", p.namespacedName,
-		"created", len(virtualMachinesToCreate), "deleted", len(virtualMachinesToDelete), "updated", len(virtualMachinesToUpdate))
+	if len(virtualMachinesToCreate) != 0 || len(virtualMachinesToDelete) != 0 || len(virtualMachinesToUpdate) != 0 {
+		p.log.Info("virtual-machine crd statistics", "account", p.namespacedName,
+			"created", len(virtualMachinesToCreate), "deleted", len(virtualMachinesToDelete), "updated", len(virtualMachinesToUpdate))
+	}
 
 	return err
 }
@@ -326,11 +321,7 @@ func areNetworkInterfacesSame(s1, s2 []cloudv1alpha1.NetworkInterface) bool {
 		if strings.Compare(strings.ToLower(value1.MAC), strings.ToLower(value2.MAC)) != 0 {
 			return false
 		}
-		if len(value1.Tags) != len(value2.Tags) ||
-			len(value1.IPs) != len(value2.IPs) {
-			return false
-		}
-		if !areTagsSame(value1.Tags, value2.Tags) {
+		if len(value1.IPs) != len(value2.IPs) {
 			return false
 		}
 		if !areIPAddressesSame(value1.IPs, value2.IPs) {

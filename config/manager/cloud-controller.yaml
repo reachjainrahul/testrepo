@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: cloud-service
+  name: cloud-controller-service
   namespace: system
 spec:
   ports:
@@ -10,14 +10,7 @@ spec:
     protocol: TCP
     targetPort: 5443
   selector:
-    control-plane: antreacloud-cloud-controller
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  labels:
-    control-plane: antreacloud-cloud-controller
-  name: system
+    control-plane: cloud-controller
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -25,17 +18,16 @@ metadata:
   name: cloud-controller
   namespace: system
   labels:
-    control-plane: antreacloud-cloud-controller
+    control-plane: cloud-controller
 spec:
   selector:
     matchLabels:
-      control-plane: antreacloud-cloud-controller
+      control-plane: cloud-controller
   replicas: 1
   template:
     metadata:
       labels:
-        aadpodidbinding: antrea-plus-azure-service-accessor
-        control-plane: antreacloud-cloud-controller
+        control-plane: cloud-controller
     spec:
       containers:
       - command:
@@ -43,9 +35,9 @@ spec:
         args:
         - --enable-leader-election
         - --enable-debug-log
-        image: antrea/antrea-cloud:latest
+        image: antrea/cloud-controller:latest
         imagePullPolicy: IfNotPresent
-        name: antreacloud-cloud-controller
+        name: cloud-controller
         resources:
           limits:
             cpu: 1000m

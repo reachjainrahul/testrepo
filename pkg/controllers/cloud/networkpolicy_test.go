@@ -28,8 +28,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	networkingv1 "k8s.io/api/networking/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/watch"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -37,13 +37,13 @@ import (
 
 	antreanetworking "antrea.io/antrea/pkg/apis/controlplane/v1beta2"
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
-	cloud "antrea.io/antreacloud/apis/crd/v1alpha1"
-	cloudcommon "antrea.io/antreacloud/pkg/cloud-provider/cloudapi/common"
-	"antrea.io/antreacloud/pkg/cloud-provider/securitygroup"
-	"antrea.io/antreacloud/pkg/controllers/config"
-	"antrea.io/antreacloud/pkg/converter/target"
-	cloudtest "antrea.io/antreacloud/pkg/testing/cloudsecurity"
-	"antrea.io/antreacloud/pkg/testing/controllerruntimeclient"
+	cloud "antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	cloudcommon "antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/common"
+	"antrea.io/cloudcontroller/pkg/cloud-provider/securitygroup"
+	"antrea.io/cloudcontroller/pkg/controllers/config"
+	"antrea.io/cloudcontroller/pkg/converter/target"
+	cloudtest "antrea.io/cloudcontroller/pkg/testing/cloudsecurity"
+	"antrea.io/cloudcontroller/pkg/testing/controllerruntimeclient"
 )
 
 var _ = Describe("NetworkPolicy", func() {
@@ -63,29 +63,26 @@ var _ = Describe("NetworkPolicy", func() {
 	}
 
 	var (
-		reconciler              *NetworkPolicyReconciler
-		anp                     *antreanetworking.NetworkPolicy
-		namespace               = "anp-ns"
-		vpc                     = "test-vpc"
-		addrGrpNames            = []string{"addr-grp-1", "addr-grp-2"}
-		addrGrps                []*antreanetworking.AddressGroup
-		addrGrpIDs              map[string]*securitygroup.CloudResourceID
-		appliedToGrpsNames      = []string{"applied-grp-1", "applied-grp-2"}
-		appliedToGrps           []*antreanetworking.AppliedToGroup
-		appliedToGrpIDs         map[string]*securitygroup.CloudResourceID
-		vmNames                 = []string{"vm-1", "vm-2", "vm-3", "vm-4", "vm-5", "vm-6"}
-		vmNameToIDMap           map[string]string
-		vmExternalEntities      map[string]*antreatypes.ExternalEntity
-		vmNameToVirtualMachine  map[string]*cloud.VirtualMachine
-		vmMembers               map[string]*securitygroup.CloudResource
-		ingressNames            = []string{"ingress-1", "ingress-2", "ingress-3", "ingress-4"}
-		ingressIPAddr           = []net.IP{net.ParseIP("1.1.1.1"), net.ParseIP("2.2.2.2"), net.ParseIP("3.3.3.4"), net.ParseIP("4.4.4.4")}
-		ingressExternalEntities map[string]*antreatypes.ExternalEntity
-		ingressRule             *securitygroup.IngressRule
-		egressRule              *securitygroup.EgressRule
-		patchVMIdx              int
-		patchIngressIdx         int
-		syncContents            []securitygroup.SynchronizationContent
+		reconciler             *NetworkPolicyReconciler
+		anp                    *antreanetworking.NetworkPolicy
+		namespace              = "anp-ns"
+		vpc                    = "test-vpc"
+		addrGrpNames           = []string{"addr-grp-1", "addr-grp-2"}
+		addrGrps               []*antreanetworking.AddressGroup
+		addrGrpIDs             map[string]*securitygroup.CloudResourceID
+		appliedToGrpsNames     = []string{"applied-grp-1", "applied-grp-2"}
+		appliedToGrps          []*antreanetworking.AppliedToGroup
+		appliedToGrpIDs        map[string]*securitygroup.CloudResourceID
+		vmNames                = []string{"vm-1", "vm-2", "vm-3", "vm-4", "vm-5", "vm-6"}
+		vmNamePrefix           = "id-"
+		vmNameToIDMap          map[string]string
+		vmExternalEntities     map[string]*antreatypes.ExternalEntity
+		vmNameToVirtualMachine map[string]*cloud.VirtualMachine
+		vmMembers              map[string]*securitygroup.CloudResource
+		ingressRule            *securitygroup.IngressRule
+		egressRule             *securitygroup.EgressRule
+		patchVMIdx             int
+		syncContents           []securitygroup.SynchronizationContent
 
 		// tunable
 		sgConfig securityGroupConfig
@@ -129,10 +126,10 @@ var _ = Describe("NetworkPolicy", func() {
 			vmExternalEntities[n] = &ee
 			vmMembers[n] = &securitygroup.CloudResource{
 				Type: securitygroup.CloudResourceTypeVM,
-				Name: securitygroup.CloudResourceID{Name: "id-" + n, Vpc: vpc}}
+				Name: securitygroup.CloudResourceID{Name: vmNamePrefix + n, Vpc: vpc}}
 
 			vm := cloud.VirtualMachine{}
-			vmID := "id-" + n
+			vmID := vmNamePrefix + n
 			vm.Name = n
 			vm.Namespace = namespace
 			vmAnnotations := make(map[string]string)
@@ -141,19 +138,6 @@ var _ = Describe("NetworkPolicy", func() {
 			vm.Annotations = vmAnnotations
 			vmNameToVirtualMachine[n] = &vm
 			vmNameToIDMap[n] = vmID
-		}
-		ingressExternalEntities = make(map[string]*antreatypes.ExternalEntity)
-		for i, n := range ingressNames {
-			ee := antreatypes.ExternalEntity{}
-			ee.Name = "ingress-" + n
-			ee.Namespace = namespace
-			labels := make(map[string]string)
-			labels[config.ExternalEntityLabelKeyKind] = target.GetExternalEntityLabelKind(&networkingv1.Ingress{})
-			labels[config.ExternalEntityLabelKeyName] = n
-			labels[config.ExternalEntityLabelKeyNamespace] = namespace
-			ee.Labels = labels
-			ee.Spec.Endpoints = []antreatypes.Endpoint{{IP: ingressIPAddr[i].String()}}
-			ingressExternalEntities[n] = &ee
 		}
 
 		// AddressGroups
@@ -166,9 +150,6 @@ var _ = Describe("NetworkPolicy", func() {
 			ag := &antreanetworking.AddressGroup{}
 			ag.Name = n
 			efvm := &antreanetworking.ExternalEntityReference{Name: vmExternalEntities[vmNames[vmIdx]].Name, Namespace: namespace}
-			efingress := &antreanetworking.ExternalEntityReference{
-				Name: ingressExternalEntities[ingressNames[ingressIdx]].Name, Namespace: namespace}
-			ingressIP := antreanetworking.IPAddress(net.ParseIP(ingressExternalEntities[ingressNames[vmIdx]].Spec.Endpoints[0].IP))
 			syncContent := securitygroup.SynchronizationContent{}
 			syncContent.Resource = securitygroup.CloudResourceID{Name: ag.Name, Vpc: vpc}
 			syncContent.Members = []securitygroup.CloudResource{
@@ -181,7 +162,6 @@ var _ = Describe("NetworkPolicy", func() {
 			ingressIdx++
 			ag.GroupMembers = []antreanetworking.GroupMember{
 				{ExternalEntity: efvm},
-				{ExternalEntity: efingress, IPs: []antreanetworking.IPAddress{ingressIP}},
 			}
 			addrGrps = append(addrGrps, ag)
 			addrGrpIDs[n] = &securitygroup.CloudResourceID{Name: n, Vpc: vpc}
@@ -207,12 +187,14 @@ var _ = Describe("NetworkPolicy", func() {
 			appliedToGrpIDs[n] = &securitygroup.CloudResourceID{Name: n, Vpc: vpc}
 		}
 		patchVMIdx = vmIdx
-		patchIngressIdx = ingressIdx
 		// NetworkPolicy
 		anp = &antreanetworking.NetworkPolicy{}
 		anp.Name = "anp-test"
 		anp.Namespace = namespace
 		anp.AppliedToGroups = appliedToGrpsNames
+		anp.SourceRef = &antreanetworking.NetworkPolicyReference{
+			Type: antreanetworking.AntreaNetworkPolicy,
+		}
 		protocol := antreanetworking.ProtocolTCP
 		port := &intstr.IntOrString{IntVal: 443}
 		inRule := antreanetworking.NetworkPolicyRule{Direction: antreanetworking.DirectionIn}
@@ -247,16 +229,12 @@ var _ = Describe("NetworkPolicy", func() {
 			FromSecurityGroups: []*securitygroup.CloudResourceID{addrGrpIDs[addrGrps[0].Name]},
 			FromSrcIP:          []*net.IPNet{ingressIPBlock},
 		}
-		_, ipnet, _ := net.ParseCIDR(ingressExternalEntities["ingress-1"].Spec.Endpoints[0].IP + "/32")
-		ingressRule.FromSrcIP = append(ingressRule.FromSrcIP, ipnet)
 		egressRule = &securitygroup.EgressRule{
 			ToPort:           &portInt,
 			Protocol:         &tcp,
 			ToSecurityGroups: []*securitygroup.CloudResourceID{addrGrpIDs[addrGrps[1].Name]},
 			ToDstIP:          []*net.IPNet{egressIPBlock},
 		}
-		_, ipnet, _ = net.ParseCIDR(ingressExternalEntities["ingress-2"].Spec.Endpoints[0].IP + "/32")
-		egressRule.ToDstIP = append(egressRule.ToDstIP, ipnet)
 
 		for i := appliedToVMIdx; i < patchVMIdx; i++ {
 			syncContents[i].EgressRules = []securitygroup.EgressRule{*egressRule}
@@ -293,8 +271,6 @@ var _ = Describe("NetworkPolicy", func() {
 			if vm := strings.TrimPrefix(gm.ExternalEntity.Name, "virtualmachine-"); vm != gm.ExternalEntity.Name {
 				// Trim successful
 				ret = append(ret, vmExternalEntities[vm])
-			} else if ingress := strings.TrimPrefix(gm.ExternalEntity.Name, "ingress-"); ingress != gm.ExternalEntity.Name {
-				ret = append(ret, ingressExternalEntities[ingress])
 			}
 		}
 		return ret
@@ -681,7 +657,7 @@ var _ = Describe("NetworkPolicy", func() {
 		// 2 AddrGroup, each with vpc and no vpc.
 		// 2 AppliedToGroup with vpc
 		nNP := 1
-		nAddrGrp := len(anp.Rules) * 2
+		nAddrGrp := len(anp.Rules)
 		nAppGrp := len(anp.AppliedToGroups)
 		if sgConfig.sgDeletePending || sgConfig.k8sGetError != nil {
 			nNP = 1
@@ -770,30 +746,32 @@ var _ = Describe("NetworkPolicy", func() {
 					vmList.Items = append(vmList.Items, *trackedVMs[opt[virtualMachineIndexerByCloudID]])
 				}
 			}).Times(len(appliedToGrps))
-		mockClient.EXPECT().Status().Return(mockStatusWriter).Times(len(appliedToGrps))
-		mockStatusWriter.EXPECT().Update(mock.Any(), mock.Any(), mock.Any()).
-			Do(func(_ context.Context, vm *cloud.VirtualMachine, opt client.UpdateOption) {
-				defer GinkgoRecover()
-				_, ok := trackedVMs[vm.Name]
-				Expect(ok).To(BeTrue())
-				if hasError {
-					Expect(len(vm.Status.NetworkPolicies)).To(Equal(1))
-					trackedVMs[vm.Name].Status.NetworkPolicies = vm.Status.NetworkPolicies
-				} else {
-					if hasTracker {
-						trackedVMs[vm.Name].Status.NetworkPolicies = map[string]string{anp.Name: NetworkPolicyStatusApplied}
-					} else {
-						trackedVMs[vm.Name].Status.NetworkPolicies = nil
-					}
-					Expect(trackedVMs).To(ContainElement(vm))
-				}
-			}).Times(len(appliedToGrps))
 		reconciler.processCloudResourceNPTrackers()
 		wait()
 		if hasTracker || hasError {
 			Expect(len(reconciler.cloudResourceNPTrackerIndexer.List())).To(Equal(len(appliedToGrps)))
 		} else {
 			Expect(len(reconciler.cloudResourceNPTrackerIndexer.List())).To(Equal(0))
+		}
+	}
+
+	verifyNPStatus := func(trackedVMs map[string]*cloud.VirtualMachine, hasPolicy, hasError bool) {
+		for idx := len(addrGrpNames); idx < len(addrGrpNames)+len(appliedToGrpsNames); idx++ {
+			vm := trackedVMs[vmNamePrefix+vmNames[idx]]
+			obj, found, _ := reconciler.virtualMachinePolicyIndexer.GetByKey(types.NamespacedName{Namespace: vm.Namespace, Name: vm.Name}.String())
+			if hasPolicy && !hasError {
+				Expect(found).To(BeTrue())
+				npStatus := obj.(*NetworkPolicyStatus)
+				status, ok := npStatus.NPStatus[anp.Name]
+				Expect(ok).To(BeTrue())
+				Expect(status).To(Equal(NetworkPolicyStatusApplied))
+			} else if !hasPolicy && hasError {
+				Expect(found).To(BeTrue())
+				npStatus := obj.(*NetworkPolicyStatus)
+				Expect(len(npStatus.NPStatus)).To(Equal(1))
+			} else if !hasPolicy && !hasError {
+				Expect(found).To(BeFalse())
+			}
 		}
 	}
 
@@ -858,23 +836,6 @@ var _ = Describe("NetworkPolicy", func() {
 		wait()
 	})
 
-	It("Modify addrGroup non-cloud member", func() {
-		createAndVerifyNP(false)
-		remove := ingressExternalEntities[ingressNames[0]]
-		add := ingressExternalEntities[ingressNames[patchIngressIdx]]
-		addrGrp := addrGrps[0]
-		p1 := patchAddrGrpMember(addrGrp, add, remove, 1)
-		_, ipnet, _ := net.ParseCIDR(ingressIPAddr[patchIngressIdx].String() + "/32")
-		ingressRule.FromSrcIP[1] = ipnet
-		checkGrpPatchChange(addrGrp.Name, addrGrp.GroupMembers, appliedToGrps, false, []*antreatypes.ExternalEntity{remove}, true)
-		var err error
-		event := watch.Event{Type: watch.Modified, Object: p1}
-		err = reconciler.processAddrGrp(event)
-		Expect(err).ToNot(HaveOccurred())
-
-		wait()
-	})
-
 	It("Modify appliedToGroup member", func() {
 		createAndVerifyNP(false)
 		add := vmExternalEntities[vmNames[patchVMIdx]]
@@ -916,34 +877,6 @@ var _ = Describe("NetworkPolicy", func() {
 		wait()
 	})
 
-	It("Modify networkPolicy address group non cloud member", func() {
-		createAndVerifyNP(false)
-
-		ag := &antreanetworking.AddressGroup{}
-		ag.Name = "ag-patch"
-		efingress := &antreanetworking.ExternalEntityReference{Name: ingressExternalEntities[ingressNames[patchIngressIdx]].Name,
-			Namespace: namespace}
-		ag.GroupMembers = []antreanetworking.GroupMember{{ExternalEntity: efingress}}
-		addrGrpIDs[ag.Name] = &securitygroup.CloudResourceID{Name: ag.Name, Vpc: vpc}
-
-		anp.Rules[0].From.AddressGroups = append(anp.Rules[0].From.AddressGroups, "ag-patch")
-
-		var err error
-		checkAddrGroup(ag)
-		event := watch.Event{Type: watch.Added, Object: ag}
-		err = reconciler.processAddrGrp(event)
-		Expect(err).ToNot(HaveOccurred())
-
-		_, ipnet, _ := net.ParseCIDR(ingressIPAddr[patchIngressIdx].String() + "/32")
-		ingressRule.FromSrcIP = append(ingressRule.FromSrcIP, ipnet)
-		checkNPPatchChange(appliedToGrps)
-		event = watch.Event{Type: watch.Modified, Object: anp}
-		err = reconciler.processNetworkPolicy(event)
-		Expect(err).ToNot(HaveOccurred())
-
-		wait()
-	})
-
 	It("Modify networkPolicy appliedTo group", func() {
 		createAndVerifyNP(false)
 		ag := &antreanetworking.AppliedToGroup{}
@@ -970,16 +903,19 @@ var _ = Describe("NetworkPolicy", func() {
 		trackedVMs := make(map[string]*cloud.VirtualMachine)
 		createAndVerifyNP(false)
 		verifyNPTracker(trackedVMs, true, false)
+		verifyNPStatus(trackedVMs, true, false)
 		// return delete error
 		sgConfig.sgDeleteError = fmt.Errorf("dummy")
 		deleteAndVerifyNP(false)
 		verifyNPTracker(trackedVMs, false, true)
+		verifyNPStatus(trackedVMs, false, true)
 		// retry without delete error
 		sgConfig.sgDeleteError = nil
 		verifyDeleteNP(false)
 		reconciler.retryQueue.CheckToRun()
 		wait()
 		verifyNPTracker(trackedVMs, false, false)
+		verifyNPStatus(trackedVMs, false, false)
 	})
 
 	It("Create NetworkPolicy groups after security group garbage collection", func() {

@@ -1,14 +1,17 @@
 # Image URL to use all building/pushing image targets
-IMG ?= antrea/antrea-cloud:latest
-BUILDER_IMG ?= antrea-cloud/builder:latest
+IMG ?= antrea/cloud-controller:latest
+BUILDER_IMG ?= cloudcontroller/builder:latest
 
 CRD_OPTIONS ?= "crd"
 
-DOCKER_SRC=/usr/src/antrea.io/antreacloud
+DOCKER_SRC=/usr/src/antrea.io/cloudcontroller
 DOCKER_GOPATH=/tmp/gopath
 DOCKER_GOCACHE=/tmp/gocache
 CONTROLLER_GEN_LIST={$$(go list ./... | grep apis/crd | paste -s -d, -)}
 
+ifneq ($(CI),)
+DOCKERIZE :=
+else
 DOCKERIZE := \
 	 docker run --rm -u $$(id -u):$$(id -g) \
 		-e "GOPATH=$(DOCKER_GOPATH)" \
@@ -19,28 +22,34 @@ DOCKERIZE := \
 		-v $(CURDIR):$(DOCKER_SRC) \
 		-w $(DOCKER_SRC) \
 		$(BUILDER_IMG)
+endif
 
 all: build
 
 # Build binaries
-build-bin: docker-builder generate tidy
+build-bin: docker-builder generate lint tidy
 	$(DOCKERIZE) hack/build-bin.sh
+
+# Deploy controller in the configured Kubernetes cluster in ~/.kube/config
+#deploy: manifests
+#	cd config/manager && kustomize edit set image controller=${IMG}
+#	kustomize build config/default | kubectl apply -f -
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: docker-builder
 	$(DOCKERIZE) controller-gen $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths=$(CONTROLLER_GEN_LIST) output:crd:artifacts:config=config/crd/bases
-	$(DOCKERIZE) kustomize build config/default > ./config/antrea-cloud.yml
+	$(DOCKERIZE) kustomize build config/default > ./config/cloud-controller.yml
 
 mock: docker-builder
 	$(DOCKERIZE) hack/mockgen.sh
 
 # Run unit-tests
 unit-test: mock
-	$(DOCKERIZE) go test -v -cover -count 1 $$(go list antrea.io/antreacloud/pkg/...) --ginkgo.v
+	$(DOCKERIZE) go test -v -cover -count 1 $$(go list antrea.io/cloudcontroller/pkg/...) --ginkgo.v
 
 # Run lint against code
-golangci-lint: docker-builder
-	$(DOCKERIZE)  golangci-lint run --timeout 10m
+lint: docker-builder
+	$(DOCKERIZE)  golangci-lint run
 
 # Run go mod tidy against code
 tidy: docker-builder
@@ -54,11 +63,6 @@ check-copyright:
 .PHONY: add-copyright
 add-copyright:
 	$(DOCKERIZE) hack/add-license.sh --add
-
-.PHONY: verify
-verify:
-	@echo "===> Verifying spellings <==="
-	GO=$(GO) $(CURDIR)/hack/verify-spelling.sh
 
 # Generate code
 generate: docker-builder
@@ -74,8 +78,10 @@ docker-push:
 
 # create docker container builder
 docker-builder:
+ifeq ($(CI),)
 ifeq (, $(shell docker images -q $(BUILDER_IMG) ))
 	docker build --target builder -f ./build/images/Dockerfile -t $(BUILDER_IMG) .
+endif
 endif
 
 ##@ Build Dependencies
@@ -107,10 +113,19 @@ $(CONTROLLER_GEN):
 
 
 # Run integration-tests
-integration-test-aws:
-	ginkgo -v --failFast --focus=".*Core-test.*" test/integration/ -- -manifest-path=../../config/antrea-cloud.yml \
-	-preserve-setup-on-fail=true -cloud-provider=Aws
+integration-test:
+	ginkgo -v --failFast --focus=".*Core-test.*" test/integration/ -- -manifest-path=../../config/cloud-controller.yml -preserve-setup-on-fail=true
 
-integration-test-azure:
-	ginkgo -v --failFast --focus=".*Extended-test-azure.*" test/integration/ -- \
-        -manifest-path=../../config/antrea-cloud.yml -preserve-setup-on-fail=true -cloud-provider=Azure
+azure-agentless-integration-test:
+	ginkgo -v --failFast --focus=".*Extended-azure-agentless.*" test/integration/ -- \
+        -manifest-path=../../config/cloud-controller.yml -preserve-setup-on-fail=true -cloud-provider=Azure
+
+eks-agentless-integration-test:
+	ginkgo -v --failFast --focus=".*Extended-test-agent-eks.*" test/integration/ -- \
+	-manifest-path=../../config/cloud-controller.yml -preserve-setup-on-fail=true \
+	-cloud-provider=AWS -kubeconfig=$(AGENT_KUBE_CONFIG)
+
+aks-agentless-integration-test:
+	ginkgo -v --failFast --focus=".*Extended-test-agent-aks.*" test/integration/ -- \
+	-manifest-path=../../config/cloud-controller.yml -preserve-setup-on-fail=true \
+	-cloud-provider=Azure -kubeconfig=$(AGENT_KUBE_CONFIG)

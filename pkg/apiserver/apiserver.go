@@ -15,7 +15,6 @@
 package apiserver
 
 import (
-	controllers "antrea.io/antreacloud/pkg/controllers/cloud"
 	"context"
 	"net"
 
@@ -27,26 +26,26 @@ import (
 	"k8s.io/apiserver/pkg/registry/rest"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	genericoptions "k8s.io/apiserver/pkg/server/options"
+	"k8s.io/client-go/tools/cache"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 
-	controlplane "antrea.io/antreacloud/apis/controlplane/v1alpha1"
-	"antrea.io/antreacloud/pkg/apiserver/registry/networkinterface"
-	"antrea.io/antreacloud/pkg/apiserver/registry/virtualmachine"
+	runtimev1alpha1 "antrea.io/cloudcontroller/apis/runtime/v1alpha1"
+	"antrea.io/cloudcontroller/pkg/apiserver/registry/virtualmachinepolicy"
 )
 
 var (
 	// APIService listening port number.
 	apiServerPort = 5443
-	// Match Antrea Cloud Service Name
-	antreaCloudSvcName = "antreacloud-cloud-service"
-	// Match Antrea Cloud Service Domain Name
-	antreaCloudDomainName = "antreacloud-cloud-service.antreacloud-system.svc"
+	// Match Cloud Controller Service Name
+	cloudControllerSvcName = "cloud-controller-service"
+	// Match Cloud Controller Service Domain Name
+	cloudControllerDomainName = "cloud-controller-service.kube-system.svc"
 )
 
 // ExtraConfig holds custom apiserver config.
 type ExtraConfig struct {
-	// Place you custom config here.
-	cloudInventory *controllers.CloudInventory
+	// virtual machine policy indexer.
+	vmpIndexer cache.Indexer
 }
 
 // Config defines the config for the apiserver.
@@ -55,7 +54,7 @@ type Config struct {
 	ExtraConfig   ExtraConfig
 }
 
-func NewConfig(codecs serializer.CodecFactory, inventory *controllers.CloudInventory) (*Config, error) {
+func NewConfig(codecs serializer.CodecFactory, indexer cache.Indexer) (*Config, error) {
 	recommend := genericoptions.NewRecommendedOptions("", nil)
 	serverConfig := genericapiserver.NewRecommendedConfig(codecs)
 	recommend.SecureServing.BindPort = apiServerPort
@@ -63,8 +62,8 @@ func NewConfig(codecs serializer.CodecFactory, inventory *controllers.CloudInven
 	// tls.crt and tls.key is populated by cert-manager injector.
 	recommend.SecureServing.ServerCert.PairName = "tls"
 	recommend.SecureServing.ServerCert.CertDirectory = "/tmp/k8s-apiserver/serving-certs"
-	if err := recommend.SecureServing.MaybeDefaultWithSelfSignedCerts(antreaCloudSvcName,
-		[]string{antreaCloudDomainName}, []net.IP{net.ParseIP("127.0.0.1")}); err != nil {
+	if err := recommend.SecureServing.MaybeDefaultWithSelfSignedCerts(cloudControllerSvcName,
+		[]string{cloudControllerDomainName}, []net.IP{net.ParseIP("127.0.0.1")}); err != nil {
 		return nil, err
 	}
 
@@ -81,7 +80,7 @@ func NewConfig(codecs serializer.CodecFactory, inventory *controllers.CloudInven
 	config := &Config{
 		GenericConfig: serverConfig,
 		ExtraConfig: ExtraConfig{
-			cloudInventory: inventory,
+			vmpIndexer: indexer,
 		},
 	}
 	return config, nil
@@ -104,11 +103,11 @@ func (s *CloudControllerAPIServer) Start(stop context.Context) error {
 
 func (s *CloudControllerAPIServer) SetupWithManager(
 	mgr controllerruntime.Manager,
-	inventory *controllers.CloudInventory,
+	indexer cache.Indexer,
 	logger logger.Logger) error {
 	s.logger = logger
 	codecs := serializer.NewCodecFactory(mgr.GetScheme())
-	apiConfig, err := NewConfig(codecs, inventory)
+	apiConfig, err := NewConfig(codecs, indexer)
 	if err != nil {
 		s.logger.Error(err, "unable to create APIServer config")
 		return err
@@ -156,13 +155,11 @@ func (c completedConfig) New(scheme *runtime.Scheme, codecs serializer.CodecFact
 		return nil, err
 	}
 
-	virtualMachineStorage := virtualmachine.NewREST(c.ExtraConfig.cloudInventory, logger.WithName("VirtualMachine"))
-	networkInterfaceStorage := networkinterface.NewREST(c.ExtraConfig.cloudInventory, logger.WithName("NetworkInterface"))
+	vmpStorage := virtualmachinepolicy.NewREST(c.ExtraConfig.vmpIndexer, logger.WithName("VirtualMachinePolicy"))
 
-	cpGroup := genericapiserver.NewDefaultAPIGroupInfo(controlplane.GroupVersion.Group, scheme, metav1.ParameterCodec, codecs)
+	cpGroup := genericapiserver.NewDefaultAPIGroupInfo(runtimev1alpha1.GroupVersion.Group, scheme, metav1.ParameterCodec, codecs)
 	cpv1alpha1Storage := map[string]rest.Storage{}
-	cpv1alpha1Storage["virtualmachines"] = virtualMachineStorage
-	cpv1alpha1Storage["networkinterfaces"] = networkInterfaceStorage
+	cpv1alpha1Storage["virtualmachinepolicy"] = vmpStorage
 
 	cpGroup.VersionedResourcesStorageMap["v1alpha1"] = cpv1alpha1Storage
 

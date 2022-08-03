@@ -18,7 +18,7 @@ import (
 	"sync"
 	"time"
 
-	cloudv1alpha1 "antrea.io/antreacloud/apis/crd/v1alpha1"
+	cloudv1alpha1 "antrea.io/cloudcontroller/apis/crd/v1alpha1"
 )
 
 type CloudServiceName string
@@ -122,6 +122,7 @@ type CloudServiceResourceCRDs struct {
 	virtualMachines []*cloudv1alpha1.VirtualMachine
 }
 
+// SetComputeResourceCRDs sets Service resource CRDs for accessing it from cloudCommon interface.
 func (s *CloudServiceResourceCRDs) SetComputeResourceCRDs(vms []*cloudv1alpha1.VirtualMachine) {
 	s.virtualMachines = vms
 }

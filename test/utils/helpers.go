@@ -28,14 +28,15 @@ import (
 
 	v1 "k8s.io/api/apps/v1"
 	v12 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
-	"antrea.io/antreacloud/apis/crd/v1alpha1"
-	"antrea.io/antreacloud/pkg/controllers/cloud"
-	k8stemplates "antrea.io/antreacloud/test/templates"
+	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	runtimev1alpha1 "antrea.io/cloudcontroller/apis/runtime/v1alpha1"
+	k8stemplates "antrea.io/cloudcontroller/test/templates"
 )
 
 // RestartDeployment restarts an existing deployment.
@@ -231,27 +232,21 @@ func ConfigureEntitySelectorAndWait(
 
 // CheckCloudResourceNetworkPolicies checks NetworkPolicies has been applied to cloud resources.
 func CheckCloudResourceNetworkPolicies(k8sClient client.Client, kind, namespace string, ids []string, anps []string) error {
-	getVMANPs := func(id string) (map[string]string, error) {
-		vmList := &v1alpha1.VirtualMachineList{}
-		if err := k8sClient.List(context.TODO(), vmList, &client.ListOptions{Namespace: namespace}); err != nil {
+	getVMANPs := func(id string) (map[string]*runtimev1alpha1.NetworkPolicyStatus, error) {
+		v := &runtimev1alpha1.VirtualMachinePolicy{}
+		fetchKey := client.ObjectKey{Name: id, Namespace: namespace}
+		if err := k8sClient.Get(context.TODO(), fetchKey, v); err != nil {
+			if errors.IsNotFound(err) {
+				return nil, nil
+			}
 			return nil, err
 		}
-		var v *v1alpha1.VirtualMachine
-		for _, vm := range vmList.Items {
-			if vm.Name == id {
-				v = &vm
-				break
-			}
-		}
-		if v == nil {
-			return nil, fmt.Errorf("vm %v not found in namespace %v", id, namespace)
-		}
-		return v.Status.NetworkPolicies, nil
+		return v.Status.NetworkPolicyDetails, nil
 	}
 
 	logf.Log.V(1).Info("Check NetworkPolicy on resources", "resources", ids, "nps", anps)
 	if err := wait.Poll(time.Second*2, time.Second*300, func() (bool, error) {
-		var getter func(id string) (map[string]string, error)
+		var getter func(id string) (map[string]*runtimev1alpha1.NetworkPolicyStatus, error)
 		if kind == reflect.TypeOf(v1alpha1.VirtualMachine{}).Name() {
 			getter = getVMANPs
 		} else {
@@ -261,7 +256,7 @@ func CheckCloudResourceNetworkPolicies(k8sClient client.Client, kind, namespace 
 		for _, id := range ids {
 			npv, err := getter(id)
 			if err != nil {
-				logf.Log.Error(err, "Get resource failed, tolerate", "Resource", id)
+				logf.Log.Info("Get resource failed, tolerate", "Resource", id, "Error", err)
 				return false, nil
 			}
 			if len(npv) != len(anps) {
@@ -272,7 +267,7 @@ func CheckCloudResourceNetworkPolicies(k8sClient client.Client, kind, namespace 
 				if !ok {
 					return false, nil
 				}
-				if v != cloud.NetworkPolicyStatusApplied {
+				if v.Realization != runtimev1alpha1.Success {
 					return false, nil
 				}
 			}
@@ -301,7 +296,7 @@ func ExecuteCmds(vpc CloudVPC, kubctl *KubeCtl,
 				go func() {
 					var err error
 					if vpc != nil {
-						_, err = vpc.VMCmd(iid, cmd, time.Second*60)
+						_, err = vpc.VMCmd(iid, cmd, time.Second*5)
 					} else {
 						_, err = kubctl.PodCmd(&types.NamespacedName{Name: iid, Namespace: ns}, cmd, time.Second*5)
 					}
@@ -330,7 +325,7 @@ func ExecuteCmds(vpc CloudVPC, kubctl *KubeCtl,
 	return err
 }
 
-// ExecuteCmds excutes curl on resource srcIDs in parallel, and returns error if oks mismatch.
+// ExecuteCurlCmds executes curl on resource srcIDs in parallel, and returns error if oks mismatch.
 func ExecuteCurlCmds(vpc CloudVPC, kubctl *KubeCtl,
 	srcIDs []string, ns string, destIPs []string, port string, oks []bool, retries int) error {
 	cmds := make([][]string, 0, len(destIPs))
@@ -342,10 +337,10 @@ func ExecuteCurlCmds(vpc CloudVPC, kubctl *KubeCtl,
 
 // CheckRestart returns error if any of Antrea+ controllers has restarted.
 func CheckRestart(kubctl *KubeCtl) error {
-	controllers := []string{"antreacloud-cloud-controller"}
+	controllers := []string{"cloud-controller"}
 	for _, c := range controllers {
 		cmd := fmt.Sprintf(
-			"get  pods -l control-plane=%s -n antreacloud-system -o=jsonpath={.items[0].status.containerStatuses[0].restartCount}", c)
+			"get  pods -l control-plane=%s -n kube-system -o=jsonpath={.items[0].status.containerStatuses[0].restartCount}", c)
 		out, err := kubctl.Cmd(cmd)
 		if err != nil {
 			return err
@@ -434,6 +429,7 @@ func CollectCRDs(kubectl *KubeCtl, dir string) error {
 	crdKinds := []string{
 		"vm",
 		"anp",
+		"vmp",
 		"ee",
 		"addressgroups",
 		"appliedtogroups",
@@ -450,8 +446,8 @@ func CollectCRDs(kubectl *KubeCtl, dir string) error {
 // CollectControllerLogs collect logs from controllers.
 func CollectControllerLogs(kubctl *KubeCtl, dir string) error {
 	controllerInfo := map[string][]string{
-		"antreacloud-cloud-controller": {"control-plane", "antreacloud-system", ""},
-		"antrea-controller":            {"component", "kube-system", ""},
+		"cloud-controller":  {"control-plane", "cloud-controller", ""},
+		"antrea-controller": {"component", "kube-system", ""},
 	}
 	it := []string{"-p", ""}
 	for k, v := range controllerInfo {
@@ -489,4 +485,33 @@ func CollectSupportBundle(kubctl *KubeCtl, dir string) {
 	if err := CollectCRDs(kubctl, dir); err != nil {
 		logf.Log.Error(err, "Failed to collect CRDs")
 	}
+}
+
+// IsCloudCluster check if the test cluster is a cloud cluster
+func IsCloudCluster(currentFocus []string, cloudClusters []string) bool {
+	for _, cloudCluster := range cloudClusters {
+		for _, current := range currentFocus {
+			if strings.Contains(current, cloudCluster) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// WaitApiServer wait for aggregated api server to be ready
+func WaitApiServer(k8sClient client.Client, timeout time.Duration) error {
+	if err := wait.Poll(time.Second, timeout, func() (bool, error) {
+		vmpList := &runtimev1alpha1.VirtualMachinePolicyList{}
+		if err := k8sClient.List(context.TODO(), vmpList); err != nil {
+			if errors.IsServiceUnavailable(err) {
+				return false, nil
+			}
+			return false, err
+		}
+		return true, nil
+	}); err != nil {
+		return err
+	}
+	return nil
 }

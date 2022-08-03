@@ -17,24 +17,34 @@ package azure
 import (
 	"strings"
 
-	"antrea.io/antreacloud/apis/crd/v1alpha1"
-	"antrea.io/antreacloud/pkg/cloud-provider/securitygroup"
-	"antrea.io/antreacloud/pkg/cloud-provider/utils"
+	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	"antrea.io/cloudcontroller/pkg/cloud-provider/securitygroup"
+	"antrea.io/cloudcontroller/pkg/cloud-provider/utils"
 )
+
+var azureStatusMap = map[string]string{
+	"PowerState/running":      "running",
+	"PowerState/deallocated":  "stopped",
+	"PowerState/deallocating": "shutting down",
+	"PowerState/stopping":     "stopping",
+	"PowerState/stopped":      "stopped",
+	"PowerState/starting":     "starting",
+}
 
 func computeInstanceToVirtualMachineCRD(instance *virtualMachineTable, namespace string) *v1alpha1.VirtualMachine {
 	tags := make(map[string]string)
+
 	vmTags := instance.Tags
 	for key, value := range vmTags {
-		// skip any tags added by antreacloud for internal processing
-		_, hasAGPrefix, hasATPrefix := securitygroup.IsAntreaCloudCreatedSecurityGroup(key)
+		// skip any tags added by cloudcontroller for internal processing
+		_, hasAGPrefix, hasATPrefix := securitygroup.IsCloudControllerCreatedSG(key)
 		if hasAGPrefix || hasATPrefix {
 			continue
 		}
 		tags[key] = *value
 	}
 
-	//Network interface associated with Virtual machine
+	// Network interfaces associated with Virtual machine
 	instNetworkInterfaces := instance.NetworkInterfaces
 	networkInterfaces := make([]v1alpha1.NetworkInterface, 0, len(instNetworkInterfaces))
 	for _, nwInf := range instNetworkInterfaces {
@@ -62,18 +72,8 @@ func computeInstanceToVirtualMachineCRD(instance *virtualMachineTable, namespace
 			macAddress = *nwInf.MacAddress
 		}
 
-		nw_tags := make(map[string]string)
-		for key, value := range nwInf.Tags {
-			// skip any tags added by antreacloud for internal processing
-			_, hasAGPrefix, hasATPrefix := securitygroup.IsAntreaCloudCreatedSecurityGroup(key)
-			if hasAGPrefix || hasATPrefix {
-				continue
-			}
-			nw_tags[key] = *value
-		}
 		networkInterface := v1alpha1.NetworkInterface{
 			Name: *nwInf.ID,
-			Tags: nw_tags,
 			MAC:  macAddress,
 			IPs:  ipAddressCRDs,
 		}
@@ -91,7 +91,10 @@ func computeInstanceToVirtualMachineCRD(instance *virtualMachineTable, namespace
 		return nil
 	}
 	cloudNetworkShortID := utils.GenerateShortResourceIdentifier(cloudNetworkID, nwResName)
+
+	status := azureStatusMap[*instance.Status]
+
 	return utils.GenerateVirtualMachineCRD(crdName, strings.ToLower(cloudName), strings.ToLower(cloudID), namespace,
 		strings.ToLower(cloudNetworkID), cloudNetworkShortID,
-		*instance.Status, tags, networkInterfaces, providerType)
+		status, tags, networkInterfaces, providerType)
 }

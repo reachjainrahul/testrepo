@@ -18,11 +18,11 @@ import (
 	"fmt"
 	"sync"
 
-	cloudv1alpha1 "antrea.io/antreacloud/apis/crd/v1alpha1"
-	"antrea.io/antreacloud/pkg/cloud-provider/cloudapi/aws"
-	"antrea.io/antreacloud/pkg/cloud-provider/cloudapi/azure"
-	cloudcommon "antrea.io/antreacloud/pkg/cloud-provider/cloudapi/common"
-	"antrea.io/antreacloud/pkg/logging"
+	cloudv1alpha1 "antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	"antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/aws"
+	"antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/azure"
+	cloudcommon "antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/common"
+	"antrea.io/cloudcontroller/pkg/logging"
 )
 
 // All registered cloudv1alpha1 providers.

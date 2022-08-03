@@ -20,7 +20,7 @@ set -o pipefail
 set -o xtrace
 
 GOPATH=`go env GOPATH`
-BASE="antrea.io/antreacloud"
+BASE="antrea.io/cloudcontroller"
 
 # Generate clientset and apis code with K8s codegen tools.
 $GOPATH/bin/client-gen \

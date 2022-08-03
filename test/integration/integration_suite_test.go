@@ -25,6 +25,7 @@ import (
 	"time"
 
 	. "github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -33,15 +34,17 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
-
-	cloudv1alpha1 "antrea.io/antreacloud/apis/crd/v1alpha1"
-	"antrea.io/antreacloud/pkg/logging"
-	"antrea.io/antreacloud/test/utils"
+	cloudv1alpha1 "antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	runtimev1alpha1 "antrea.io/cloudcontroller/apis/runtime/v1alpha1"
+	"antrea.io/cloudcontroller/pkg/logging"
+	"antrea.io/cloudcontroller/test/utils"
 )
 
 const (
-	focusCore  = "Core-test"
-	focusAzure = "Extended-test-azure"
+	focusCore           = "Core-test"
+	focusAzureAgentless = "Extended-azure-agentless"
+	focusAgentEks       = "Extended-test-agent-eks"
+	focusAgentAks       = "Extended-test-agent-aks"
 )
 
 var (
@@ -53,7 +56,8 @@ var (
 	clusters      []string
 	scheme        = runtime.NewScheme()
 	preserveSetup = false
-	testFocus     = []string{focusCore, focusAzure}
+	testFocus     = []string{focusCore, focusAzureAgentless, focusAgentEks, focusAgentAks}
+	cloudClusters = []string{focusAgentEks, focusAgentAks}
 	cloudCluster  bool
 
 	// flags.
@@ -66,13 +70,12 @@ var (
 )
 
 func init() {
-	flag.StringVar(&manifest, "manifest-path", "./config/antrea-cloud.yml", "The relative path to manifest.")
+	flag.StringVar(&manifest, "manifest-path", "./config/cloud-controller.yml", "The relative path to manifest.")
 	flag.BoolVar(&preserveSetupOnFail, "preserve-setup-on-fail", false, "Preserve the setup if a test failed.")
-	flag.StringVar(&supportBundleDir, "support-bundle-dir", "", "Support bundles are saved in this dir when specified.")
+	flag.StringVar(&supportBundleDir, "support-bundle-dir", "", "Support bundles are saved in this dir when specified")
 	flag.StringVar(&cloudProviders, "cloud-provider", string(cloudv1alpha1.AWSCloudProvider),
-		"Cloud Providers to use, separated by comma. Default is Aws.")
-	flag.StringVar(&clusterContexts, "cluster-context", "", "Cluster context to use, separated by common. Default is empty.")
-	flag.BoolVar(&cloudCluster, "cloud-cluster", false, "Cluster deployed in public cloud.")
+		"cloud Providers to use, separated by comma. Default is aws")
+	flag.StringVar(&clusterContexts, "cluster-context", "", "cluster context to use, separated by common. Default is empty")
 	rand.Seed(time.Now().Unix())
 }
 
@@ -96,18 +99,21 @@ var _ = BeforeSuite(func(done Done) {
 	err = antreatypes.AddToScheme(scheme)
 	Expect(err).NotTo(HaveOccurred())
 
+	err = runtimev1alpha1.AddToScheme(scheme)
+	Expect(err).NotTo(HaveOccurred())
+
 	kubeconfig = flag.Lookup("kubeconfig").Value.(flag.Getter).Get().(string)
 	kubeCtl, err = utils.NewKubeCtl(kubeconfig)
 	Expect(err).ToNot(HaveOccurred())
 	Expect(kubeCtl).ToNot(BeNil())
 
-	antreaCloudManifests := make(map[string]string)
+	cloudControllerManifests := make(map[string]string)
 	k8sClients = make(map[string]client.Client)
 	clusters = strings.Split(clusterContexts, ",")
 	for _, cluster := range clusters {
 		bytes, err := ioutil.ReadFile(manifest)
 		Expect(err).ToNot(HaveOccurred())
-		antreaCloudManifests[cluster] = string(bytes)
+		cloudControllerManifests[cluster] = string(bytes)
 
 		c, err := utils.NewK8sClient(scheme, cluster)
 		Expect(err).ToNot(HaveOccurred())
@@ -139,7 +145,7 @@ var _ = BeforeSuite(func(done Done) {
 	}()
 
 	for _, cluster := range clusters {
-		antreaCloudManifest := antreaCloudManifests[cluster]
+		cloudControllerManifest := cloudControllerManifests[cluster]
 		kubeCtl.SetContext(cluster)
 		cl := k8sClients[cluster]
 		if len(cluster) == 0 {
@@ -158,13 +164,15 @@ var _ = BeforeSuite(func(done Done) {
 		err = utils.RestartOrWaitDeployment(cl, "antrea-controller", "kube-system", time.Second*120, false)
 		Expect(err).ToNot(HaveOccurred())
 
-		By(cluster + ": Applying antrea cloud manifest")
-		err = kubeCtl.Apply("", []byte(antreaCloudManifest))
+		By(cluster + ": Applying cloud controller manifest")
+		err = kubeCtl.Apply("", []byte(cloudControllerManifest))
 		Expect(err).ToNot(HaveOccurred())
 
-		By(cluster + ": Check antrea cloud is ready")
-		err = utils.RestartOrWaitDeployment(cl, "antreacloud-cloud-controller", "antreacloud-system", time.Second*120, false)
+		By(cluster + ": Check cloud controller is ready")
+		err = utils.RestartOrWaitDeployment(cl, "cloud-controller", "kube-system", time.Second*120, false)
 		Expect(err).ToNot(HaveOccurred())
+
+		cloudCluster = utils.IsCloudCluster(config.GinkgoConfig.FocusStrings, cloudClusters)
 	}
 	// Check create VPC status.
 	By("Check VM VPCs are ready")

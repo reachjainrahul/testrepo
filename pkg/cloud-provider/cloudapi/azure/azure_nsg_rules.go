@@ -23,13 +23,13 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-03-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
 
-	"antrea.io/antreacloud/pkg/cloud-provider/securitygroup"
+	"antrea.io/cloudcontroller/pkg/cloud-provider/securitygroup"
 )
 
 const (
 	ruleStartPriority             = 100
 	vnetToVnetDenyRulePriority    = 4096
-	vnetToVnetDenyRuleDescription = "antreacloud-at-" + appliedToSecurityGroupNamePerVnet
+	vnetToVnetDenyRuleDescription = "cloudcontroller-at-" + appliedToSecurityGroupNamePerVnet
 	emptyPort                     = "*"
 	virtualnetworkAddressPrefix   = "VirtualNetwork"
 )
@@ -85,11 +85,11 @@ func updateSecurityRuleNameAndPriority(existingRules []network.SecurityRule, new
 }
 
 func convertIngressToAzureNsgSecurityRules(appliedToGroupID *securitygroup.CloudResourceID, rules []*securitygroup.IngressRule,
-	agAsgMapByAntreaCloudName map[string]network.ApplicationSecurityGroup,
-	atAsgMapByAntreaCloudName map[string]network.ApplicationSecurityGroup) ([]network.SecurityRule, error) {
+	agAsgMapByCloudControllerName map[string]network.ApplicationSecurityGroup,
+	atAsgMapByCloudControllerName map[string]network.ApplicationSecurityGroup) ([]network.SecurityRule, error) {
 	var securityRules []network.SecurityRule
 
-	dstAsgObj, found := atAsgMapByAntreaCloudName[strings.ToLower(appliedToGroupID.Name)]
+	dstAsgObj, found := atAsgMapByCloudControllerName[strings.ToLower(appliedToGroupID.Name)]
 	if !found {
 		return []network.SecurityRule{}, fmt.Errorf("asg not found for applied to SG %v", appliedToGroupID.Name)
 	}
@@ -119,7 +119,7 @@ func convertIngressToAzureNsgSecurityRules(appliedToGroupID *securitygroup.Cloud
 			}
 		}
 
-		srcApplicationSecurityGroups := convertToAzureApplicationSecurityGroups(rule.FromSecurityGroups, agAsgMapByAntreaCloudName)
+		srcApplicationSecurityGroups := convertToAzureApplicationSecurityGroups(rule.FromSecurityGroups, agAsgMapByCloudControllerName)
 		if srcApplicationSecurityGroups != nil && len(*srcApplicationSecurityGroups) != 0 {
 			securityRule := buildSecurityRule(to.Int32Ptr(rulePriority), protoName, network.SecurityRuleDirectionInbound,
 				to.StringPtr(emptyPort), nil, nil, srcApplicationSecurityGroups,
@@ -140,7 +140,7 @@ func convertIngressToAzureNsgSecurityRules(appliedToGroupID *securitygroup.Cloud
 }
 
 func convertIngressToAzurePeerNsgSecurityRules(appliedToGroupID *securitygroup.CloudResourceID, rules []*securitygroup.IngressRule,
-	agAsgMapByAntreaCloudName map[string]network.ApplicationSecurityGroup,
+	agAsgMapByCloudControllerName map[string]network.ApplicationSecurityGroup,
 	ruleIP *string) ([]network.SecurityRule, error) {
 	var securityRules []network.SecurityRule
 
@@ -171,7 +171,7 @@ func convertIngressToAzurePeerNsgSecurityRules(appliedToGroupID *securitygroup.C
 		flag := 0
 		for _, fromSecurityGroup := range rule.FromSecurityGroups {
 			if fromSecurityGroup.Vpc == appliedToGroupID.Vpc {
-				srcApplicationSecurityGroups := convertToAzureApplicationSecurityGroups(rule.FromSecurityGroups, agAsgMapByAntreaCloudName)
+				srcApplicationSecurityGroups := convertToAzureApplicationSecurityGroups(rule.FromSecurityGroups, agAsgMapByCloudControllerName)
 				if srcApplicationSecurityGroups != nil && len(*srcApplicationSecurityGroups) != 0 {
 					securityRule := buildPeerSecurityRule(to.Int32Ptr(rulePriority), protoName, network.SecurityRuleDirectionInbound,
 						to.StringPtr(emptyPort), nil, nil, srcApplicationSecurityGroups,
@@ -204,11 +204,11 @@ func convertIngressToAzurePeerNsgSecurityRules(appliedToGroupID *securitygroup.C
 }
 
 func convertEgressToAzureNsgSecurityRules(appliedToGroupID *securitygroup.CloudResourceID, rules []*securitygroup.EgressRule,
-	agAsgMapByAntreaCloudName map[string]network.ApplicationSecurityGroup,
-	atAsgMapByAntreaCloudName map[string]network.ApplicationSecurityGroup) ([]network.SecurityRule, error) {
+	agAsgMapByCloudControllerName map[string]network.ApplicationSecurityGroup,
+	atAsgMapByCloudControllerName map[string]network.ApplicationSecurityGroup) ([]network.SecurityRule, error) {
 	var securityRules []network.SecurityRule
 
-	srcAsgObj, found := atAsgMapByAntreaCloudName[strings.ToLower(appliedToGroupID.Name)]
+	srcAsgObj, found := atAsgMapByCloudControllerName[strings.ToLower(appliedToGroupID.Name)]
 	if !found {
 		return []network.SecurityRule{}, fmt.Errorf("asg not found for applied to SG %v", appliedToGroupID.Name)
 	}
@@ -237,7 +237,7 @@ func convertEgressToAzureNsgSecurityRules(appliedToGroupID *securitygroup.CloudR
 			}
 		}
 
-		dstApplicationSecurityGroups := convertToAzureApplicationSecurityGroups(rule.ToSecurityGroups, agAsgMapByAntreaCloudName)
+		dstApplicationSecurityGroups := convertToAzureApplicationSecurityGroups(rule.ToSecurityGroups, agAsgMapByCloudControllerName)
 		if dstApplicationSecurityGroups != nil && len(*dstApplicationSecurityGroups) != 0 {
 			securityRule := buildSecurityRule(to.Int32Ptr(rulePriority), protoName, network.SecurityRuleDirectionOutbound,
 				to.StringPtr(emptyPort), nil, nil, &[]network.ApplicationSecurityGroup{srcAsgObj},
@@ -258,7 +258,7 @@ func convertEgressToAzureNsgSecurityRules(appliedToGroupID *securitygroup.CloudR
 }
 
 func convertEgressToAzurePeerNsgSecurityRules(appliedToGroupID *securitygroup.CloudResourceID, rules []*securitygroup.EgressRule,
-	agAsgMapByAntreaCloudName map[string]network.ApplicationSecurityGroup,
+	agAsgMapByCloudControllerName map[string]network.ApplicationSecurityGroup,
 	ruleIP *string) ([]network.SecurityRule, error) {
 	var securityRules []network.SecurityRule
 
@@ -288,7 +288,7 @@ func convertEgressToAzurePeerNsgSecurityRules(appliedToGroupID *securitygroup.Cl
 		flag := 0
 		for _, toSecurityGroup := range rule.ToSecurityGroups {
 			if toSecurityGroup.Vpc == appliedToGroupID.Vpc {
-				dstApplicationSecurityGroups := convertToAzureApplicationSecurityGroups(rule.ToSecurityGroups, agAsgMapByAntreaCloudName)
+				dstApplicationSecurityGroups := convertToAzureApplicationSecurityGroups(rule.ToSecurityGroups, agAsgMapByCloudControllerName)
 				if dstApplicationSecurityGroups != nil && len(*dstApplicationSecurityGroups) != 0 {
 					securityRule := buildPeerSecurityRule(to.Int32Ptr(rulePriority), protoName, network.SecurityRuleDirectionOutbound,
 						to.StringPtr(emptyPort), to.StringPtr(emptyPort), nil, nil,
@@ -376,10 +376,10 @@ func buildPeerSecurityRule(rulePriority *int32, protoName network.SecurityRulePr
 }
 
 func convertToAzureApplicationSecurityGroups(securityGroups []*securitygroup.CloudResourceID,
-	asgByAntreaCloudName map[string]network.ApplicationSecurityGroup) *[]network.ApplicationSecurityGroup {
+	asgByCloudControllerName map[string]network.ApplicationSecurityGroup) *[]network.ApplicationSecurityGroup {
 	var asgsToReturn []network.ApplicationSecurityGroup
 	for _, securityGroup := range securityGroups {
-		asg, found := asgByAntreaCloudName[strings.ToLower(securityGroup.Name)]
+		asg, found := asgByCloudControllerName[strings.ToLower(securityGroup.Name)]
 		if !found {
 			continue
 		}
@@ -425,45 +425,45 @@ func convertToAzureAddressPrefix(ruleIPs []*net.IPNet) (*string, *[]string) {
 	return addressPrefix, addressPrefixes
 }
 
-func convertToAntreaCloudRulesByAppliedToSGName(azureSecurityRules *[]network.SecurityRule,
+func convertToCloudControllerRulesByAppliedToSGName(azureSecurityRules *[]network.SecurityRule,
 	vnetID string) (map[string][]securitygroup.IngressRule, map[string][]securitygroup.EgressRule) {
-	antreaCloudATSgNameToIngressRules := make(map[string][]securitygroup.IngressRule)
-	antreaCloudATSgNameToEgressRules := make(map[string][]securitygroup.EgressRule)
+	cloudControllerATSgNameToIngressRules := make(map[string][]securitygroup.IngressRule)
+	cloudControllerATSgNameToEgressRules := make(map[string][]securitygroup.EgressRule)
 	for _, azureSecurityRule := range *azureSecurityRules {
-		antreaCloudName, _, isATSg := securitygroup.IsAntreaCloudCreatedSecurityGroup(*azureSecurityRule.Description)
+		sgName, _, isATSg := securitygroup.IsCloudControllerCreatedSG(*azureSecurityRule.Description)
 		if !isATSg {
 			continue
 		}
 		ruleName := azureSecurityRule.Name
 		if azureSecurityRule.Direction == network.SecurityRuleDirectionInbound {
-			ingressRule, err := convertFromAzureSecurityRuleToAntreaCloudIngressRule(azureSecurityRule, vnetID)
+			ingressRule, err := convertFromAzureSecurityRuleToCloudControllerIngressRule(azureSecurityRule, vnetID)
 			if err != nil {
 				azurePluginLogger().Error(err, "failed to convert to ingress rule", "ruleName", ruleName)
 				continue
 			}
-			rules := antreaCloudATSgNameToIngressRules[antreaCloudName]
+			rules := cloudControllerATSgNameToIngressRules[sgName]
 			rules = append(rules, ingressRule)
-			antreaCloudATSgNameToIngressRules[antreaCloudName] = rules
+			cloudControllerATSgNameToIngressRules[sgName] = rules
 		} else {
-			egressRule, err := convertFromAzureSecurityRuleToAntreaCloudEgressRule(azureSecurityRule, vnetID)
+			egressRule, err := convertFromAzureSecurityRuleToCloudControllerEgressRule(azureSecurityRule, vnetID)
 			if err != nil {
 				azurePluginLogger().Error(err, "failed to convert to egress rule", "ruleName", ruleName)
 				continue
 			}
-			rules := antreaCloudATSgNameToEgressRules[antreaCloudName]
+			rules := cloudControllerATSgNameToEgressRules[sgName]
 			rules = append(rules, egressRule)
-			antreaCloudATSgNameToEgressRules[antreaCloudName] = rules
+			cloudControllerATSgNameToEgressRules[sgName] = rules
 		}
 	}
 
-	return antreaCloudATSgNameToIngressRules, antreaCloudATSgNameToEgressRules
+	return cloudControllerATSgNameToIngressRules, cloudControllerATSgNameToEgressRules
 }
 
-func convertFromAzureSecurityRuleToAntreaCloudIngressRule(rule network.SecurityRule, vnetID string) (securitygroup.IngressRule, error) {
-	port := convertFromAzurePortToAntreaCloudPort(rule.DestinationPortRange)
-	srcIP := convertFromAzurePrefixesToAntreaCloudIPs(rule.SourceAddressPrefix, rule.SourceAddressPrefixes)
-	securityGroups := convertFromAzureASGsToAntreaCloudSecurityGroups(rule.SourceApplicationSecurityGroups, vnetID)
-	protoNum, err := convertFromAzureProtocolToAntreaCloudProtocol(rule.Protocol)
+func convertFromAzureSecurityRuleToCloudControllerIngressRule(rule network.SecurityRule, vnetID string) (securitygroup.IngressRule, error) {
+	port := convertFromAzurePortToCloudControllerPort(rule.DestinationPortRange)
+	srcIP := convertFromAzurePrefixesToCloudControllerIPs(rule.SourceAddressPrefix, rule.SourceAddressPrefixes)
+	securityGroups := convertFromAzureASGsToCloudControllerSecurityGroups(rule.SourceApplicationSecurityGroups, vnetID)
+	protoNum, err := convertFromAzureProtocolToCloudControllerProtocol(rule.Protocol)
 	if err != nil {
 		return securitygroup.IngressRule{}, err
 	}
@@ -477,11 +477,11 @@ func convertFromAzureSecurityRuleToAntreaCloudIngressRule(rule network.SecurityR
 	return ingressRule, nil
 }
 
-func convertFromAzureSecurityRuleToAntreaCloudEgressRule(rule network.SecurityRule, vnetID string) (securitygroup.EgressRule, error) {
-	port := convertFromAzurePortToAntreaCloudPort(rule.DestinationPortRange)
-	dstIP := convertFromAzurePrefixesToAntreaCloudIPs(rule.DestinationAddressPrefix, rule.DestinationAddressPrefixes)
-	securityGroups := convertFromAzureASGsToAntreaCloudSecurityGroups(rule.DestinationApplicationSecurityGroups, vnetID)
-	protoNum, err := convertFromAzureProtocolToAntreaCloudProtocol(rule.Protocol)
+func convertFromAzureSecurityRuleToCloudControllerEgressRule(rule network.SecurityRule, vnetID string) (securitygroup.EgressRule, error) {
+	port := convertFromAzurePortToCloudControllerPort(rule.DestinationPortRange)
+	dstIP := convertFromAzurePrefixesToCloudControllerIPs(rule.DestinationAddressPrefix, rule.DestinationAddressPrefixes)
+	securityGroups := convertFromAzureASGsToCloudControllerSecurityGroups(rule.DestinationApplicationSecurityGroups, vnetID)
+	protoNum, err := convertFromAzureProtocolToCloudControllerProtocol(rule.Protocol)
 	if err != nil {
 		return securitygroup.EgressRule{}, err
 	}
@@ -496,7 +496,7 @@ func convertFromAzureSecurityRuleToAntreaCloudEgressRule(rule network.SecurityRu
 	return egressRule, err
 }
 
-func convertFromAzureProtocolToAntreaCloudProtocol(azureProtoName network.SecurityRuleProtocol) (*int, error) {
+func convertFromAzureProtocolToCloudControllerProtocol(azureProtoName network.SecurityRuleProtocol) (*int, error) {
 	if azureProtoName == network.SecurityRuleProtocolAsterisk {
 		return nil, nil
 	}
@@ -509,7 +509,7 @@ func convertFromAzureProtocolToAntreaCloudProtocol(azureProtoName network.Securi
 	return &protocolNum, nil
 }
 
-func convertFromAzureASGsToAntreaCloudSecurityGroups(asgs *[]network.ApplicationSecurityGroup,
+func convertFromAzureASGsToCloudControllerSecurityGroups(asgs *[]network.ApplicationSecurityGroup,
 	vnetID string) []*securitygroup.CloudResourceID {
 	var cloudResourceIDs []*securitygroup.CloudResourceID
 	if asgs == nil {
@@ -521,12 +521,12 @@ func convertFromAzureASGsToAntreaCloudSecurityGroups(asgs *[]network.Application
 		if err != nil {
 			continue
 		}
-		antreaCloudName, isAntreaCloudCreatedAG, _ := securitygroup.IsAntreaCloudCreatedSecurityGroup(asgName)
-		if !isAntreaCloudCreatedAG {
+		sgName, isCloudControllerCreatedAG, _ := securitygroup.IsCloudControllerCreatedSG(asgName)
+		if !isCloudControllerCreatedAG {
 			continue
 		}
 		cloudResourceID := &securitygroup.CloudResourceID{
-			Name: antreaCloudName,
+			Name: sgName,
 			Vpc:  vnetID,
 		}
 		cloudResourceIDs = append(cloudResourceIDs, cloudResourceID)
@@ -534,7 +534,7 @@ func convertFromAzureASGsToAntreaCloudSecurityGroups(asgs *[]network.Application
 	return cloudResourceIDs
 }
 
-func convertFromAzurePrefixesToAntreaCloudIPs(ipPrefix *string, ipPrefixes *[]string) []*net.IPNet {
+func convertFromAzurePrefixesToCloudControllerIPs(ipPrefix *string, ipPrefixes *[]string) []*net.IPNet {
 	if ipPrefix != nil && *ipPrefix == emptyPort {
 		return nil
 	}
@@ -558,7 +558,7 @@ func convertFromAzurePrefixesToAntreaCloudIPs(ipPrefix *string, ipPrefixes *[]st
 	return ipNetList
 }
 
-func convertFromAzurePortToAntreaCloudPort(port *string) *int {
+func convertFromAzurePortToCloudControllerPort(port *string) *int {
 	if port == nil || *port == emptyPort {
 		return nil
 	}

@@ -21,7 +21,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-03-01/network"
 	"github.com/Azure/go-autorest/autorest"
 
-	"antrea.io/antreacloud/pkg/cloud-provider/securitygroup"
+	"antrea.io/cloudcontroller/pkg/cloud-provider/securitygroup"
 )
 
 // applicationSecurityGroups returns application-security-groups apiClient.
@@ -55,27 +55,27 @@ func createOrGetApplicationSecurityGroup(asgAPIClient azureAsgWrapper, location 
 	return strings.ToLower(*asg.ID), nil
 }
 
-func getAntreaCloudCreatedAsgByNameForResourceGroup(asgAPIClient azureAsgWrapper,
+func getCloudControllerCreatedAsgByNameForResourceGroup(asgAPIClient azureAsgWrapper,
 	rgName string) (map[string]network.ApplicationSecurityGroup, map[string]network.ApplicationSecurityGroup, error) {
 	applicationSecurityGroups, err := asgAPIClient.listComplete(context.Background(), rgName)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	atAsgByAntreaCloudName := make(map[string]network.ApplicationSecurityGroup)
-	agAsgByAntreaCloudName := make(map[string]network.ApplicationSecurityGroup)
+	atAsgByCloudControllerName := make(map[string]network.ApplicationSecurityGroup)
+	agAsgByCloudControllerName := make(map[string]network.ApplicationSecurityGroup)
 	for _, applicationSecurityGroup := range applicationSecurityGroups {
 		asgName := applicationSecurityGroup.Name
 		if asgName == nil {
 			continue
 		}
-		antreaCloudName, isAntreaCloudCreatedAG, isAntreaCloudCreatedAT := securitygroup.IsAntreaCloudCreatedSecurityGroup(*asgName)
-		if isAntreaCloudCreatedAT {
-			atAsgByAntreaCloudName[strings.ToLower(antreaCloudName)] = applicationSecurityGroup
-		} else if isAntreaCloudCreatedAG {
-			agAsgByAntreaCloudName[strings.ToLower(antreaCloudName)] = applicationSecurityGroup
+		sgName, isCloudControllerCreatedAG, isCloudControllerCreatedAT := securitygroup.IsCloudControllerCreatedSG(*asgName)
+		if isCloudControllerCreatedAT {
+			atAsgByCloudControllerName[strings.ToLower(sgName)] = applicationSecurityGroup
+		} else if isCloudControllerCreatedAG {
+			agAsgByCloudControllerName[strings.ToLower(sgName)] = applicationSecurityGroup
 		}
 	}
 
-	return agAsgByAntreaCloudName, atAsgByAntreaCloudName, nil
+	return agAsgByCloudControllerName, atAsgByCloudControllerName, nil
 }

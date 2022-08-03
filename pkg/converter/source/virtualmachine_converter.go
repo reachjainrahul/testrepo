@@ -24,8 +24,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
-	cloudv1alpha1 "antrea.io/antreacloud/apis/crd/v1alpha1"
-	"antrea.io/antreacloud/pkg/converter/target"
+	cloudv1alpha1 "antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	"antrea.io/cloudcontroller/pkg/converter/target"
 )
 
 const (
@@ -100,7 +100,7 @@ func (v VMConverter) processEvent(vm *VirtualMachineSource, failedUpdates map[st
 	}()
 
 	ctx := context.Background()
-	ips, err := vm.GetEndPointAddresses(v.Client)
+	ips, err := vm.GetEndPointAddresses()
 	if err != nil {
 		log.Info("Failed to get IP address for", "Name", fetchKey, "err", err)
 		return

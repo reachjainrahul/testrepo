@@ -9,7 +9,7 @@ spec:
   appliedTo:
   - externalEntitySelector:
       matchLabels:
-         kind.crd.cloud.antrea.io: virtualmachine
+         kind.cloudcontroller: virtualmachine
   ingress:
   - action: Allow
     from:

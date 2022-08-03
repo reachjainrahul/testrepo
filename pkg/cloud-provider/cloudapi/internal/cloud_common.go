@@ -22,8 +22,8 @@ import (
 	"go.uber.org/multierr"
 	"k8s.io/apimachinery/pkg/types"
 
-	cloudv1alpha1 "antrea.io/antreacloud/apis/crd/v1alpha1"
-	"antrea.io/antreacloud/pkg/logging"
+	cloudv1alpha1 "antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	"antrea.io/cloudcontroller/pkg/logging"
 )
 
 // CloudCommonHelperInterface interface needs to be implemented by each cloud-plugin. It provides a way to inject
@@ -146,7 +146,7 @@ func (c *cloudCommon) GetCloudAccountComputeResourceCRDs(accountNamespacedName *
 		}
 	}
 
-	c.logger().Info("account CRDs", "account", accountNamespacedName, "service-type", CloudServiceTypeCompute,
+	c.logger().V(1).Info("account CRDs", "account", accountNamespacedName, "service-type", CloudServiceTypeCompute,
 		"compute", len(computeCRDs))
 
 	return computeCRDs, nil

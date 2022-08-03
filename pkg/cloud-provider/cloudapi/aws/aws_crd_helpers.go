@@ -17,8 +17,8 @@ package aws
 import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 
-	"antrea.io/antreacloud/apis/crd/v1alpha1"
-	"antrea.io/antreacloud/pkg/cloud-provider/utils"
+	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	"antrea.io/cloudcontroller/pkg/cloud-provider/utils"
 )
 
 const ResourceNameTagKey = "Name"
@@ -33,7 +33,7 @@ func ec2InstanceToVirtualMachineCRD(instance *ec2.Instance, namespace string) *v
 		}
 	}
 
-	//Network interface associated with Virtual machine
+	// Network interfaces associated with Virtual machine
 	instNetworkInterfaces := instance.NetworkInterfaces
 	networkInterfaces := make([]v1alpha1.NetworkInterface, 0, len(instNetworkInterfaces))
 
@@ -60,7 +60,6 @@ func ec2InstanceToVirtualMachineCRD(instance *ec2.Instance, namespace string) *v
 		}
 		networkInterface := v1alpha1.NetworkInterface{
 			Name: *nwInf.NetworkInterfaceId,
-			Tags: nil,
 			MAC:  *nwInf.MacAddress,
 			IPs:  ipAddressCRDs,
 		}

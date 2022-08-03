@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"strings"
 
-	"antrea.io/antreacloud/apis/crd/v1alpha1"
-	"antrea.io/antreacloud/pkg/cloud-provider/cloudapi/internal"
+	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	"antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/internal"
 )
 
 type azureAccountCredentials struct {

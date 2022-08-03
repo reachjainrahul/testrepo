@@ -22,7 +22,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-03-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
 
-	"antrea.io/antreacloud/pkg/cloud-provider/securitygroup"
+	"antrea.io/cloudcontroller/pkg/cloud-provider/securitygroup"
 )
 
 // networkInterfaces returns network interfaces SDK api client.
@@ -131,7 +131,7 @@ func getUpdatedNetworkInterfaceNsgAndTags(nwIntfObj *network.Interface, nsgObjTo
 		currentTags[tagKey] = to.StringPtr("true")
 	} else {
 		delete(currentTags, tagKey)
-		if !hasAnyAntreaCloudSecurityGroupTags(currentTags) {
+		if !hasAnyCloudControllerSecurityGroupTags(currentTags) {
 			nwIntfObj.NetworkSecurityGroup = nil
 		}
 	}
@@ -139,9 +139,9 @@ func getUpdatedNetworkInterfaceNsgAndTags(nwIntfObj *network.Interface, nsgObjTo
 	return nwIntfObj.NetworkSecurityGroup, currentTags
 }
 
-func hasAnyAntreaCloudSecurityGroupTags(tags map[string]*string) bool {
+func hasAnyCloudControllerSecurityGroupTags(tags map[string]*string) bool {
 	for key := range tags {
-		_, _, isATSG := securitygroup.IsAntreaCloudCreatedSecurityGroup(key)
+		_, _, isATSG := securitygroup.IsCloudControllerCreatedSG(key)
 		if isATSG {
 			return true
 		}

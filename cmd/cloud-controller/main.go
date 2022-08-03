@@ -24,12 +24,11 @@ import (
 
 	antreanetworking "antrea.io/antrea/pkg/apis/controlplane/v1beta2"
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
-
-	controlplanev1alpha1 "antrea.io/antreacloud/apis/controlplane/v1alpha1"
-	crdv1alpha1 "antrea.io/antreacloud/apis/crd/v1alpha1"
-	"antrea.io/antreacloud/pkg/apiserver"
-	controllers "antrea.io/antreacloud/pkg/controllers/cloud"
-	"antrea.io/antreacloud/pkg/logging"
+	crdv1alpha1 "antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	runtimev1alpha1 "antrea.io/cloudcontroller/apis/runtime/v1alpha1"
+	"antrea.io/cloudcontroller/pkg/apiserver"
+	controllers "antrea.io/cloudcontroller/pkg/controllers/cloud"
+	"antrea.io/cloudcontroller/pkg/logging"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -43,7 +42,7 @@ func init() {
 	_ = antreanetworking.AddToScheme(scheme)
 	_ = antreatypes.AddToScheme(scheme)
 	_ = crdv1alpha1.AddToScheme(scheme)
-	_ = controlplanev1alpha1.AddToScheme(scheme)
+	_ = runtimev1alpha1.AddToScheme(scheme)
 
 	// +kubebuilder:scaffold:scheme
 }
@@ -76,12 +75,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	cloudInventory := controllers.NewCloudInventory(logging.GetLogger("cloud-inventory"))
 	if err = (&controllers.CloudEntitySelectorReconciler{
-		Client:         mgr.GetClient(),
-		Log:            logging.GetLogger("controllers").WithName("CloudEntitySelector"),
-		Scheme:         mgr.GetScheme(),
-		CloudInventory: cloudInventory,
+		Client: mgr.GetClient(),
+		Log:    logging.GetLogger("controllers").WithName("CloudEntitySelector"),
+		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "CloudEntitySelector")
 		os.Exit(1)
@@ -139,7 +136,7 @@ func main() {
 	}
 
 	if err = (&apiserver.CloudControllerAPIServer{}).SetupWithManager(mgr,
-		cloudInventory, logging.GetLogger("apiServer")); err != nil {
+		npController.GetVirtualMachinePolicyIndexer(), logging.GetLogger("apiServer")); err != nil {
 		setupLog.Error(err, "unable to create APIServer")
 		os.Exit(1)
 	}

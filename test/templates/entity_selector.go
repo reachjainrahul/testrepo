@@ -32,7 +32,6 @@ spec:
   # Add fields here
   accountName: {{.CloudAccountName}}
   vmSelector:
-    vmMatches:
-      - vpcMatch:
-          matchID: {{.VPC}}
+    - vpcMatch:
+        matchID: {{.VPC}}
 `

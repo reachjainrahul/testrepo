@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"time"
 
-	"antrea.io/antreacloud/apis/crd/v1alpha1"
-	k8stemplates "antrea.io/antreacloud/test/templates"
+	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	k8stemplates "antrea.io/cloudcontroller/test/templates"
 )
 
 type CloudVPC interface {

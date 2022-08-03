@@ -14,7 +14,7 @@
 
 package azure
 
-import "antrea.io/antreacloud/pkg/cloud-provider/cloudapi/internal"
+import "antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/internal"
 
 type azureCloudCommonHelperImpl struct{}
 

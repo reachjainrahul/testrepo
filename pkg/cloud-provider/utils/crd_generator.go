@@ -21,8 +21,8 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
 
-	cloudv1alpha1 "antrea.io/antreacloud/apis/crd/v1alpha1"
-	cloudcommon "antrea.io/antreacloud/pkg/cloud-provider/cloudapi/common"
+	cloudv1alpha1 "antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	cloudcommon "antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/common"
 )
 
 func GenerateVirtualMachineCRD(crdName string, cloudName string, cloudID string, namespace string, cloudNetwork string,

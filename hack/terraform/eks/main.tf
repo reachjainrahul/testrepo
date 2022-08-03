@@ -1,26 +1,35 @@
 terraform {
   required_version = ">= 0.13.1"
+  required_providers {
+    aws = {
+      version = "~> 4.4"
+    }
+    random = {
+      version = "~> 2.1"
+    }
+    template = {
+      version = "~> 2.1"
+    }
+    local = {
+      version = "~>2.1.0"
+    }
+    null = {
+      version = "~>3.1"
+    }
+    kubernetes = {
+      version = "~>2.11.0"
+    }
+  }
 }
 
 provider "aws" {
-  version = "~> 4.4"
-  region  = var.region
+  region = var.region
 }
 
-provider "random" {
-  version = "~> 2.1"
-}
-
-provider "template" {
-  version = "~> 2.1"
-}
-
-provider "local" {
-  version = "~>2.1.0"
-}
-
-provider "null" {
-  version = "~>3.1"
+provider "kubernetes" {
+  host                   = data.aws_eks_cluster.cluster.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
+  token                  = data.aws_eks_cluster_auth.cluster.token
 }
 
 data "aws_eks_cluster" "cluster" {
@@ -33,22 +42,14 @@ data "aws_eks_cluster_auth" "cluster" {
 
 data "aws_caller_identity" "current" {}
 
+data "aws_availability_zones" "available" {}
+
 locals {
-  vpc_name = "antreacloud-eks-vpc-${var.owner}-${random_string.suffix.result}"
-}
-
-provider "kubernetes" {
-  host                   = data.aws_eks_cluster.cluster.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
-  token                  = data.aws_eks_cluster_auth.cluster.token
-  version                = "~>2.11.0"
-}
-
-data "aws_availability_zones" "available" {
+  vpc_name = "cloudcontroller-eks-vpc-${var.owner}-${random_string.suffix.result}"
 }
 
 locals {
-  cluster_name = "antreacloud-eks-${var.owner}-${random_string.suffix.result}"
+  cluster_name = "cloudcontroller-eks-${var.owner}-${random_string.suffix.result}"
 }
 
 resource "random_string" "suffix" {
@@ -57,7 +58,7 @@ resource "random_string" "suffix" {
 }
 
 resource "aws_security_group" "all_worker_mgmt" {
-  name_prefix = "antreacloud-eks"
+  name_prefix = "cloudcontroller-eks"
   vpc_id      = module.vpc.vpc_id
 
   ingress {
@@ -85,7 +86,7 @@ module "vpc" {
 
   tags = {
     Terraform   = "true"
-    Environment = "antreacloud"
+    Environment = "cloudcontroller"
   }
 
   public_subnet_tags = {
@@ -103,7 +104,7 @@ module "eks" {
 
   tags = {
     Terraform   = "true"
-    Environment = "antreacloud"
+    Environment = "cloudcontroller"
   }
 
   vpc_id = module.vpc.vpc_id

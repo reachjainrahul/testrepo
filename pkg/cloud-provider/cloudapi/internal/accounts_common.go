@@ -23,9 +23,9 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 
-	cloudv1alpha1 "antrea.io/antreacloud/apis/crd/v1alpha1"
+	cloudv1alpha1 "antrea.io/cloudcontroller/apis/crd/v1alpha1"
 
-	"antrea.io/antreacloud/pkg/logging"
+	"antrea.io/cloudcontroller/pkg/logging"
 )
 
 type CloudAccountInterface interface {
@@ -192,10 +192,10 @@ func (accCfg *cloudAccountConfig) performInventorySync() error {
 				accCfg.Status.Error = err.Error()
 			} else {
 				if isFilterNil {
-					accCfg.logger().Info("fetching resources from cloud", "service", serviceCfg.getName(),
+					accCfg.logger().V(1).Info("fetching resources from cloud", "service", serviceCfg.getName(),
 						"account", accCfg.namespacedName, "resource-filters", "all(nil)")
 				} else {
-					accCfg.logger().Info("fetching resources from cloud", "service", serviceCfg.getName(),
+					accCfg.logger().V(1).Info("fetching resources from cloud", "service", serviceCfg.getName(),
 						"account", accCfg.namespacedName, "resource-filters", "configured")
 				}
 			}

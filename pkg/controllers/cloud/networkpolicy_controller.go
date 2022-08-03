@@ -15,6 +15,7 @@
 package cloud
 
 import (
+	"antrea.io/antrea/pkg/apis/crd/v1alpha1"
 	"context"
 	"fmt"
 	"net"
@@ -35,13 +36,14 @@ import (
 	antreanetworking "antrea.io/antrea/pkg/apis/controlplane/v1beta2"
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
 	antreanetworkingclient "antrea.io/antrea/pkg/client/clientset/versioned/typed/controlplane/v1beta2"
-	cloud "antrea.io/antreacloud/apis/crd/v1alpha1"
-	"antrea.io/antreacloud/pkg/cloud-provider/cloudapi/common"
-	"antrea.io/antreacloud/pkg/cloud-provider/securitygroup"
-	"antrea.io/antreacloud/pkg/controllers/config"
+	cloud "antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	"antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/common"
+	"antrea.io/cloudcontroller/pkg/cloud-provider/securitygroup"
+	"antrea.io/cloudcontroller/pkg/controllers/config"
 )
 
 const (
+	NetworkPolicyStatusIndexerByNamespace       = "namespace"
 	addrAppliedToIndexerByGroupID               = "GroupID"
 	networkPolicyIndexerByAddrGrp               = "AddressGrp"
 	networkPolicyIndexerByAppliedToGrp          = "AppliedToGrp"
@@ -65,7 +67,7 @@ type NetworkPolicyController interface {
 	LocalEvent(watch.Event)
 }
 
-// NetworkPolicy reconciles a NetworkPolicy object.
+// NetworkPolicyReconciler reconciles a NetworkPolicy object.
 type NetworkPolicyReconciler struct {
 	client.Client
 	Log          logr.Logger
@@ -82,6 +84,7 @@ type NetworkPolicyReconciler struct {
 	addrSGIndexer                 cache.Indexer
 	appliedToSGIndexer            cache.Indexer
 	cloudResourceNPTrackerIndexer cache.Indexer
+	virtualMachinePolicyIndexer   cache.Indexer
 
 	// pendingDeleteGroups keep tracks of deleting AddressGroup or AppliedToGroup.
 	pendingDeleteGroups *PendingItemQueue
@@ -100,6 +103,23 @@ type NetworkPolicyReconciler struct {
 
 	// Federated ExternalEntities IPs.
 	fedExternalEntityIPs map[string][]string
+}
+
+// isNetworkPolicySupported check if network policy is supported.
+func (r *NetworkPolicyReconciler) isNetworkPolicySupported(anp *antreanetworking.NetworkPolicy) error {
+	if anp.SourceRef == nil {
+		return fmt.Errorf("source reference not set in network policy")
+	}
+	if anp.SourceRef.Type != antreanetworking.AntreaNetworkPolicy {
+		return fmt.Errorf("only antrea network policy is supported")
+	}
+	// Check for support actions
+	for _, rule := range anp.Rules {
+		if rule.Action != nil && *rule.Action != v1alpha1.RuleActionAllow {
+			return fmt.Errorf("only Allow action is supported in antrea network policy")
+		}
+	}
+	return nil
 }
 
 // processMemberGrp is common function to process AppliedTo/AddressGroup updates from Antrea controller.
@@ -245,7 +265,7 @@ func (r *NetworkPolicyReconciler) processMemberGrp(name string, eventType watch.
 			sg = creator(key, addedIPs, nil)
 			_ = sg.(*addrSecurityGroup).add(r)
 		} else {
-			r.Log.Error(nil, "Update to IPblock does find security group", "key", key)
+			r.Log.Error(nil, "Update to IP block does find security group", "key", key)
 		}
 		sgChanges = true
 	}
@@ -318,19 +338,23 @@ func (r *NetworkPolicyReconciler) processNetworkPolicy(event watch.Event) error 
 		r.Log.V(1).Info("processNetworkPolicy unknown message type", "type", event.Type, "obj", event.Object)
 		return nil
 	}
-	if anp.SourceRef != nil && (anp.SourceRef.Type == antreanetworking.AntreaNetworkPolicy ||
-		anp.SourceRef.Type == antreanetworking.K8sNetworkPolicy) && anp.Namespace == "" {
-		// anp comes from antrea controller, recover to its original name/namepsace
-		anp.Name = anp.SourceRef.Name
-		anp.Namespace = anp.SourceRef.Namespace
-	}
-	npKey := types.NamespacedName{Name: anp.Name, Namespace: anp.Namespace}.String()
-	r.Log.V(1).Info("Received NetworkPolicy event", "type", event.Type, "anp", npKey, "obj", anp)
 	if r.processBookMark(event.Type) {
 		return nil
 	}
+
+	r.Log.V(1).Info("Received NetworkPolicy event", "type", event.Type, "obj", anp)
+	if err := r.isNetworkPolicySupported(anp); err != nil {
+		return err
+	}
+	if anp.Namespace == "" {
+		// anp comes from antrea controller, recover to its original name/namespace
+		anp.Name = anp.SourceRef.Name
+		anp.Namespace = anp.SourceRef.Namespace
+	}
+
 	var np *networkPolicy
 	isCreate := false
+	npKey := types.NamespacedName{Name: anp.Name, Namespace: anp.Namespace}.String()
 	if i, ok, _ := r.networkPolicyIndexer.GetByKey(npKey); !ok {
 		np = &networkPolicy{}
 		anp.DeepCopyInto(&np.NetworkPolicy)
@@ -530,6 +554,20 @@ func (r *NetworkPolicyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 				return sgs, nil
 			},
 		})
+	r.virtualMachinePolicyIndexer = cache.NewIndexer(
+		// Each VirtualMachinePolicy is uniquely identified by namespaced name of corresponding crd object.
+		func(obj interface{}) (string, error) {
+			npStatus := obj.(*NetworkPolicyStatus)
+			return npStatus.String(), nil
+		},
+		// VirtualMachinePolicy indexed by namespace
+		cache.Indexers{
+			NetworkPolicyStatusIndexerByNamespace: func(obj interface{}) ([]string, error) {
+				npStatus := obj.(*NetworkPolicyStatus)
+				ret := []string{npStatus.Namespace}
+				return ret, nil
+			},
+		})
 	r.localRequest = make(chan watch.Event)
 	r.cloudResponse = make(chan *securityGroupStatus)
 	r.pendingDeleteGroups = NewPendingItemQueue(r, nil)
@@ -580,4 +618,8 @@ func (r *NetworkPolicyReconciler) resetWatchers() error {
 		break
 	}
 	return err
+}
+
+func (r *NetworkPolicyReconciler) GetVirtualMachinePolicyIndexer() cache.Indexer {
+	return r.virtualMachinePolicyIndexer
 }

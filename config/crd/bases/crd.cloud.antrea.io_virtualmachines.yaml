@@ -81,20 +81,8 @@ spec:
                       type: string
                     name:
                       type: string
-                    tags:
-                      additionalProperties:
-                        type: string
-                      description: Tags of this interface. A corresponding label is
-                        also generated for each tag.
-                      type: object
                   type: object
                 type: array
-              networkPolicies:
-                additionalProperties:
-                  type: string
-                description: NetworkPolicies indicates NetworkPolicy status on this
-                  VirtualMachine.
-                type: object
               provider:
                 description: Provider specifies cloud provider of this VirtualMachine.
                 enum:

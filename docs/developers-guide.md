@@ -1,276 +1,265 @@
 # Developers Guide
 
 The project scaffold is created via [Kubebuilder](https://github.com/kubernetes-sigs/kubebuilder).
-Please see these [instructions](https://book.kubebuilder.io/quick-start.html#installation) to
-install  ``kubebuilder``.
+To install `kubebuilder version 3`, please refer to
+[kubebuilder quick start guide](https://book.kubebuilder.io/quick-start.html#installation).
 
-If you are running Mac, consider using a Ubuntu 18 virtual machine.
-(Recommended Configuration: Memory > 12288MB, Space > 100GB)
+## Prerequisites
 
-## Other Prerequisites
+The following tools are required to build, test and run Cloud Controller
+`cloud controller`.
 
-The following tools are required to build, test and run Antrea Plus Controllers.
 - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 - [docker](https://docs.docker.com/install/)
 - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/)
 
 ## Build
-Run the following commands to build AntreaPlus controllers.
+
+Build Cloud Controller `cloud controller` image. The `cloud controller` binary is
+located in `./bin` directory and the docker image `antrea /cloud-controller:latest`
+is created or updated in the local docker repository.
 
 ```bash
-make
+$ make
 ```
-The controller binaries can be located in ``./bin`` directory, and docker image ``antreaplus
-/antreaplus:latest`` is created or updated in the local docker repository.  
 
 ## CRD Creation and Modification
-The project current support single API group, all CRD Kind must be in a single API group 
-``cloud.antreaplus.vmware-tanzu.com``. To create a new CRD, e.g. MyKind., do
-```bash
-kubebuilder create api --group cloud --version v1alpha1 --kind MyKind
-```
-The ``kubebuilder`` creates skeleton CRD definition in ``.api/cloud/v1alpha1/mykind_types.go``, and
-a skeleton MyKindReconciler in ``./controllers/cloud/mykind_controller.go``. You will need to
-1. Modify the new CRD definition as required. 
-1. Move the skeleton reconciler file to appropriate location if needed.
-1. Initiate the reconciler, if required, perhaps at process boot-up.
 
-Then run 
-```bash
-make
-make manifests
-```
-The first ``make`` attempts to build controller binaries, which in turn triggers code generation
-based on the new CRD definition. The second ``make`` generates manifests for Roles with
-permission to manipulate the new CRD.
+Cloud Controller currently has a single API group `cloud.crd.antrea.io`. This
+section specifies the steps required to create a new CRD. `MyKind` is used an
+example CRD object for illustration.
 
-## Enable Webhook
-
-### Prerequisite
-Webhook server requires [cert-manager](https://cert-manager.io/docs/installation/kubernetes/)
-to provide SSL certificate support. It needs to installed to Antrea Plus K8s cluster.
+1. Kubebuilder expects `main.go` in the project home directory. So before
+   running any kubebuilder command, create a soft link for `main.go` in project
+   home directory.
 
 ```bash
-kubectl create namespace cert-manager
-kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.2.0/cert-manager.yaml
+$ ln -s cmd/cloud-controller/main.go main.go
 ```
 
-### Enable webhook services
-These are initial steps to enable webhook services on antrea-plus-cloud-controller. Skip to next section to just enable webhook for a CRD.
- 
-- In config/default/kustomization.yaml, uncomment all sections with ``CERTMANAGER`` and
- ``WEBHOOK``.
-- In config/default/manager_webhook_patch.yaml, add Deployment patches to antrea-plus-cloud-controller. So that back-end Pods from
-these Deployments becomes also webhook server.
-- In config/webhook/service.yaml, add webhook services to antrea-plus-cloud-controller. 
-- In config/certmanager/certificate.yaml. under dnsName, replace ``$(SERVICE_NAME)`` with
-``*`` this allows the same Certificate be used by all webhook services in antrea-plus-system
-namespace.  
-- Create a yaml config/webhook/manifests-new.yaml, and create two pairs of
-ValidatingWebhookConfiguration and MutatingWebhookConfiguration for each of the controllers, and
-replace manifests.yaml with manifests-new.yaml in config/webhook/kustomization.yaml
--- In config/default/webhookcainjection_patch.yaml, add cainject patch to each of above
-WebhookConfiguration.
+2. Run kubebuilder create API command, to create a new API group for the kind
+   object. This command initiates a reconciler in `main.go`.
 
-### Enable webhook For CRD
-- Choose which controller process that a CRD should run its webhook on. Run kubebuilder to generate
-webhook skeleton implementation. The "ln" command allows webhook for CRD to be bootstrapped. In
-the following example, we have decided VirtualMachine webhook shall be run on cloud
--controller, and VirtualMachine webhook implementation is under 
-apis/crd/v1alpha1/virtualmachine_webhook.go.
 ```bash
-ln -s cmd/cloud-controller/main.go main.go
-kubebuilder create webhook --group cloud --version v1alpha1 --kind VirtualMachine --defaulting --programmatic-validation
-rm main.go
+$ kubebuilder create api --group cloud --version v1alpha1 --kind MyKind
 ```
-- Auto-generate other implementation and K8s configuration manifests
-```
-make
-make manifests
-```
-- In config/crd/kustomization.yaml, uncomment patches to the CRD.
-- In config/crd/patches/webhook_in_CRD_NAME.yaml, add ``preserveUnknownFields: False`` under
- ``Spec``.
-- In config/webhook/manifests-new.yaml, copy ClientCfg of CRD from config/webhook/manifests.yaml
-and place it under webhookConfiguration of appropriate controller; And change 
-``webhook.clientConfig.service.name`` to the webhook service of that controller.
-- Run ``make manifests`` again to rebuild antrea-plus.yaml.
 
- 
+The kubebuilder creates a skeleton CRD definition in
+`apis/cloud/v1alpha1/mykind_types.go`, and a skeleton `MyKindReconciler` in
+`controllers/cloud/mykind_controller.go`.
+
+3. Modify the new CRD definition as required.
+4. Move skeleton reconciler file `controllers/cloud/mykind_controller.go` under
+   `pkg/controller/cloud` and remove`./controllers` directory.
+5. Remove the import path of skeleton reconciler `controller/cloud` from
+   `main.go`, since skeleton reconciler file is moved under
+   `pkg/controller/cloud`.
+6. Remove `main.go` from project home directory.
+
+```bash
+$ rm main.go
+```
+
+7. Then run following make commands.
+
+```bash
+$ make
+$ make manifests
+```
+
+The first make command builds the controller binary, which in turn triggers code
+generation based on the new CRD definition. The second make command generates a
+manifests for Roles with permission to manipulate the new CRD.
+
+### Enable Webhook For CRD
+
+To create a webhook for the newly created CRD, follow the below procedure:
+
+1. Make sure that `main.go` exists in project home directory. Run kubebuilder
+   command to create a webhook skeleton implementation and a webhook for the CRD
+   is bootstrapped in `main.go`.
+
+```bash
+$ ln -s cmd/cloud-controller/main.go main.go
+$ kubebuilder create webhook --group cloud --version v1alpha1 --kind MyKind --defaulting --programmatic-validation
+$ rm main.go
+```
+
+2. Auto-generate other required implementations and K8s configuration manifests.
+
+```bash
+$ make
+$ make manifests
+```
+
+3. In `config/crd/kustomization.yaml`, uncomment patches to the CRD.
+4. In `config/crd/patches/webhook_in_CRD_NAME.yaml`, add
+   `preserveUnknownFields: False` under the Spec. Also change
+   `webhook.clientConfig.service.name` to the webhook service of the controller.
+5. In `config/webhook/manifests-new.yaml`, copy the ClientCfg of CRD from
+   `config/webhook/manifests.yaml` and place it under webhook configuration of
+   `cloud controller`. Change `webhook.clientConfig.service.name` to the webhook
+   service of the controller.
+6. Run `make manifests` again to rebuild `cloud-controller.yaml`.
+
 ## TestBed and Deployment
-The AntreaPlus manifest deploys one antrea-plus-cloud-controller Deployment. All
-AntreaPlus resources are placed under Namespace antrea-plus-system  
 
-### KinD
-Create a KinD setup in the local machine.
+The Cloud Controller manifest deploys one `cloud-controller` Deployment.
+All the Cloud Controller related resources are namespaced under `kube-system`
+.
 
 ```bash
-./ci/kind/kind-setup.sh create kind
+$ kubectl get deployment -A
+NAMESPACE            NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
+cert-manager         cert-manager              1/1     1            1           41m
+cert-manager         cert-manager-cainjector   1/1     1            1           41m
+cert-manager         cert-manager-webhook      1/1     1            1           41m
+kube-system          antrea-controller         1/1     1            1           41m
+kube-system          cloud-controller          1/1     1            1           40m
+kube-system          coredns                   2/2     2            2           43m
+local-path-storage   local-path-provisioner    1/1     1            1           43m
+
+$ kubectl get pods -A 
+NAMESPACE            NAME                                         READY   STATUS    RESTARTS   AGE
+cert-manager         cert-manager-677874db78-mxp8g                1/1     Running   0          42m
+cert-manager         cert-manager-cainjector-6c5bf7b759-spn9w     1/1     Running   0          42m
+cert-manager         cert-manager-webhook-5685fdbc4b-kdrdn        1/1     Running   0          42m
+kube-system          antrea-agent-6rrbn                           2/2     Running   0          42m
+kube-system          antrea-agent-6szv8                           2/2     Running   0          42m
+kube-system          antrea-agent-7ggx9                           2/2     Running   0          42m
+kube-system          antrea-controller-5f9bfb6b5d-p8znw           1/1     Running   0          37m
+kube-system          cloud-controller-7f4795f64b-6hbn5            1/1     Running   0          33m
+kube-system          coredns-5598b8945f-6j7lp                     1/1     Running   0          43m
+kube-system          coredns-5598b8945f-qggsg                     1/1     Running   0          43m
+kube-system          etcd-kind-control-plane                      1/1     Running   0          44m
+kube-system          kube-apiserver-kind-control-plane            1/1     Running   0          44m
+kube-system          kube-controller-manager-kind-control-plane   1/1     Running   0          44m
+kube-system          kube-proxy-d7ssn                             1/1     Running   0          43m
+kube-system          kube-proxy-hrfm5                             1/1     Running   0          43m
+kube-system          kube-proxy-rfzmn                             1/1     Running   0          43m
+kube-system          kube-scheduler-kind-control-plane            1/1     Running   0          44m
+local-path-storage   local-path-provisioner-5ddd94ff66-gdqzg      1/1     Running   0          43m
 ```
-Get help for KinD setup by  
+
+### Kind based cluster deployment
+
+Create a Kind setup in the local machine.
+
 ```bash
-./ci/kind/kind-setup.sh help
+$ ./ci/kind/kind-setup.sh create kind
+```
+
+Get help for Kind setup.
+
+```bash
+$ ./ci/kind/kind-setup.sh help
 ````
 
-If you do not have access to jfrog, tag and load AntreaPlus image manually
+Apply manifest.
+
 ```bash
-docker tag antreaplus/antreaplus vmwaresaas.jfrog.io/antrea-service-tilt-images/antreaplus/antreaplus
-kind load docker-image vmwaresaas.jfrog.io/antrea-service-tilt-images/antreaplus/antreaplus
-```
-Apply manifest 
-```bash
-kubectl apply -f ./config/antrea-plus.yaml
+$ kubectl apply -f ./config/cloud-controller.yml
 ``` 
 
-### Cloud
+### Cloud based cluster deployment
 
-See instructions to setup EKS/AKS [cluster](cloud.md)
+Please refer [EKS](eks-installation.md) / [AKS](aks-installation.md) guide for
+cloud based cluster deployment.
 
-Load AntreaPlus image and apply manifest to AKS
+Load Cloud Controller image and apply manifest to AKS cluster.
+
 ```bash
-./terraform/aks load antreaplus/antreaplus:latest
-./terraform/aks kubectl apply -f ./config/antrea-plus.yaml
+$ ./terraform/aks load antrea/cloud-controller:latest
+$ ./terraform/aks kubectl apply -f ./config/cloud-controller.yml
 ```
 
-Load AntreaPlus image and apply manifest to EKS
+Load Cloud Controller image and apply manifest to EKS cluster.
+
 ```bash
-./terraform/eks load antreaplus/antreaplus:latest
-./terraform/eks kubectl apply -f ./config/antrea-plus.yaml
+$ ./terraform/eks load antrea/cloud-controller:latest
+$ ./terraform/eks kubectl apply -f ./config/cloud-controller.yml
 ```
 
 ## Unit Test
-Unit tests are placed under same directories with the implementations, the test package name is
-PACKAGE_test. For instance, unit test files xxx_test.go under pkg/cloud-provider have the package
-name of cloudprovider_test.
 
-Unit tests uses [go mock](https://github.com/golang/mock) to generate mock packages. To generate
-mock code for a package, the package must implement interfaces, and add package/interfaces to
-hack/mockgen.sh.
-To generated mock mode, run 
+Unit tests are placed under same directories with the implementations. The test
+package name is `PACKAGE_test`. For instance, the unit test files `xxx_test.go`
+under `pkg/cloud-provider` have the package name of `cloudprovider_test`. Unit
+tests uses [go mock](https://github.com/golang/mock) to generate mock packages.
+To generate mock code for a package, the package must implement interfaces, and
+add package/interfaces to [mockgen](../hack/mockgen.sh).
+
+To generate mock:
+
 ```bash
-make mock
+$ make mock
 ```
 
-To run unit tests,
-```bash
-make unit-test
-```
+To run unit tests:
 
-## VM Agent test
-VM Agent data path test may run as
 ```bash
-make vm-agent-test
+$ make unit-test
 ```
 
 ## Integration Test
-Test/integration directory contains all integration tests. It uses
-Ginkgo as the underlying frameworks. Each Ginkgo test spec may be run as default or extended
-test in CI pipeline. The keywords `Core-test` and `Extended-test-*` are used in 
-descriptions on any level of a test spec to indicate if this test spec should be run in zero 
-or more test suites.
 
-Set following variables to allow terraform to create AWS VPC, see [cloud](./cloud.md) for details
-to install terraform.
+The `test/integration` directory contains all the integration tests. It uses
+Ginkgo as the underlying framework. Each Ginkgo test spec may be run as default
+or extended test in the CI pipeline. The keywords `Core-test` and
+`Extended-test-*` are used in descriptions on any level of a test spec, to
+indicate if this test spec should be run in zero or more test suites.
+
+The test creates a VPC in AWS and deploys 3 VMs. Sets the following variables to
+allow terraform to create an AWS VPC. Please refer to [eks guide](eks-installation.md)
+for the deployment details.
+
 ```bash
-export TF_VAR_aws_access_key_id=YOUR_AWS_KEY
-export TF_VAR_aws_access_key_secret=YOUR_AWS_KEY_SECRET
-export TF_VAR_aws_key_pair_name=YOU_AWS_KEY_PAIR
-export TF_VAR_region=YOUR_AWS_REGION
-export TF_VAR_owner=YOUR_ID
+$ export TF_VAR_aws_access_key_id=YOUR_AWS_KEY
+$ export TF_VAR_aws_access_key_secret=YOUR_AWS_KEY_SECRET
+$ export TF_VAR_aws_key_pair_name=YOU_AWS_KEY_PAIR
+$ export TF_VAR_region=YOUR_AWS_REGION
+$ export TF_VAR_owner=YOUR_ID
 ```
+
 To run integration test,
-```bash
-ci/kind/kind-setup.sh create kind
-make integration-test
-```
-
-you can also run integration tests on an existing K8s setup
-```
-make
-kind load docker-image antreaplus/antreaplus
-make integration-test
-```
-
-## Azure Agentless Integration Test
-Set following variables to allow terraform to create Azure VNET.
-```bash
-export TF_VAR_azure_client_id=YOUR_AZURE_CLIENT_ID
-export TF_VAR_azure_client_subscription_id=YOUR_AZURE_CLIENT_SUBSCRIPTION_ID
-export TF_VAR_azure_client_secret=YOUR_AZURE_CLIENT_SECRET
-export TF_VAR_azure_client_tenant_id=YOUR_AZURE_TENANT_ID
-```
-To run integration test,
-```bash
-ci/kind/kind-setup.sh create kind
-make azure-agentless-integration-test
-```
-
-you can also run integration tests on an existing K8s setup
-```
-make
-kind load docker-image antreaplus/antreaplus
-make azure-agentless-integration-test
-```
-
-## Federation Integration Test
-The federation integration test make use of 2 KinD cluster. Currently it is hardcoded to kind
--kind and kind-kind1. So you must already have created these two clusters. i.e
 
 ```bash
-ci/kind/kind-setup.sh create kind
-ci/kind/kind-setup.sh create kind1
-make federation-test
+$ ci/kind/kind-setup.sh create kind
+$ make integration-test
 ```
 
-## Agent Integration Test
+You can also run integration tests on an existing K8s setup.
 
-### In EKS
-Integration test may run in agented mode with an EKS cluster. You will need to have an EKS
-cluster already created as described in [cloud](./cloud.md), in 
-addition to integration test requirements.
-
-The following pushes docker image to your account in dockerhub, and notify terraform the your
- docker account credential.
 ```bash
-docker tag antreaplus/vmagent YOUR_DOCKER_ID/vmagent
-docker push YOUR_DOCKER_ID/vmagent
-    
-export TF_VAR_aws_docker_usr=YOUR_DOCKER_ID
-export TF_VAR_aws_docker_pwd=YOUR_DOCKER_PWD
+$ make
+$ kind load docker-image antrea/cloud-controller
+$ make integration-test
 ```
 
-To run EKS agented test,
+## Azure Integration Test
+
+Set the following variables to allow terraform scripts to create an Azure VNET
+and a compute VNET with 3 VMs. Please refer to [aks guide](aks-installation.md)
+for the deployment details.
+
 ```bash
-~/terraform/eks load antreaplus/antreaplus
-export AGENT_KUBE_CONFIG=path_to_eks_kubeconfig
-make vm-agent-eks-integration-test
+$ export TF_VAR_azure_client_id=YOUR_AZURE_CLIENT_ID
+$ export TF_VAR_azure_client_subscription_id=YOUR_AZURE_CLIENT_SUBSCRIPTION_ID
+$ export TF_VAR_azure_client_secret=YOUR_AZURE_CLIENT_SECRET
+$ export TF_VAR_azure_client_tenant_id=YOUR_AZURE_TENANT_ID
 ```
 
-### In AKS
-Integration test may run in agented mode with an AKS cluster. You will need to have an AKS
-cluster already created as described in [cloud](./cloud.md), in addition to integration test
-requirements.
+To run integration test:
+
 ```bash
-docker tag antreaplus/vmagent YOUR_DOCKER_ID/vmagent
-docker push YOUR_DOCKER_ID/vmagent
-export TF_VAR_azure_docker_usr=YOUR_DOCKER_ID
-export TF_VAR_azure_docker_pwd=YOUR_DOCKER_PWD
-
-~/terraform/eks load antreaplus/antreaplus
-export AGENT_KUBE_CONFIG=path_to_aks_kubeconfig
-make vm-agent-aks-integration-test
+$ ci/kind/kind-setup.sh create kind
+$ make azure-integration-test
 ```
 
-## Debug Containers
+You can also run integration tests on an existing K8s setup:
 
-In a KinD cluster, we can attach debug running containers as described
- [here](https://kubernetes.io/docs/tasks/debug-application-cluster/debug-running-pod/).
-
-you must used kubectl version 1.18 or later. For instance, the following command attaches a
-busybox into antrea-plus-cloud-controllers namespace.
- ```bash
-kubectl debug -it antrea-plus-cloud-controller-59b4fc6bbf-kdqd2  --image=busybox -n antrea-plus-system --target=antrea-plus-cloud-controller
-Defaulting debug container name to debugger-qdkwv.
-If you don't see a command prompt, try pressing enter.
-/ #
+```bash
+$ make
+$ kind load docker-image antrea/cloud-controller
+$ make azure-integration-test
 ```

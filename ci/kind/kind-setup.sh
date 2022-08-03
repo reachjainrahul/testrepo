@@ -20,7 +20,7 @@
 
 CLUSTER_NAME=""
 ANTREA_IMAGE="projects.registry.vmware.com/antrea/antrea-ubuntu:v1.7.0 "
-ANTREA_IMAGE+="antrea/antrea-cloud:latest "
+ANTREA_IMAGE+="antrea/cloud-controller:latest "
 ANTREA_IMAGE+="quay.io/jetstack/cert-manager-controller:v1.8.2 "
 ANTREA_IMAGE+="quay.io/jetstack/cert-manager-webhook:v1.8.2 "
 ANTREA_IMAGE+="quay.io/jetstack/cert-manager-cainjector:v1.8.2 "
@@ -32,7 +32,6 @@ ANTREA_CNI=true
 POD_CIDR="10.10.0.0/16"
 NUM_WORKERS=2
 SUBNETS=""
-ENCAP_MODE=""
 NODE_IMG="kindest/node:v1.23.4"
 IP_FAMILY="ipv4"
 SERVICE_CIDR=""
@@ -45,15 +44,14 @@ function echoerr {
 
 _usage="
 Usage: $0 create CLUSTER_NAME [--pod-cidr POD_CIDR] [--antrea-cni true|false ] [--num-workers NUM_WORKERS] [--images IMAGES] [--subnets SUBNETS]
-                  destroy CLUSTER_NAME
-                  modify-node NODE_NAME
-                  help
+          destroy CLUSTER_NAME
+          load-images IMAGES CLUSTER_NAME
+          help
 where:
   create: create a kind cluster with name CLUSTER_NAME
   destroy: delete a kind cluster with name CLUSTER_NAME
-  modify-node: modify kind node with name NODE_NAME
+  load-images: load images to kind cluster with name CLUSTER_NAME
   --pod-cidr: specifies pod cidr used in kind cluster, default is $POD_CIDR
-  --encap-mode: inter-node pod traffic encap mode, default is encap
   --antrea-cni: specifies install Antrea CNI in kind cluster, default is true.
   --num-workers: specifies number of worker nodes in kind cluster, default is $NUM_WORKERS
   --images: specifies images loaded to kind cluster, default is $IMAGES
@@ -67,14 +65,6 @@ function print_usage {
 
 function print_help {
     echoerr "Try '$0 help' for more information."
-}
-
-function get_encap_mode {
-  if [[ $ENCAP_MODE == "" ]]; then
-    echo ""
-    return
-  fi
-  echo "--encap-mode $ENCAP_MODE"
 }
 
 function configure_networks {
@@ -311,16 +301,14 @@ while [[ $# -gt 0 ]]
       destroy
       exit 0
       ;;
-    modify-node)
-      modify "$2"
+    load-images)
+      IMAGES="$2"
+      CLUSTER_NAME="$3"
+      load_images
       exit 0
       ;;
     --pod-cidr)
       POD_CIDR="$2"
-      shift 2
-      ;;
-    --encap-mode)
-      ENCAP_MODE="$2"
       shift 2
       ;;
     --subnets)

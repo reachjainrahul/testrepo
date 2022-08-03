@@ -7,7 +7,7 @@ metadata:
 spec:
   providerType: "AWS"
   configAWS:
-    accountID: "id"
+    accountID: "<REPLACE_ME>"
     accessKeyId: "<REPLACE_ME>"
     accessKeySecret: "<REPLACE_ME>"
     region: "<REPLACE_ME>"
@@ -15,11 +15,11 @@ spec:
 apiVersion: crd.cloud.antrea.io/v1alpha1
 kind: CloudEntitySelector
 metadata:
-  name: cloudentityselector-sample01
+  name: cloudentityselector-sample
   namespace: sample-ns
 spec:
   accountName: cloudprovideraccount-sample
   vmSelector:
     vmMatches:
       - vpcMatch:
-          matchID: "<REPLACE_ME>"
+          matchID: "<VPC_ID>"

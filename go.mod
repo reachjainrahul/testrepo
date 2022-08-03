@@ -1,4 +1,4 @@
-module antrea.io/antreacloud
+module antrea.io/cloudcontroller
 
 go 1.17
 

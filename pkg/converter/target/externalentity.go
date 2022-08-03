@@ -25,7 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
-	"antrea.io/antreacloud/pkg/controllers/config"
+	"antrea.io/cloudcontroller/pkg/controllers/config"
 )
 
 const (
@@ -38,7 +38,7 @@ type ExternalEntitySource interface {
 	client.Object
 	// GetEndPointAddresses returns IP addresses of ExternalEntitySource.
 	// Passing client in case there are references needs to be retrieved from local cache.
-	GetEndPointAddresses(client client.Client) ([]string, error)
+	GetEndPointAddresses() ([]string, error)
 	// GetEndPointPort returns port and port name, if applicable, of ExternalEntitySource.
 	GetEndPointPort(client client.Client) []antreatypes.NamedPort
 	// GetTags returns tags of ExternalEntitySource.
@@ -118,7 +118,7 @@ func PopulateExternalEntityFrom(source ExternalEntitySource, externEntity *antre
 	}
 	externEntity.SetLabels(labels)
 
-	ipAddrs, _ := source.GetEndPointAddresses(cl)
+	ipAddrs, _ := source.GetEndPointAddresses()
 	endpoints := make([]antreatypes.Endpoint, 0, len(ipAddrs))
 	for _, ip := range ipAddrs {
 		endpoints = append(endpoints, antreatypes.Endpoint{IP: ip})

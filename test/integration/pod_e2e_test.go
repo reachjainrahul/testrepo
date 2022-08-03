@@ -29,9 +29,9 @@ import (
 	v1 "k8s.io/api/core/v1"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
-	cloud "antrea.io/antreacloud/apis/crd/v1alpha1"
-	k8stemplates "antrea.io/antreacloud/test/templates"
-	"antrea.io/antreacloud/test/utils"
+	cloud "antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	k8stemplates "antrea.io/cloudcontroller/test/templates"
+	"antrea.io/cloudcontroller/test/utils"
 )
 
 var _ = Describe(fmt.Sprintf("%s: NetworkPolicy On Pods", focusCore), func() {

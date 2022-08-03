@@ -18,10 +18,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
-	"antrea.io/antreacloud/apis/crd/v1alpha1"
-	"antrea.io/antreacloud/pkg/controllers/config"
-	"antrea.io/antreacloud/pkg/controllers/utils"
-	"antrea.io/antreacloud/pkg/converter/target"
+	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	"antrea.io/cloudcontroller/pkg/controllers/config"
+	"antrea.io/cloudcontroller/pkg/controllers/utils"
+	"antrea.io/cloudcontroller/pkg/converter/target"
 )
 
 // VirtualMachineSource says VirtualMachine is a source of converter targets.
@@ -30,8 +30,8 @@ type VirtualMachineSource struct {
 }
 
 // GetEndPointAddresses returns VirtualMachine's IP addresses.
-func (v *VirtualMachineSource) GetEndPointAddresses(cl client.Client) ([]string, error) {
-	ipAddrs := utils.GetVMIPAddresses(&v.VirtualMachine, cl)
+func (v *VirtualMachineSource) GetEndPointAddresses() ([]string, error) {
+	ipAddrs := utils.GetVMIPAddresses(&v.VirtualMachine)
 	ip := make([]string, 0, len(ipAddrs))
 	for _, ipAddr := range ipAddrs {
 		ip = append(ip, ipAddr.Address)

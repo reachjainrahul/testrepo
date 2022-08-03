@@ -24,9 +24,9 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 
-	"antrea.io/antreacloud/apis/crd/v1alpha1"
-	cloudcommon "antrea.io/antreacloud/pkg/cloud-provider/cloudapi/common"
-	"antrea.io/antreacloud/pkg/cloud-provider/cloudapi/internal"
+	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	cloudcommon "antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/common"
+	"antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/internal"
 )
 
 type computeServiceConfig struct {
@@ -120,7 +120,7 @@ func (computeCfg *computeServiceConfig) getCachedVirtualMachines() []*virtualMac
 		instancesToReturn = append(instancesToReturn, virtualMachine)
 	}
 
-	azurePluginLogger().Info("cached instances", "service", azureComputeServiceNameCompute, "account", computeCfg.accountName,
+	azurePluginLogger().V(1).Info("cached instances", "service", azureComputeServiceNameCompute, "account", computeCfg.accountName,
 		"instances", len(instancesToReturn))
 	return instancesToReturn
 }
@@ -168,7 +168,7 @@ func (computeCfg *computeServiceConfig) getVirtualMachines() ([]*virtualMachineT
 		virtualMachines = append(virtualMachines, virtualMachineRows...)
 	}
 
-	azurePluginLogger().Info("instances from cloud", "service", azureComputeServiceNameCompute, "account", computeCfg.accountName,
+	azurePluginLogger().V(1).Info("instances from cloud", "service", azureComputeServiceNameCompute, "account", computeCfg.accountName,
 		"instances", len(virtualMachines))
 
 	return virtualMachines, nil
@@ -244,7 +244,7 @@ func (computeCfg *computeServiceConfig) GetResourceCRDs(namespace string) *inter
 		vmCRDs = append(vmCRDs, vmCRD)
 	}
 
-	azurePluginLogger().Info("CRDs", "service", azureComputeServiceNameCompute, "account", computeCfg.accountName,
+	azurePluginLogger().V(1).Info("CRDs", "service", azureComputeServiceNameCompute, "account", computeCfg.accountName,
 		"virtual-machine CRDs", len(vmCRDs))
 
 	serviceResourceCRDs := &internal.CloudServiceResourceCRDs{}

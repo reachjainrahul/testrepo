@@ -29,8 +29,8 @@ done
 # the package name of generated mock.
 MOCKGEN_TARGETS=(
   "sigs.k8s.io/controller-runtime/pkg/client Client,StatusWriter controllerruntimeclient"
-  "antrea.io/antreacloud/pkg/cloud-provider/securitygroup CloudSecurityGroupAPI cloudsecurity"
-  "antrea.io/antreacloud/pkg/controllers/cloud NetworkPolicyController networkpolicy"
+  "antrea.io/cloudcontroller/pkg/cloud-provider/securitygroup CloudSecurityGroupAPI cloudsecurity"
+  "antrea.io/cloudcontroller/pkg/controllers/cloud NetworkPolicyController networkpolicy"
 )
 
 for target in "${MOCKGEN_TARGETS[@]}"; do

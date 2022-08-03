@@ -15,7 +15,7 @@
 package target_test
 
 import (
-	converter "antrea.io/antreacloud/pkg/converter/target"
+	converter "antrea.io/cloudcontroller/pkg/converter/target"
 	"context"
 	mock "github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -27,9 +27,9 @@ import (
 
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
 
-	cloud "antrea.io/antreacloud/apis/crd/v1alpha1"
-	"antrea.io/antreacloud/pkg/testing"
-	"antrea.io/antreacloud/pkg/testing/controllerruntimeclient"
+	cloud "antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	"antrea.io/cloudcontroller/pkg/testing"
+	"antrea.io/cloudcontroller/pkg/testing/controllerruntimeclient"
 )
 
 var _ = Describe("Externalentity", func() {
@@ -64,7 +64,7 @@ var _ = Describe("Externalentity", func() {
 
 	getEndPointAddressesTester := func(name string) {
 		externalEntitySource := externalEntitySources[name]
-		ips, err := externalEntitySource.GetEndPointAddresses(mockclient)
+		ips, err := externalEntitySource.GetEndPointAddresses()
 		Expect(err).ToNot(HaveOccurred())
 		// As Equal and []string{} == nil
 		Expect(ips).To(ConsistOf(networkInterfaceIPAddresses))

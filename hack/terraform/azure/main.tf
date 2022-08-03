@@ -1,14 +1,20 @@
+terraform {
+  required_providers {
+    azurerm = {
+      version = "~>2.36"
+    }
+    random = {
+      version = "~> 2.1"
+    }
+  }
+}
+
 provider "azurerm" {
-  version         = "~>2.36"
   client_id       = var.azure_client_id
   client_secret   = var.azure_client_secret
   subscription_id = var.azure_client_subscription_id
   tenant_id       = var.azure_client_tenant_id
   features {}
-}
-
-provider "random" {
-  version = "~> 2.1"
 }
 
 resource "azurerm_resource_group" "vm" {
@@ -17,11 +23,11 @@ resource "azurerm_resource_group" "vm" {
 }
 
 locals {
-  resource_group_name = "antreacloud-vnet-${var.owner}-${random_string.suffix.result}"
+  resource_group_name = "cloudcontroller-vnet-${var.owner}-${random_string.suffix.result}"
 }
 
 locals {
-  vnet_name_random = "antreacloud-vnet-${random_id.suffix.hex}"
+  vnet_name_random = "cloudcontroller-vnet-${random_id.suffix.hex}"
 }
 
 resource "random_id" "suffix" {
@@ -61,7 +67,7 @@ module "vm_cluster" {
 
   tags = {
     Terraform   = "true"
-    Environment = "antreacloud"
+    Environment = "cloudcontroller"
     Name        = var.azure_vm_os_types[count.index].name
   }
 }

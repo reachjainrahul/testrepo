@@ -15,7 +15,7 @@
 
 
 set -eo pipefail
-echo "GOBIN=$(pwd)/bin CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go install -ldflags="-s -w" antrea.io/antreacloud/cmd/..."
-GOBIN=$(pwd)/bin CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go install -ldflags="-s -w" antrea.io/antreacloud/cmd/...
-echo "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go test -c antrea.io/antreacloud/test/integration/ -ldflags="-s -w" -o ./ci/bin/integration.test"
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go test -c antrea.io/antreacloud/test/integration/ -ldflags="-s -w" -o ./ci/bin/integration.test
+echo "GOBIN=$(pwd)/bin CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go install -ldflags="-s -w" antrea.io/cloudcontroller/cmd/..."
+GOBIN=$(pwd)/bin CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go install -ldflags="-s -w" antrea.io/cloudcontroller/cmd/...
+echo "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go test -c antrea.io/cloudcontroller/test/integration/ -ldflags="-s -w" -o ./ci/bin/integration.test"
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go test -c antrea.io/cloudcontroller/test/integration/ -ldflags="-s -w" -o ./ci/bin/integration.test

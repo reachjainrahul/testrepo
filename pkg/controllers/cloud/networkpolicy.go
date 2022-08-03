@@ -28,17 +28,21 @@ import (
 
 	antreanetworking "antrea.io/antrea/pkg/apis/controlplane/v1beta2"
 	antreanetcore "antrea.io/antrea/pkg/apis/crd/v1alpha2"
-	cloud "antrea.io/antreacloud/apis/crd/v1alpha1"
-	cloudcommon "antrea.io/antreacloud/pkg/cloud-provider/cloudapi/common"
-	"antrea.io/antreacloud/pkg/cloud-provider/securitygroup"
-	"antrea.io/antreacloud/pkg/controllers/config"
-	converter "antrea.io/antreacloud/pkg/converter/target"
+	cloud "antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	cloudcommon "antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/common"
+	"antrea.io/cloudcontroller/pkg/cloud-provider/securitygroup"
+	"antrea.io/cloudcontroller/pkg/controllers/config"
+	converter "antrea.io/cloudcontroller/pkg/converter/target"
 )
 
-// inProgress indicates a securityGroup operation is in progress.
-type inProgress struct{}
+// InProgress indicates a securityGroup operation is in progress.
+type InProgress struct{}
 
-func (i *inProgress) Error() string {
+func (i *InProgress) String() string {
+	return "in-progress"
+}
+
+func (i *InProgress) Error() string {
 	return "in-progress"
 }
 
@@ -250,10 +254,11 @@ func vpcsFromGroupMembers(members []antreanetworking.GroupMember, r *NetworkPoli
 		}
 		var cloudRsc securitygroup.CloudResource
 		readAnnotations := false
-		// TODO: cleanup dead code
 		if kind == converter.GetExternalEntityLabelKind(&cloud.VirtualMachine{}) {
 			cloudRsc.Type = securitygroup.CloudResourceTypeVM
 			readAnnotations = true
+		} else {
+			r.Log.Error(fmt.Errorf(""), "Invalid cloud resource type received", "kind", kind)
 		}
 		if readAnnotations {
 			ownerAnnotations, err := getOwnerAnnotations(e, r)
@@ -505,7 +510,7 @@ func (s *securityGroupImpl) addImpl(c cloudSecurityGroup, membershipOnly bool, r
 	}
 	r.Log.V(1).Info("Adding SecurityGroup", "Name", s.id, "MembershipOnly", membershipOnly)
 	ch := securitygroup.CloudSecurityGroup.CreateSecurityGroup(&s.id, membershipOnly)
-	s.status = &inProgress{}
+	s.status = &InProgress{}
 	go func() {
 		err := <-ch
 		r.cloudResponse <- &securityGroupStatus{sg: c, op: securityGroupOperationAdd, err: err}
@@ -548,7 +553,7 @@ func (s *securityGroupImpl) deleteImpl(c cloudSecurityGroup, membershipOnly bool
 		s.retryOp = nil
 		if s.state == securityGroupStateInit {
 			// Security group has not been or in the process of being created by cloud.
-			if _, ok := s.status.(*inProgress); !ok {
+			if _, ok := s.status.(*InProgress); !ok {
 				return nil
 			}
 		}
@@ -558,7 +563,7 @@ func (s *securityGroupImpl) deleteImpl(c cloudSecurityGroup, membershipOnly bool
 		return nil
 	}
 	_ = r.pendingDeleteGroups.Update(guName, false, 1, false)
-	s.status = &inProgress{}
+	s.status = &InProgress{}
 	ch := securitygroup.CloudSecurityGroup.DeleteSecurityGroup(&s.id, membershipOnly)
 	go func() {
 		err := <-ch
@@ -567,7 +572,7 @@ func (s *securityGroupImpl) deleteImpl(c cloudSecurityGroup, membershipOnly bool
 	return nil
 }
 
-// updateImpl invokes cloud plug-in to update  a SecurityGroup's membership.
+// updateImpl invokes cloud plug-in to update a SecurityGroup's membership.
 func (s *securityGroupImpl) updateImpl(c cloudSecurityGroup, added, removed []*securitygroup.CloudResource,
 	membershipOnly bool, r *NetworkPolicyReconciler) error {
 	if len(added)+len(removed)+len(s.members) == 0 {
@@ -754,7 +759,7 @@ func (a *addrSecurityGroup) getStatus() error {
 	if a.state == securityGroupStateCreated || a.isIPBlocks() {
 		return nil
 	}
-	return &inProgress{}
+	return &InProgress{}
 }
 
 // getIPs returns IPs in an addrSecurityGroup.
@@ -903,7 +908,7 @@ func (a *appliedToSecurityGroup) getStatus() error {
 	if a.state == securityGroupStateCreated && a.hasRules {
 		return nil
 	}
-	return &inProgress{}
+	return &InProgress{}
 }
 
 // notify calls into appliedToSecurityGroup to report operation status from cloud plug-in.
@@ -1317,7 +1322,7 @@ func (n *networkPolicy) markDirty(r *NetworkPolicyReconciler) {
 // getStatus returns status of networkPolicy.
 func (n *networkPolicy) getStatus(r *NetworkPolicyReconciler) error {
 	if n.ingressRules == nil && n.egressRules == nil {
-		return &inProgress{}
+		return &InProgress{}
 	}
 	return n.computeRulesReady(true, r)
 }

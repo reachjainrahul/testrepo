@@ -1,25 +1,33 @@
+terraform {
+  required_providers {
+    aws = {
+      version = ">= 3.34"
+    }
+    random = {
+      version = "~> 2.1"
+    }
+  }
+}
+
 provider "aws" {
-  version    = ">= 3.34"
   region     = var.region
   access_key = var.aws_access_key_id
   secret_key = var.aws_access_key_secret
 }
-
-provider "random" {
-  version = "~> 2.1"
-}
-
 
 ##################################################################
 # Data sources to get VPC, subnet, security group and AMI details
 ##################################################################
 
 locals {
-  vpc_name = "antreacloud-vpc-${var.owner}-${random_string.suffix.result}"
+  vpc_name = "cloudcontroller-vpc-${var.owner}-${random_string.suffix.result}"
 }
 
-data "aws_subnet_ids" "all" {
-  vpc_id     = module.vpc.vpc_id
+data "aws_subnets" "all" {
+  filter {
+    name   = "vpc-id"
+    values = [module.vpc.vpc_id]
+  }
   depends_on = [module.vpc.public_subnet_arns]
 }
 
@@ -53,7 +61,7 @@ module "vpc" {
 
   tags = {
     Terraform   = "true"
-    Environment = "antreacloud"
+    Environment = "cloudcontroller"
   }
 }
 
@@ -61,13 +69,13 @@ module "security_group" {
   source          = "terraform-aws-modules/security-group/aws"
   version         = "3.18.0"
   count           = length(var.aws_security_groups_postfix)
-  name            = "antreacloud-at-${var.aws_security_groups_postfix[count.index]}"
+  name            = "cloudcontroller-at-${var.aws_security_groups_postfix[count.index]}"
   vpc_id          = module.vpc.vpc_id
   use_name_prefix = false
 
   tags = {
     Terraform   = "true"
-    Environment = "antreacloud"
+    Environment = "cloudcontroller"
   }
 }
 
@@ -89,7 +97,7 @@ resource "aws_default_security_group" "default_security_group" {
   }
   tags = {
     Terraform   = "true"
-    Environment = "antreacloud"
+    Environment = "cloudcontroller"
   }
 }
 
@@ -109,13 +117,13 @@ module "ec2_cluster" {
   instance_type               = var.aws_vm_type
   key_name                    = var.aws_key_pair_name
   monitoring                  = true
-  subnet_id                   = tolist(data.aws_subnet_ids.all.ids)[0]
+  subnet_id                   = tolist(data.aws_subnets.all.ids)[0]
   associate_public_ip_address = true
   user_data                   = data.template_file.user_data[count.index].rendered
 
   tags = {
     Terraform   = "true"
-    Environment = "antreacloud"
+    Environment = "cloudcontroller"
     Login       = var.aws_vm_os_types[count.index].login
   }
 }

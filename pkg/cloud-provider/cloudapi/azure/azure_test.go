@@ -25,7 +25,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	"antrea.io/antreacloud/apis/crd/v1alpha1"
+	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
 )
 
 var _ = Describe("Azure", func() {
@@ -187,14 +187,12 @@ var _ = Describe("Azure", func() {
 				},
 				Spec: v1alpha1.CloudEntitySelectorSpec{
 					AccountName: testAccountNamespacedName.Name,
-					VMSelector: &v1alpha1.VirtualMachineSelector{
-						VMMatches: []v1alpha1.VirtualMachineMatch{
-							{
-								VpcMatch: &v1alpha1.EntityMatch{
-									MatchID: testVnet01,
-								},
-								VMMatch: nil,
+					VMSelector: []v1alpha1.VirtualMachineSelector{
+						{
+							VpcMatch: &v1alpha1.EntityMatch{
+								MatchID: testVnet01,
 							},
+							VMMatch: []v1alpha1.EntityMatch{},
 						},
 					},
 				},
@@ -233,12 +231,10 @@ var _ = Describe("Azure", func() {
 				expectedQueryStr, _ := getVMsByVnetIDsAndSubscriptionIDsAndTenantIDsAndLocationsMatchQuery(vnetIDs,
 					subIDs, tenantIDs, locations)
 				expectedQueryStrs = append(expectedQueryStrs, expectedQueryStr)
-				vmSelector := &v1alpha1.VirtualMachineSelector{
-					VMMatches: []v1alpha1.VirtualMachineMatch{
-						{
-							VpcMatch: &v1alpha1.EntityMatch{MatchID: testVnetID01},
-							VMMatch:  nil,
-						},
+				vmSelector := []v1alpha1.VirtualMachineSelector{
+					{
+						VpcMatch: &v1alpha1.EntityMatch{MatchID: testVnetID01},
+						VMMatch:  []v1alpha1.EntityMatch{},
 					},
 				}
 
@@ -260,16 +256,14 @@ var _ = Describe("Azure", func() {
 			expectedQueryStr, _ := getVMsByVnetIDsAndSubscriptionIDsAndTenantIDsAndLocationsMatchQuery(vnetIDs,
 				subIDs, tenantIDs, locations)
 			expectedQueryStrs = append(expectedQueryStrs, expectedQueryStr)
-			vmSelector := &v1alpha1.VirtualMachineSelector{
-				VMMatches: []v1alpha1.VirtualMachineMatch{
-					{
-						VpcMatch: &v1alpha1.EntityMatch{MatchID: testVnetID01},
-						VMMatch:  nil,
-					},
-					{
-						VpcMatch: &v1alpha1.EntityMatch{MatchID: testVnetID02},
-						VMMatch:  nil,
-					},
+			vmSelector := []v1alpha1.VirtualMachineSelector{
+				{
+					VpcMatch: &v1alpha1.EntityMatch{MatchID: testVnetID01},
+					VMMatch:  []v1alpha1.EntityMatch{},
+				},
+				{
+					VpcMatch: &v1alpha1.EntityMatch{MatchID: testVnetID02},
+					VMMatch:  []v1alpha1.EntityMatch{},
 				},
 			}
 
@@ -291,16 +285,14 @@ var _ = Describe("Azure", func() {
 			expectedQueryStr, _ := getVMsByVnetIDsAndSubscriptionIDsAndTenantIDsAndLocationsMatchQuery(vnetIDs,
 				subIDs, tenantIDs, locations)
 			expectedQueryStrs = append(expectedQueryStrs, expectedQueryStr)
-			vmSelector := &v1alpha1.VirtualMachineSelector{
-				VMMatches: []v1alpha1.VirtualMachineMatch{
-					{
-						VpcMatch: &v1alpha1.EntityMatch{MatchID: testVnetID01},
-						VMMatch:  nil,
-					},
-					{
-						VpcMatch: &v1alpha1.EntityMatch{MatchID: testVnetID02},
-						VMMatch:  nil,
-					},
+			vmSelector := []v1alpha1.VirtualMachineSelector{
+				{
+					VpcMatch: &v1alpha1.EntityMatch{MatchID: testVnetID01},
+					VMMatch:  []v1alpha1.EntityMatch{},
+				},
+				{
+					VpcMatch: &v1alpha1.EntityMatch{MatchID: testVnetID02},
+					VMMatch:  []v1alpha1.EntityMatch{},
 				},
 			}
 
@@ -319,15 +311,13 @@ var _ = Describe("Azure", func() {
 		})
 		It("Should match expected filter - multiple with one all", func() {
 			var expectedQueryStrs []*string
-			vmSelector := &v1alpha1.VirtualMachineSelector{
-				VMMatches: []v1alpha1.VirtualMachineMatch{
-					{
-						VpcMatch: &v1alpha1.EntityMatch{MatchID: testVnetID01},
-					},
-					{
-						VpcMatch: nil,
-						VMMatch:  nil,
-					},
+			vmSelector := []v1alpha1.VirtualMachineSelector{
+				{
+					VpcMatch: &v1alpha1.EntityMatch{MatchID: testVnetID01},
+				},
+				{
+					VpcMatch: nil,
+					VMMatch:  []v1alpha1.EntityMatch{},
 				},
 			}
 

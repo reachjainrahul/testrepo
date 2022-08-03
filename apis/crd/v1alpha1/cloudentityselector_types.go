@@ -25,28 +25,19 @@ type EntityMatch struct {
 	MatchName string `json:"matchName,omitempty"`
 	// MatchID matches cloud entities' identifier. If not specified, it matches any cloud entities.
 	MatchID string `json:"matchID,omitempty"`
-	// MatchName matches cloud entities's tags. Tag matches are ANDed.
-	// If not specified, it matches any cloud entities.
-	MatchTags map[string]string `json:"matchTags,omitempty"`
 }
 
-// VirtualMachineMatch specifies VirtualMachine match criteria.
-// VirtualMachines must satisfy all fields(ANDed) in VirtualMachineMatch in order to satisfy VirtualMachineMatch.
-type VirtualMachineMatch struct {
+// VirtualMachineSelector specifies VirtualMachine match criteria.
+// VirtualMachines must satisfy all fields(ANDed) in VirtualMachineSelector in order to satisfy match.
+type VirtualMachineSelector struct {
 	// VpcMatch specifies the virtual private cloud to which VirtualMachines belong.
-	// If it is not specified, VirtualMachines may belong to any virtual private cloud,
+	// VpcMatch is ANDed with VMMatch.
+	// If it is not specified, VirtualMachines may belong to any virtual private cloud.
 	VpcMatch *EntityMatch `json:"vpcMatch,omitempty"`
 	// VMMatch specifies VirtualMachines to match.
-	// If it is not specified, all VirtualMachines are matching.
-	VMMatch *EntityMatch `json:"vmMatch,omitempty"`
-}
-
-// VirtualMachineSelector specifies VM selection criteria.
-type VirtualMachineSelector struct {
-	// VMMatches is an array of VirtualMachineMatch.
-	// VirtualMachines satisfying any item on VMMatches are selected(ORed).
-	// If not specified, all VirtualMachines are selected.
-	VMMatches []VirtualMachineMatch `json:"vmMatches,omitempty"`
+	// It is an array, match satisfying any item on VMMatch is selected(ORed).
+	// If it is not specified, all VirtualMachines matching VpcMatch are selected.
+	VMMatch []EntityMatch `json:"vmMatch,omitempty"`
 }
 
 // CloudEntitySelectorSpec defines the desired state of CloudEntitySelector.
@@ -54,8 +45,10 @@ type CloudEntitySelectorSpec struct {
 	// AccountName specifies cloud account in this CloudProvider.
 	AccountName string `json:"accountName,omitempty"`
 	// VMSelector selects the VirtualMachines the user has modify privilege.
-	// If it is not specified, no VirtualMachines are selected.
-	VMSelector *VirtualMachineSelector `json:"vmSelector,omitempty"`
+	// If VMSelector is not specified, no VirtualMachines are selected.
+	// It is an array, VirtualMachines satisfying any item on VMSelector are selected(ORed).
+	// If any item under VMSelector is not specified, all VirtualMachines are selected.
+	VMSelector []VirtualMachineSelector `json:"vmSelector,omitempty"`
 }
 
 // CloudEntitySelectorStatus defines the current state of CloudEntitySelector.

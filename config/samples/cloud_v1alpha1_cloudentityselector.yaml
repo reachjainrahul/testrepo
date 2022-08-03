@@ -4,9 +4,7 @@ metadata:
   name: cloudentityselector-sample01
   namespace: sample-ns
 spec:
-  # Add fields here
   accountName: cloudprovideraccount-sample
   vmSelector:
-    vmMatches:
       - vpcMatch:
-          matchID: ""
+          matchID: "<VPC_ID>"

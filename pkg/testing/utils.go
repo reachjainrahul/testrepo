@@ -21,9 +21,9 @@ import (
 	"strings"
 
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
-	cloud "antrea.io/antreacloud/apis/crd/v1alpha1"
-	"antrea.io/antreacloud/pkg/converter/source"
-	"antrea.io/antreacloud/pkg/converter/target"
+	cloud "antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	"antrea.io/cloudcontroller/pkg/converter/source"
+	"antrea.io/cloudcontroller/pkg/converter/target"
 )
 
 func SetupVirtualMachine(vm *cloud.VirtualMachine, name, namespace string, nics ...*cloud.NetworkInterface) {
@@ -44,7 +44,6 @@ func SetupVirtualMachineOwnerOf(vm *source.VirtualMachineSource, name, namespace
 
 func SetupNetworkInterface(nic *cloud.NetworkInterface, name string, ips []string) {
 	nic.Name = name
-	nic.Tags = map[string]string{"test-nic-tag": "test-nic-key"}
 	nic.IPs = nil
 	for _, ip := range ips {
 		nic.IPs = append(nic.IPs, cloud.IPAddress{Address: ip})

@@ -31,7 +31,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"antrea.io/antreacloud/apis/crd/v1alpha1"
+	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
 )
 
 var (
@@ -160,7 +160,7 @@ var _ = Describe("AWS cloud", func() {
 					},
 					Spec: v1alpha1.CloudEntitySelectorSpec{
 						AccountName: testAccountNamespacedName.Name,
-						VMSelector:  &v1alpha1.VirtualMachineSelector{},
+						VMSelector:  []v1alpha1.VirtualMachineSelector{},
 					},
 				}
 
@@ -304,14 +304,12 @@ var _ = Describe("AWS cloud", func() {
 				},
 				Spec: v1alpha1.CloudEntitySelectorSpec{
 					AccountName: testAccountNamespacedName.Name,
-					VMSelector: &v1alpha1.VirtualMachineSelector{
-						VMMatches: []v1alpha1.VirtualMachineMatch{
-							{
-								VpcMatch: &v1alpha1.EntityMatch{
-									MatchID: testVpcID01,
-								},
-								VMMatch: nil,
+					VMSelector: []v1alpha1.VirtualMachineSelector{
+						{
+							VpcMatch: &v1alpha1.EntityMatch{
+								MatchID: testVpcID01,
 							},
+							VMMatch: []v1alpha1.EntityMatch{},
 						},
 					},
 				},
@@ -351,12 +349,10 @@ var _ = Describe("AWS cloud", func() {
 				vpcFilters = append(vpcFilters, vpc01Filter, buildEc2FilterForValidInstanceStates())
 				expectedFilters = append(expectedFilters, vpcFilters)
 
-				vmSelector := &v1alpha1.VirtualMachineSelector{
-					VMMatches: []v1alpha1.VirtualMachineMatch{
-						{
-							VpcMatch: &v1alpha1.EntityMatch{MatchID: testVpcID01},
-							VMMatch:  nil,
-						},
+				vmSelector := []v1alpha1.VirtualMachineSelector{
+					{
+						VpcMatch: &v1alpha1.EntityMatch{MatchID: testVpcID01},
+						VMMatch:  []v1alpha1.EntityMatch{},
 					},
 				}
 
@@ -380,16 +376,14 @@ var _ = Describe("AWS cloud", func() {
 			vpcFilters = append(vpcFilters, vpc01Filter, buildEc2FilterForValidInstanceStates())
 			expectedFilters = append(expectedFilters, vpcFilters)
 
-			vmSelector := &v1alpha1.VirtualMachineSelector{
-				VMMatches: []v1alpha1.VirtualMachineMatch{
-					{
-						VpcMatch: &v1alpha1.EntityMatch{MatchID: testVpcID01},
-						VMMatch:  nil,
-					},
-					{
-						VpcMatch: &v1alpha1.EntityMatch{MatchID: testVpcID02},
-						VMMatch:  nil,
-					},
+			vmSelector := []v1alpha1.VirtualMachineSelector{
+				{
+					VpcMatch: &v1alpha1.EntityMatch{MatchID: testVpcID01},
+					VMMatch:  []v1alpha1.EntityMatch{},
+				},
+				{
+					VpcMatch: &v1alpha1.EntityMatch{MatchID: testVpcID02},
+					VMMatch:  []v1alpha1.EntityMatch{},
 				},
 			}
 
@@ -412,16 +406,14 @@ var _ = Describe("AWS cloud", func() {
 			vpcFilters = append(vpcFilters, vpc01Filter, buildEc2FilterForValidInstanceStates())
 			expectedFilters = append(expectedFilters, vpcFilters)
 
-			vmSelector := &v1alpha1.VirtualMachineSelector{
-				VMMatches: []v1alpha1.VirtualMachineMatch{
-					{
-						VpcMatch: &v1alpha1.EntityMatch{MatchName: testVpcName01},
-						VMMatch:  nil,
-					},
-					{
-						VpcMatch: &v1alpha1.EntityMatch{MatchName: testVpcName02},
-						VMMatch:  nil,
-					},
+			vmSelector := []v1alpha1.VirtualMachineSelector{
+				{
+					VpcMatch: &v1alpha1.EntityMatch{MatchName: testVpcName01},
+					VMMatch:  []v1alpha1.EntityMatch{},
+				},
+				{
+					VpcMatch: &v1alpha1.EntityMatch{MatchName: testVpcName02},
+					VMMatch:  []v1alpha1.EntityMatch{},
 				},
 			}
 
@@ -460,15 +452,21 @@ var _ = Describe("AWS cloud", func() {
 
 			expectedFilters = append(expectedFilters, vpc01Filter, vpc02Filter)
 
-			vmSelector := &v1alpha1.VirtualMachineSelector{
-				VMMatches: []v1alpha1.VirtualMachineMatch{
-					{
-						VpcMatch: &v1alpha1.EntityMatch{MatchID: testVpcID01},
-						VMMatch:  &v1alpha1.EntityMatch{MatchName: testVMName01},
+			vmSelector := []v1alpha1.VirtualMachineSelector{
+				{
+					VpcMatch: &v1alpha1.EntityMatch{MatchID: testVpcID01},
+					VMMatch: []v1alpha1.EntityMatch{
+						{
+							MatchName: testVMName01,
+						},
 					},
-					{
-						VpcMatch: &v1alpha1.EntityMatch{MatchID: testVpcID02},
-						VMMatch:  &v1alpha1.EntityMatch{MatchName: testVMName02},
+				},
+				{
+					VpcMatch: &v1alpha1.EntityMatch{MatchID: testVpcID02},
+					VMMatch: []v1alpha1.EntityMatch{
+						{
+							MatchName: testVMName02,
+						},
 					},
 				},
 			}
@@ -484,16 +482,18 @@ var _ = Describe("AWS cloud", func() {
 		})
 		It("Should match expected filter - multiple with one all", func() {
 			var expectedFilters [][]*ec2.Filter
-			vmSelector := &v1alpha1.VirtualMachineSelector{
-				VMMatches: []v1alpha1.VirtualMachineMatch{
-					{
-						VpcMatch: &v1alpha1.EntityMatch{MatchID: testVpcID01},
-						VMMatch:  &v1alpha1.EntityMatch{MatchName: testVMName01},
+			vmSelector := []v1alpha1.VirtualMachineSelector{
+				{
+					VpcMatch: &v1alpha1.EntityMatch{MatchID: testVpcID01},
+					VMMatch: []v1alpha1.EntityMatch{
+						{
+							MatchName: testVMName01,
+						},
 					},
-					{
-						VpcMatch: nil,
-						VMMatch:  nil,
-					},
+				},
+				{
+					VpcMatch: nil,
+					VMMatch:  []v1alpha1.EntityMatch{},
 				},
 			}
 
@@ -516,13 +516,19 @@ var _ = Describe("AWS cloud", func() {
 			vmNameFilters = append(vmNameFilters, vmNameFilter, buildEc2FilterForValidInstanceStates())
 			expectedFilters = append(expectedFilters, vmNameFilters)
 
-			vmSelector := &v1alpha1.VirtualMachineSelector{
-				VMMatches: []v1alpha1.VirtualMachineMatch{
-					{
-						VMMatch: &v1alpha1.EntityMatch{MatchName: testVMName01},
+			vmSelector := []v1alpha1.VirtualMachineSelector{
+				{
+					VMMatch: []v1alpha1.EntityMatch{
+						{
+							MatchName: testVMName01,
+						},
 					},
-					{
-						VMMatch: &v1alpha1.EntityMatch{MatchName: testVMName02},
+				},
+				{
+					VMMatch: []v1alpha1.EntityMatch{
+						{
+							MatchName: testVMName02,
+						},
 					},
 				},
 			}
@@ -546,13 +552,19 @@ var _ = Describe("AWS cloud", func() {
 			vmIDFilters = append(vmIDFilters, vmIDFilter, buildEc2FilterForValidInstanceStates())
 			expectedFilters = append(expectedFilters, vmIDFilters)
 
-			vmSelector := &v1alpha1.VirtualMachineSelector{
-				VMMatches: []v1alpha1.VirtualMachineMatch{
-					{
-						VMMatch: &v1alpha1.EntityMatch{MatchID: testVMID01},
+			vmSelector := []v1alpha1.VirtualMachineSelector{
+				{
+					VMMatch: []v1alpha1.EntityMatch{
+						{
+							MatchID: testVMID01,
+						},
 					},
-					{
-						VMMatch: &v1alpha1.EntityMatch{MatchID: testVMID02},
+				},
+				{
+					VMMatch: []v1alpha1.EntityMatch{
+						{
+							MatchID: testVMID02,
+						},
 					},
 				},
 			}

@@ -69,18 +69,16 @@ func (r *CloudEntitySelector) Default() {
 		return
 	}
 	if ownerAccount.Spec.ProviderType == AzureCloudProvider {
-		if r.Spec.VMSelector != nil {
-			for _, m := range r.Spec.VMSelector.VMMatches {
-				// Convert azure ID to lower case, because Azure API do not preserve case info.
-				// Tags are required to be lower case when used in antreacloud.
-				if m.VpcMatch != nil {
-					m.VpcMatch.MatchID = strings.ToLower(m.VpcMatch.MatchID)
-					m.VpcMatch.MatchName = strings.ToLower(m.VpcMatch.MatchName)
-				}
-				if m.VMMatch != nil {
-					m.VMMatch.MatchID = strings.ToLower(m.VMMatch.MatchID)
-					m.VMMatch.MatchName = strings.ToLower(m.VMMatch.MatchName)
-				}
+		for _, m := range r.Spec.VMSelector {
+			// Convert azure ID to lower case, because Azure API do not preserve case info.
+			// Tags are required to be lower case when used in cloudcontroller.
+			if m.VpcMatch != nil {
+				m.VpcMatch.MatchID = strings.ToLower(m.VpcMatch.MatchID)
+				m.VpcMatch.MatchName = strings.ToLower(m.VpcMatch.MatchName)
+			}
+			for _, vmMatch := range m.VMMatch {
+				vmMatch.MatchID = strings.ToLower(vmMatch.MatchID)
+				vmMatch.MatchName = strings.ToLower(vmMatch.MatchName)
 			}
 		}
 	}

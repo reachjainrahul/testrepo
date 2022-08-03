@@ -27,9 +27,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/cenkalti/backoff/v4"
 
-	"antrea.io/antreacloud/apis/crd/v1alpha1"
-	cloudcommon "antrea.io/antreacloud/pkg/cloud-provider/cloudapi/common"
-	"antrea.io/antreacloud/pkg/cloud-provider/cloudapi/internal"
+	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	cloudcommon "antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/common"
+	"antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/internal"
 )
 
 type ec2ServiceConfig struct {
@@ -129,7 +129,7 @@ func (ec2Cfg *ec2ServiceConfig) getCachedInstances() []*ec2.Instance {
 	for _, instance := range instances {
 		instancesToReturn = append(instancesToReturn, instance)
 	}
-	awsPluginLogger().Info("cached instances", "service", awsComputeServiceNameEC2, "account", ec2Cfg.accountName,
+	awsPluginLogger().V(1).Info("cached instances", "service", awsComputeServiceNameEC2, "account", ec2Cfg.accountName,
 		"instances", len(instancesToReturn))
 	return instancesToReturn
 }
@@ -215,7 +215,7 @@ func (ec2Cfg *ec2ServiceConfig) getInstances() ([]*ec2.Instance, error) {
 		instances = append(instances, filterInstances...)
 	}
 
-	awsPluginLogger().Info("instances from cloud", "service", awsComputeServiceNameEC2, "account", ec2Cfg.accountName,
+	awsPluginLogger().V(1).Info("instances from cloud", "service", awsComputeServiceNameEC2, "account", ec2Cfg.accountName,
 		"instances", len(instances))
 
 	return instances, nil
@@ -265,7 +265,7 @@ func (ec2Cfg *ec2ServiceConfig) GetResourceCRDs(namespace string) *internal.Clou
 		vmCRDs = append(vmCRDs, vmCRD)
 	}
 
-	awsPluginLogger().Info("CRDs", "service", awsComputeServiceNameEC2, "account", ec2Cfg.accountName,
+	awsPluginLogger().V(1).Info("CRDs", "service", awsComputeServiceNameEC2, "account", ec2Cfg.accountName,
 		"virtual-machine CRDs", len(vmCRDs))
 
 	serviceResourceCRDs := &internal.CloudServiceResourceCRDs{}

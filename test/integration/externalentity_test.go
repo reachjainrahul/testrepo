@@ -32,10 +32,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
-	"antrea.io/antreacloud/pkg/controllers/config"
-	"antrea.io/antreacloud/pkg/converter/target"
-	"antrea.io/antreacloud/pkg/testing"
-	"antrea.io/antreacloud/test/utils"
+	"antrea.io/cloudcontroller/pkg/controllers/config"
+	"antrea.io/cloudcontroller/pkg/converter/target"
+	"antrea.io/cloudcontroller/pkg/testing"
+	"antrea.io/cloudcontroller/test/utils"
 )
 
 var _ = Describe(fmt.Sprintf("%s: ExternalEntity", focusCore), func() {
@@ -137,7 +137,7 @@ var _ = Describe(fmt.Sprintf("%s: ExternalEntity", focusCore), func() {
 		checkEndpoints(eeFetchKey, spec)
 
 		if restartController {
-			err = utils.RestartOrWaitDeployment(k8sClient, "antreacloud-cloud-controller", "antreacloud-system", time.Second*120, true)
+			err = utils.RestartOrWaitDeployment(k8sClient, "cloud-controller", "kube-system", time.Second*120, true)
 			Expect(err).ToNot(HaveOccurred())
 			// After restart controller, test need to permit time to allow ExternalEntitySources to be re-learnt.
 			time.Sleep(time.Second * 10)

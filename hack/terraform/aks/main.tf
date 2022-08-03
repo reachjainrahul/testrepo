@@ -1,22 +1,24 @@
 terraform {
   required_version = ">= 0.12.0"
+  required_providers {
+    azurerm = {
+      version = "=2.78.0"
+    }
+    external = {
+      version = "~> 1.2"
+    }
+    random = {
+      version = "~> 2.1"
+    }
+  }
 }
 
 provider "azurerm" {
-  version         = "=2.78.0"
   client_id       = var.aks_client_id
   client_secret   = var.aks_client_secret
   subscription_id = var.aks_client_subscription_id
   tenant_id       = var.aks_client_tenant_id
   features {}
-}
-
-provider "external" {
-  version = "~> 1.2"
-}
-
-provider "random" {
-  version = "~> 2.1"
 }
 
 resource "azurerm_resource_group" "k8s" {
@@ -49,7 +51,7 @@ locals {
 }
 
 locals {
-  resource_group_name = "antreacloud-aks-${local.owner_name}-${random_string.suffix.result}"
+  resource_group_name = "cloudcontroller-aks-${local.owner_name}-${random_string.suffix.result}"
 }
 
 resource "random_string" "suffix" {
@@ -104,9 +106,9 @@ resource "azurerm_kubernetes_cluster" "k8s" {
     type = "SystemAssigned"
   }
 
-  kubernetes_version = "1.21.7"
+  kubernetes_version = "1.21.9"
 
   tags = {
-    Environment = "antreacloud"
+    Environment = "cloudcontroller"
   }
 }
