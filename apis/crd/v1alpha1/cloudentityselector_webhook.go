@@ -112,11 +112,14 @@ func (r *CloudEntitySelector) ValidateCreate() error {
 	}
 
 	// make sure no existing cloudentityselector has same account as this cloudentiryselector as its owner.
-	err := r.validateNoOwnerConflict()
-	if err != nil {
+	if err := r.validateNoOwnerConflict(); err != nil {
 		return err
 	}
 
+	// make sure unsupported match combinations are not configured
+	if err := r.validateMatchSections(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -151,6 +154,11 @@ func (r *CloudEntitySelector) ValidateUpdate(old runtime.Object) error {
 		return fmt.Errorf("account name update not allowed (old:%v, new:%v)", oldAccName, newAccountName)
 	}
 
+	// make sure unsupported match combinations are not configured
+	if err := r.validateMatchSections(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -159,5 +167,78 @@ func (r *CloudEntitySelector) ValidateDelete() error {
 	cloudentityselectorlog.Info("validate delete", "name", r.Name)
 
 	// TODO(user): fill in your validation logic upon object deletion.
+	return nil
+}
+
+func (r *CloudEntitySelector) GetOwnerAccount() (*CloudProviderAccount, error) {
+	accountNameSpacedName := &types.NamespacedName{
+		Namespace: r.Namespace,
+		Name:      r.Spec.AccountName,
+	}
+	ownerAccount := &CloudProviderAccount{}
+	err := client.Get(context.TODO(), *accountNameSpacedName, ownerAccount)
+	if err != nil {
+		cloudentityselectorlog.Error(err, "failed to find owner account", "account", *accountNameSpacedName)
+		return nil, err
+	}
+	return ownerAccount, err
+}
+
+// validateMatchSections checks for unsupported match combinations and errors out
+func (r *CloudEntitySelector) validateMatchSections() error {
+	// MatchID and MatchName are not supported together in an EntityMatch, applicable for both vpcMatch, vmMatch section
+	for _, m := range r.Spec.VMSelector {
+		if m.VpcMatch != nil {
+			if len(strings.TrimSpace(m.VpcMatch.MatchID)) != 0 &&
+				len(strings.TrimSpace(m.VpcMatch.MatchName)) != 0 {
+				return fmt.Errorf("matchID and matchName are not supported together, " +
+					"configure either matchID or matchName in an EntityMatch")
+			}
+		}
+		for _, vmMatch := range m.VMMatch {
+			if len(strings.TrimSpace(vmMatch.MatchID)) != 0 &&
+				len(strings.TrimSpace(vmMatch.MatchName)) != 0 {
+				return fmt.Errorf("matchID and matchName are not supported together, " +
+					"configure either matchID or matchName in an EntityMatch")
+			}
+		}
+	}
+
+	ownerAccount, err := r.GetOwnerAccount()
+	if err != nil {
+		return err
+	}
+	cloudProviderType, err := ownerAccount.GetAccountProviderType()
+	if err != nil {
+		cloudentityselectorlog.Error(err, "Invalid cloud provider type")
+		return err
+	}
+
+	// In Azure, Vpc Name is not supported in vpcMatch
+	// In AWS, Vpc name(in vpcMatch section) with either vm id or vm name(in vmMatch section) is not supported
+	if cloudProviderType == AzureCloudProvider {
+		for _, m := range r.Spec.VMSelector {
+			if m.VpcMatch != nil {
+				if len(strings.TrimSpace(m.VpcMatch.MatchName)) != 0 {
+					return fmt.Errorf("vpc name match is not supported in vpcMatch, " +
+						"use vpc id instead of vpc name")
+				}
+			}
+		}
+	} else {
+		for _, m := range r.Spec.VMSelector {
+			if m.VpcMatch != nil {
+				if len(strings.TrimSpace(m.VpcMatch.MatchName)) != 0 {
+					for _, vmMatch := range m.VMMatch {
+						if len(strings.TrimSpace(vmMatch.MatchID)) != 0 ||
+							len(strings.TrimSpace(vmMatch.MatchName)) != 0 {
+							return fmt.Errorf("vpc name match with either vm id or vm name is not supported, " +
+								"use vpc id instead of vpc Name")
+						}
+					}
+				}
+			}
+		}
+	}
 	return nil
 }

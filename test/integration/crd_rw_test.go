@@ -54,6 +54,13 @@ var _ = Describe(fmt.Sprintf("%s,%s: Basic CRD Read-Write", focusAws, focusAzure
 			},
 			Spec: v1alpha1.CloudEntitySelectorSpec{
 				AccountName: testAccountName,
+				VMSelector: []v1alpha1.VirtualMachineSelector{
+					{
+						VpcMatch: &v1alpha1.EntityMatch{
+							MatchID: "",
+						},
+					},
+				},
 			},
 		}
 	)

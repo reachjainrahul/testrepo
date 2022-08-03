@@ -19,6 +19,5 @@ metadata:
 spec:
   accountName: cloudprovideraccount-sample
   vmSelector:
-    vmMatches:
-      - vpcMatch:
-          matchID: "<VPC_ID>"
+    - vpcMatch:
+        matchID: "<VPC_ID>"

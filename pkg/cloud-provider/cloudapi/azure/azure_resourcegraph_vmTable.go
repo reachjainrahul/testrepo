@@ -128,7 +128,7 @@ func getVirtualMachineTable(resourceGraphAPIClient azureResourceGraphWrapper, qu
 	return virtualMachines, count, nil
 }
 
-func getVMsByVnetIDsAndSubscriptionIDsAndTenantIDsAndLocationsMatchQuery(vnetIDs []string, subscriptionIDs []string, tenantIDs []string,
+func getVMsByVnetIDsMatchQuery(vnetIDs []string, subscriptionIDs []string, tenantIDs []string,
 	locations []string) (*string, error) {
 	commaSeparatedVnetIDs := convertStrSliceToLowercaseCommaSeparatedStr(vnetIDs)
 	if len(commaSeparatedVnetIDs) == 0 {
@@ -164,7 +164,7 @@ func getVMsByVnetIDsAndSubscriptionIDsAndTenantIDsAndLocationsMatchQuery(vnetIDs
 	return queryString, nil
 }
 
-func getVMsByVMNamesAndSubscriptionIDsAndTenantIDsAndLocationsMatchQuery(vmNames []string, subscriptionIDs []string, tenantIDs []string,
+func getVMsByVMNamesMatchQuery(vmNames []string, subscriptionIDs []string, tenantIDs []string,
 	locations []string) (*string, error) {
 	commaSeparatedVMNames := convertStrSliceToLowercaseCommaSeparatedStr(vmNames)
 	if len(commaSeparatedVMNames) == 0 {
@@ -200,7 +200,7 @@ func getVMsByVMNamesAndSubscriptionIDsAndTenantIDsAndLocationsMatchQuery(vmNames
 	return queryString, nil
 }
 
-func getVMsByVMIDsAndSubscriptionIDsAndTenantIDsAndLocationsMatchQuery(vmIDs []string, subscriptionIDs []string, tenantIDs []string,
+func getVMsByVMIDsMatchQuery(vmIDs []string, subscriptionIDs []string, tenantIDs []string,
 	locations []string) (*string, error) {
 	commaSeparatedVMIDs := convertStrSliceToLowercaseCommaSeparatedStr(vmIDs)
 	if len(commaSeparatedVMIDs) == 0 {
@@ -260,6 +260,61 @@ func getVMsBySubscriptionIDsAndTenantIDsAndLocationsMatchQuery(subscriptionIDs [
 	}
 
 	queryString, err := buildVmsTableQueryWithParams("getVMsBySubscriptionIDsAndTenantIDsAndLocationsMatchQuery", queryParams)
+	if err != nil {
+		return nil, err
+	}
+	return queryString, nil
+}
+
+func getVMsByVnetAndOtherMatchesQuery(vnetIDs []string, vmNames []string, vmIDs []string, subscriptionIDs []string,
+	tenantIDs []string, locations []string) (*string, error) {
+	var queryParams *vmTableQueryParameters
+	commaSeparatedSubscriptionIDs := convertStrSliceToLowercaseCommaSeparatedStr(subscriptionIDs)
+	if len(commaSeparatedSubscriptionIDs) == 0 {
+		return nil, fmt.Errorf(subscriptionIDsNotFoundErrorMsg)
+	}
+
+	commaSeparatedTenantIDs := convertStrSliceToLowercaseCommaSeparatedStr(tenantIDs)
+	if len(commaSeparatedTenantIDs) == 0 {
+		return nil, fmt.Errorf(tenantIDsNotFoundErrorMsg)
+	}
+
+	commaSeparatedLocations := convertStrSliceToLowercaseCommaSeparatedStr(locations)
+	if len(commaSeparatedLocations) == 0 {
+		return nil, fmt.Errorf(locationsNotFoundErrorMsg)
+	}
+
+	commaSeparatedVnetIDs := convertStrSliceToLowercaseCommaSeparatedStr(vnetIDs)
+	if len(commaSeparatedVnetIDs) == 0 {
+		return nil, fmt.Errorf(vnetIDsNotFoundErrorMsg)
+	}
+
+	commaSeparatedVMIDs := convertStrSliceToLowercaseCommaSeparatedStr(vmIDs)
+
+	commaSeparatedVMNames := convertStrSliceToLowercaseCommaSeparatedStr(vmNames)
+
+	if len(commaSeparatedVMIDs) == 0 && len(commaSeparatedVMNames) == 0 {
+		return nil, fmt.Errorf(vmIDorNameNotFoundErrorMsg)
+	}
+	if len(commaSeparatedVMNames) == 0 {
+		queryParams = &vmTableQueryParameters{
+			SubscriptionIDs: &commaSeparatedSubscriptionIDs,
+			TenantIDs:       &commaSeparatedTenantIDs,
+			Locations:       &commaSeparatedLocations,
+			VMIDs:           &commaSeparatedVMIDs,
+			VnetIDs:         &commaSeparatedVnetIDs,
+		}
+	} else {
+		queryParams = &vmTableQueryParameters{
+			SubscriptionIDs: &commaSeparatedSubscriptionIDs,
+			TenantIDs:       &commaSeparatedTenantIDs,
+			Locations:       &commaSeparatedLocations,
+			VMNames:         &commaSeparatedVMNames,
+			VnetIDs:         &commaSeparatedVnetIDs,
+		}
+	}
+
+	queryString, err := buildVmsTableQueryWithParams("getVMsByVMIDsAndSubscriptionIDsAndTenantIDsAndLocationsMatchQuery", queryParams)
 	if err != nil {
 		return nil, err
 	}

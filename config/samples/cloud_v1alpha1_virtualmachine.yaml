@@ -1,4 +1,0 @@
-apiVersion: crd.cloud.antrea.io/v1alpha1
-kind: VirtualMachine
-metadata:
-  name: virtualmachine-sample

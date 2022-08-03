@@ -28,6 +28,7 @@ const (
 	vnetIDsNotFoundErrorMsg         = "vnet ID(s) required for the query"
 	vmIDsNotFoundErrorMsg           = "vm ID(s) required for the query"
 	vmNamesNotFoundErrorMsg         = "vm names(s) required for the query"
+	vmIDorNameNotFoundErrorMsg      = "vm id or name is required for the query"
 )
 
 // resourceGraph returns resource-graph SDK apiClient.
