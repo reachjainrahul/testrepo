@@ -38,7 +38,7 @@ import (
 	"antrea.io/cloudcontroller/test/utils"
 )
 
-var _ = Describe(fmt.Sprintf("%s: ExternalEntity", focusCore), func() {
+var _ = Describe(fmt.Sprintf("%s,%s: ExternalEntity", focusAws, focusAzure), func() {
 
 	var (
 		ipAddresses = []string{"1.1.1.1", "2.2.2.2"}

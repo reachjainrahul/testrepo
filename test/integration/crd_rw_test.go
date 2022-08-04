@@ -36,7 +36,7 @@ import (
 	"antrea.io/cloudcontroller/test/utils"
 )
 
-var _ = Describe(fmt.Sprintf("%s: Basic CRD Read-Write", focusCore), func() {
+var _ = Describe(fmt.Sprintf("%s,%s: Basic CRD Read-Write", focusAws, focusAzure), func() {
 	const (
 		nameSpaceName   = "test-crd-rw"
 		testAccountName = "test-account"

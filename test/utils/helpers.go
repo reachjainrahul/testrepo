@@ -487,18 +487,6 @@ func CollectSupportBundle(kubctl *KubeCtl, dir string) {
 	}
 }
 
-// IsCloudCluster check if the test cluster is a cloud cluster
-func IsCloudCluster(currentFocus []string, cloudClusters []string) bool {
-	for _, cloudCluster := range cloudClusters {
-		for _, current := range currentFocus {
-			if strings.Contains(current, cloudCluster) {
-				return true
-			}
-		}
-	}
-	return false
-}
-
 // WaitApiServer wait for aggregated api server to be ready
 func WaitApiServer(k8sClient client.Client, timeout time.Duration) error {
 	if err := wait.Poll(time.Second, timeout, func() (bool, error) {

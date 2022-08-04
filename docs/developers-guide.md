@@ -225,7 +225,7 @@ To run integration test,
 
 ```bash
 $ ci/kind/kind-setup.sh create kind
-$ make integration-test
+$ make integration-test-aws
 ```
 
 You can also run integration tests on an existing K8s setup.
@@ -233,7 +233,7 @@ You can also run integration tests on an existing K8s setup.
 ```bash
 $ make
 $ kind load docker-image antrea/cloud-controller
-$ make integration-test
+$ make integration-test-aws
 ```
 
 ## Azure Integration Test
@@ -253,7 +253,7 @@ To run integration test:
 
 ```bash
 $ ci/kind/kind-setup.sh create kind
-$ make azure-integration-test
+$ make integration-test-azure
 ```
 
 You can also run integration tests on an existing K8s setup:
@@ -261,5 +261,5 @@ You can also run integration tests on an existing K8s setup:
 ```bash
 $ make
 $ kind load docker-image antrea/cloud-controller
-$ make azure-integration-test
+$ make integration-test-azure
 ```
