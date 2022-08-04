@@ -28,9 +28,6 @@
     name: ntpdate
     state: present
 
-- name: Sync time Forcefully
-  command: ntpdate -v {{ local_ntp_servers }}
-
 - when: inventory_hostname in groups['controlplane'] or inventory_hostname in groups['workers']
   block:
     - name: Ensure Containerd Service Setting Dir Exist
@@ -49,8 +46,6 @@
         mode: 0644
         content: |
           [Service]
-          Environment="HTTP_PROXY=http://proxy.vmware.com:3128"
-          Environment="HTTPS_PROXY=http://proxy.vmware.com:3128"
           Environment="NO_PROXY=10.96.0.2,127.0.0.1,::1,*.artifactory.eng.vmware.com,harbor-repo.vmware.com,projects.registry.vmware.com"
       register: containerd_proxy_result
 

@@ -50,8 +50,6 @@
     cmd: |
       cat > /etc/systemd/system/docker.service.d/proxy.conf<<EOF
       [Service]
-      Environment="HTTP_PROXY=http://proxy.vmware.com:3128"
-      Environment="HTTPS_PROXY=http://proxy.vmware.com:3128"
       Environment="NO_PROXY=localhost,127.0.0.1,::1,*.artifactory.eng.vmware.com,harbor-repo.vmware.com,projects.registry.vmware.com"
       EOF
 
@@ -77,20 +75,17 @@
 # Install docker-py so that docker images can be pulled
 - pip:
     name: docker-py
-  environment:
-    HTTP_PROXY: http://proxy.vmware.com:3128
-    HTTPS_PROXY: http://proxy.vmware.com:3128
 
-- name: Log into nsx-ujo-docker-local build-artifactory
-  docker_login:
-    registry: nsx-ujo-docker-local.artifactory.eng.vmware.com
-    username: nsx-ujo-deployer
-    password: nsx-ujo-deployer
-    reauthorize: yes
+#- name: Log into nsx-ujo-docker-local build-artifactory
+#  docker_login:
+#    registry: nsx-ujo-docker-local.artifactory.eng.vmware.com
+#    username: nsx-ujo-deployer
+#    password: nsx-ujo-deployer
+#    reauthorize: yes
 
-- name: Pull busybox Image from Internal Registry and Tag
-  docker_image:
-    name: nsx-ujo-docker-local.artifactory.eng.vmware.com/antrea/busybox:latest
-    repository: busybox:latest
-    pull: yes
+#- name: Pull busybox Image from Internal Registry and Tag
+#  docker_image:
+#    name: nsx-ujo-docker-local.artifactory.eng.vmware.com/antrea/busybox:latest
+#    repository: busybox:latest
+#    pull: yes
  
