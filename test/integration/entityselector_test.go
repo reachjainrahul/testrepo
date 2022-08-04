@@ -36,7 +36,7 @@ import (
 	"antrea.io/cloudcontroller/test/utils"
 )
 
-var _ = Describe(fmt.Sprintf("%s: Entity selector test", focusCore), func() {
+var _ = Describe(fmt.Sprintf("%s: Entity selector test", focusAws), func() {
 	const (
 		nameSpaceName   = "entity-selector-test"
 		testAccountName = "entity-selector-test-account"
@@ -327,9 +327,9 @@ var _ = Describe(fmt.Sprintf("%s: Entity selector test", focusCore), func() {
 			By("Change match key back to valid value again")
 			tester(matchKey, matchValue, true, 2, expectedResult)
 		},
-		table.Entry(focusAzureAgentless+":"+"VPC id match", vpcIDMatch),
-		table.Entry(focusAzureAgentless+":"+"VM id match", vmIDMatch),
-		table.Entry(focusAzureAgentless+":"+"VM name match", vmNameMatch),
+		table.Entry(focusAzure+":"+"VPC id match", vpcIDMatch),
+		table.Entry(focusAzure+":"+"VM id match", vmIDMatch),
+		table.Entry(focusAzure+":"+"VM name match", vmNameMatch),
 		// vpcNameMatch test apply only to aws for now
 		table.Entry("VPC name match", vpcNameMatch),
 	)

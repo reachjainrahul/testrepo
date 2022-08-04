@@ -10,9 +10,6 @@ DOCKER_GOCACHE=/tmp/gocache
 GENERATE_CODE_LIST={$$(go list ./... | grep -e apis/crd -e apis/runtime | paste -s -d, -)}
 GENERATE_MANIFEST_LIST={$$(go list ./... | grep apis/crd | paste -s -d, -)}
 
-ifneq ($(CI),)
-DOCKERIZE :=
-else
 DOCKERIZE := \
 	 docker run --rm -u $$(id -u):$$(id -g) \
 		-e "GOPATH=$(DOCKER_GOPATH)" \
@@ -23,12 +20,11 @@ DOCKERIZE := \
 		-v $(CURDIR):$(DOCKER_SRC) \
 		-w $(DOCKER_SRC) \
 		$(BUILDER_IMG)
-endif
 
 all: build
 
 # Build binaries
-build-bin: docker-builder generate lint tidy
+build-bin: docker-builder generate tidy
 	$(DOCKERIZE) hack/build-bin.sh
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
@@ -49,8 +45,8 @@ unit-test: mock
 	$(DOCKERIZE) go test -v -cover -count 1 $$(go list antrea.io/cloudcontroller/pkg/...) --ginkgo.v
 
 # Run lint against code
-lint: docker-builder
-	$(DOCKERIZE)  golangci-lint run
+golangci-lint: docker-builder
+	$(DOCKERIZE)  golangci-lint run --timeout 10m
 
 # Run go mod tidy against code
 tidy: docker-builder
@@ -64,6 +60,11 @@ check-copyright:
 .PHONY: add-copyright
 add-copyright:
 	$(DOCKERIZE) hack/add-license.sh --add
+
+.PHONY: verify
+verify:
+	@echo "===> Verifying spellings <==="
+	GO=$(GO) $(CURDIR)/hack/verify-spelling.sh
 
 # Generate code
 generate: docker-builder
@@ -79,10 +80,8 @@ docker-push:
 
 # create docker container builder
 docker-builder:
-ifeq ($(CI),)
 ifeq (, $(shell docker images -q $(BUILDER_IMG) ))
 	docker build --target builder -f ./build/images/Dockerfile -t $(BUILDER_IMG) .
-endif
 endif
 
 ##@ Build Dependencies
@@ -112,21 +111,11 @@ $(KUSTOMIZE):
 $(CONTROLLER_GEN):
 	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
 
-
 # Run integration-tests
-integration-test:
-	ginkgo -v --failFast --focus=".*Core-test.*" test/integration/ -- -manifest-path=../../config/cloud-controller.yml -preserve-setup-on-fail=true
+integration-test-aws:
+	ginkgo -v --failFast --focus=".*Test-aws.*" test/integration/ -- \
+	    -manifest-path=../../config/cloud-controller.yml -preserve-setup-on-fail=true -cloud-provider=AWS
 
-azure-agentless-integration-test:
-	ginkgo -v --failFast --focus=".*Extended-azure-agentless.*" test/integration/ -- \
+integration-test-azure:
+	ginkgo -v --failFast --focus=".*Test-azure.*" test/integration/ -- \
         -manifest-path=../../config/cloud-controller.yml -preserve-setup-on-fail=true -cloud-provider=Azure
-
-eks-agentless-integration-test:
-	ginkgo -v --failFast --focus=".*Extended-test-agent-eks.*" test/integration/ -- \
-	-manifest-path=../../config/cloud-controller.yml -preserve-setup-on-fail=true \
-	-cloud-provider=AWS -kubeconfig=$(AGENT_KUBE_CONFIG)
-
-aks-agentless-integration-test:
-	ginkgo -v --failFast --focus=".*Extended-test-agent-aks.*" test/integration/ -- \
-	-manifest-path=../../config/cloud-controller.yml -preserve-setup-on-fail=true \
-	-cloud-provider=Azure -kubeconfig=$(AGENT_KUBE_CONFIG)

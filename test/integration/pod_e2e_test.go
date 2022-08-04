@@ -34,7 +34,7 @@ import (
 	"antrea.io/cloudcontroller/test/utils"
 )
 
-var _ = Describe(fmt.Sprintf("%s: NetworkPolicy On Pods", focusCore), func() {
+var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Pods", focusAws, focusAzure), func() {
 	const (
 		httpServiceName    = "httpbin"
 		curlDeploymentName = "curl"
