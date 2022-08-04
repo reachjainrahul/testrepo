@@ -22,8 +22,8 @@ func (h *awsCloudCommonHelperImpl) GetCloudServicesCreateFunc() internal.CloudSe
 	return newAwsServiceConfigs
 }
 
-func (h *awsCloudCommonHelperImpl) GetCloudCredentialsValidatorFunc() internal.CloudCredentialValidatorFunc {
-	return validateAccountCredentials
+func (h *awsCloudCommonHelperImpl) SetAccountCredentialsFunc() internal.CloudCredentialValidatorFunc {
+	return setAccountCredentials
 }
 
 func (h *awsCloudCommonHelperImpl) GetCloudCredentialsComparatorFunc() internal.CloudCredentialComparatorFunc {

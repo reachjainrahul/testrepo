@@ -15,7 +15,6 @@
 package azure
 
 import (
-	"fmt"
 	"strings"
 
 	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
@@ -31,42 +30,18 @@ type azureAccountCredentials struct {
 	identityClientID string
 }
 
-// validateAccountCredentials validates account config.
-func validateAccountCredentials(credentials interface{}) (interface{}, error) {
-	configAzure := credentials.(*v1alpha1.CloudProviderAccountConfigAzure)
+// setAccountCredentials sets account credentials.
+func setAccountCredentials(credentials interface{}) (interface{}, error) {
+	azureConfig := credentials.(*v1alpha1.CloudProviderAccountAzureConfig)
 	accCreds := &azureAccountCredentials{
-		subscriptionID:   strings.TrimSpace(configAzure.SubscriptionID),
-		clientID:         strings.TrimSpace(configAzure.ClientID),
-		tenantID:         strings.TrimSpace(configAzure.TenantID),
-		clientKey:        strings.TrimSpace(configAzure.ClientKey),
-		region:           strings.TrimSpace(configAzure.Region),
-		identityClientID: strings.TrimSpace(configAzure.IdentityClientID),
+		subscriptionID:   strings.TrimSpace(azureConfig.SubscriptionID),
+		clientID:         strings.TrimSpace(azureConfig.ClientID),
+		tenantID:         strings.TrimSpace(azureConfig.TenantID),
+		clientKey:        strings.TrimSpace(azureConfig.ClientKey),
+		region:           strings.TrimSpace(azureConfig.Region),
+		identityClientID: strings.TrimSpace(azureConfig.IdentityClientID),
 	}
 
-	// validate subscription ID
-	if len(accCreds.subscriptionID) == 0 {
-		return nil, fmt.Errorf("subscription id cannot be blank or empty")
-	}
-
-	// validate tenant ID
-	if len(accCreds.tenantID) == 0 {
-		return nil, fmt.Errorf("tenant id cannot be blank or empty")
-	}
-
-	// validate credentials
-	if len(accCreds.identityClientID) != 0 {
-		azurePluginLogger().Info("Managed Identity Client ID configured will be used for cloud-account access")
-		// empty credentials when role based access is configured
-		accCreds.clientID = ""
-		accCreds.clientKey = ""
-	} else if len(accCreds.clientID) == 0 || len(accCreds.clientKey) == 0 {
-		return nil, fmt.Errorf("must specify either credentials or managed identity client id, cannot both be empty")
-	}
-
-	// validate region
-	if len(accCreds.region) == 0 {
-		return nil, fmt.Errorf("region cannot be blank or empty")
-	}
 	return accCreds, nil
 }
 

@@ -34,9 +34,11 @@ required bash and terraform scripts to the user home directory, under
 
 ### Create an AKS cluster
 
-Create an AKS cluster using the provided terraform scripts. Once AKS cluster is
-created, worker nodes are accessible via their external IP using ssh. Terraform
-state files and other runtime info will be stored under `~/tmp/terraform-aks/`.
+Create an AKS cluster using the provided terraform scripts. Once the AKS cluster
+is created, worker nodes are accessible via their external IP using ssh.
+Terraform state files and other runtime info will be stored under
+`~/tmp/terraform-aks/`. You can also create an AKS cluster in other ways and
+deploy prerequisites manually.
 
 This will deploy `cert-manager v1.8.2` and `antrea v1.8`.
 
@@ -79,13 +81,13 @@ Display AKS attributes.
 ~/terraform/aks destroy
 ```
 
-## Create an Azure VM cluster
+## Create Azure VMs
 
 Additionally, you can also create a compute VNET with 3 VMs using the terraform
-scripts. Each VM will have a public IP and an Apache Tomcat server deployed on
-port 80. Use curl `<PUBLIC_IP>:80` to access a sample web page. Create or obtain
-Azure Service Principal credential and configure the below environment
-variables.
+scripts for testing purpose. Each VM will have a public IP and an Apache Tomcat
+server deployed on port 80. Use curl `<PUBLIC_IP>:80` to access a sample web
+page. Create or obtain Azure Service Principal credential and configure the
+below environment variables.
 
 ```bash
 export TF_VAR_azure_client_id=YOUR_CLIENT_ID
@@ -100,7 +102,7 @@ export TF_VAR_azure_client_tenant_id=YOUR_TENANT_ID
 ./hack/install-cloud-tools.sh
 ```
 
-### Create an Azure VM cluster
+### Create VMs
 
 ```bash
 ~/terraform/azure-tf create
@@ -109,13 +111,13 @@ export TF_VAR_azure_client_tenant_id=YOUR_TENANT_ID
 Terraform state files and other runtime info will be stored under
 `~/tmp/terraform-azure/`
 
-### Get Azure VNET attributes
+### Get VNET attributes
 
 ```bash
 ~/terraform/azure-tf output
 ```
 
-### Destroy Azure VM cluster
+### Destroy VMs
 
 ```bash
 ~/terraform/azure-tf destroy

@@ -85,7 +85,7 @@ func (c *azureCloud) IsVirtualPrivateCloudPresent(vpcUniqueIdentifier string) bo
 // ////////////////////////////////////////////////////////
 // AddProviderAccount adds and initializes given account of a cloud provider.
 func (c *azureCloud) AddProviderAccount(account *v1alpha1.CloudProviderAccount) error {
-	return c.cloudCommon.AddCloudAccount(account, account.Spec.ConfigAzure)
+	return c.cloudCommon.AddCloudAccount(account, account.Spec.AzureConfig)
 }
 
 // RemoveProviderAccount removes and cleans up any resources of given account of a cloud provider.

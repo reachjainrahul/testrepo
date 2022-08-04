@@ -7,7 +7,7 @@ To install `kubebuilder version 3`, please refer to
 ## Prerequisites
 
 The following tools are required to build, test and run Cloud Controller
-`cloud controller`.
+`cloud-controller`.
 
 - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 - [docker](https://docs.docker.com/install/)
@@ -15,8 +15,8 @@ The following tools are required to build, test and run Cloud Controller
 
 ## Build
 
-Build Cloud Controller `cloud controller` image. The `cloud controller` binary is
-located in `./bin` directory and the docker image `antrea /cloud-controller:latest`
+Build Cloud Controller `cloud-controller` image. The `cloud-controller` binary is
+located in `./bin` directory and the docker image `antrea/cloud-controller:latest`
 is created or updated in the local docker repository.
 
 ```bash
@@ -25,7 +25,7 @@ $ make
 
 ## CRD Creation and Modification
 
-Cloud Controller currently has a single API group `cloud.crd.antrea.io`. This
+Cloud Controller currently has a single API group `crd.cloud.antrea.io`. This
 section specifies the steps required to create a new CRD. `MyKind` is used an
 example CRD object for illustration.
 

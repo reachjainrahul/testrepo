@@ -18,10 +18,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// VirtualMachinePolicySpec defines the desired state of VirtualMachinePolicy.
-type VirtualMachinePolicySpec struct {
-}
-
 type Realization string
 
 const (
@@ -31,9 +27,9 @@ const (
 )
 
 type NetworkPolicyStatus struct {
-	// Realization shows the status of a network policy.
+	// Realization shows the status of a NetworkPolicy.
 	Realization Realization
-	// Reason shows the error message on network policy application error.
+	// Reason shows the error message on NetworkPolicy application error.
 	Reason string
 }
 
@@ -54,7 +50,6 @@ type VirtualMachinePolicy struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   VirtualMachinePolicySpec   `json:"spec,omitempty"`
 	Status VirtualMachinePolicyStatus `json:"status,omitempty"`
 }
 

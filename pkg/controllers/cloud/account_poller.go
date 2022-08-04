@@ -268,7 +268,7 @@ func areDiscoveredFieldsSameVirtualMachineStatus(s1, s2 cloudv1alpha1.VirtualMac
 	if s1.Provider != s2.Provider {
 		return false
 	}
-	if s1.Status != s2.Status {
+	if s1.State != s2.State {
 		return false
 	}
 	if s1.VirtualPrivateCloud != s2.VirtualPrivateCloud {
@@ -363,7 +363,7 @@ func convertNetworkInterfacesToMap(nwInterfaces []cloudv1alpha1.NetworkInterface
 
 func updateCloudDiscoveredFieldsOfVirtualMachineStatus(current, discovered *cloudv1alpha1.VirtualMachineStatus) {
 	current.Provider = discovered.Provider
-	current.Status = discovered.Status
+	current.State = discovered.State
 	current.NetworkInterfaces = discovered.NetworkInterfaces
 	current.VirtualPrivateCloud = discovered.VirtualPrivateCloud
 	current.Tags = discovered.Tags

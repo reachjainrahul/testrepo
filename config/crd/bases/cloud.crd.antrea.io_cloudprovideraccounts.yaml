@@ -38,7 +38,7 @@ spec:
           spec:
             description: CloudProviderAccountSpec defines the desired state of CloudProviderAccount.
             properties:
-              configAWS:
+              awsConfig:
                 description: Cloud provider account config
                 properties:
                   accessKeyId:
@@ -61,7 +61,7 @@ spec:
                     description: Cloud provider role arn to be assumed
                     type: string
                 type: object
-              configAzure:
+              azureConfig:
                 description: Cloud provider account config
                 properties:
                   clientId:

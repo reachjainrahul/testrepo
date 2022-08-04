@@ -38,7 +38,7 @@ spec:
           spec:
             description: CloudProviderAccountSpec defines the desired state of CloudProviderAccount.
             properties:
-              configAWS:
+              awsConfig:
                 description: Cloud provider account config
                 properties:
                   accessKeyId:
@@ -61,7 +61,7 @@ spec:
                     description: Cloud provider role arn to be assumed
                     type: string
                 type: object
-              configAzure:
+              azureConfig:
                 description: Cloud provider account config
                 properties:
                   clientId:
@@ -81,12 +81,6 @@ spec:
                 description: PollIntervalInSeconds defines account poll interval (default
                   value is 60, if not specified)
                 type: integer
-              providerType:
-                description: Cloud provider type
-                enum:
-                - Azure
-                - AWS
-                type: string
             type: object
           status:
             description: CloudProviderAccountStatus defines the observed state of

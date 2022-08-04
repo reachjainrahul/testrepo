@@ -335,7 +335,7 @@ func ExecuteCurlCmds(vpc CloudVPC, kubctl *KubeCtl,
 	return ExecuteCmds(vpc, kubctl, srcIDs, ns, cmds, oks, retries)
 }
 
-// CheckRestart returns error if any of Antrea+ controllers has restarted.
+// CheckRestart returns error if cloud controller has restarted.
 func CheckRestart(kubctl *KubeCtl) error {
 	controllers := []string{"cloud-controller"}
 	for _, c := range controllers {

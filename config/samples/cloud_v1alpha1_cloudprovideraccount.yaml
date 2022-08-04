@@ -4,8 +4,7 @@ metadata:
   name: cloudprovideraccount-sample
   namespace: sample-ns
 spec:
-  providerType: "AWS"
-  configAWS:
+  awsConfig:
     accountID: "<REPLACE_ME>"
     accessKeyId: "<REPLACE_ME>"
     accessKeySecret: "<REPLACE_ME>"

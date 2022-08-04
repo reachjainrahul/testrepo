@@ -31,7 +31,7 @@ import (
 // service operations, credentials management etc.
 type CloudCommonHelperInterface interface {
 	GetCloudServicesCreateFunc() CloudServiceConfigCreatorFunc
-	GetCloudCredentialsValidatorFunc() CloudCredentialValidatorFunc
+	SetAccountCredentialsFunc() CloudCredentialValidatorFunc
 	GetCloudCredentialsComparatorFunc() CloudCredentialComparatorFunc
 }
 

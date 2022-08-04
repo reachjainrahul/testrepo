@@ -2,11 +2,13 @@
 
 ## Overview
 
-Cloud Controller supports Antrea NetworkPolicy enforcement across different Public
-Clouds. It translates and enforces Antrea Network Policies on Public Cloud Virtual
-Machines using Cloud Network Security Groups.
+Cloud Controller supports security policy enforcement across different Public
+Clouds. It translates and enforces Antrea NetworkPolicies on Public Cloud
+Virtual Machines using Cloud Network Security Groups. The project deploys a
+`cloud-controller` Pod in a Kubernetes cluster. Antrea must be the CNI of the
+Kubernetes cluster and provides Antrea NetworkPolicy (ANP) CRD.
 
-## Third Party Dependencies
+## Dependencies
 
 * [Golang](https://go.dev/dl/): Cloud Controller is developed and tested with go
   version 1.17.

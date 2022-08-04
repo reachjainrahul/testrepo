@@ -29,8 +29,7 @@ const (
 	// AzureCloudProvider specifies Azure.
 	AzureCloudProvider CloudProvider = "Azure"
 	// AWSCloudProvider specifies AWS.
-	AWSCloudProvider    CloudProvider = "AWS"
-	OnPremCloudProvider CloudProvider = "" // Not a real cloud provider
+	AWSCloudProvider CloudProvider = "AWS"
 )
 
 // CloudProviderAccountSpec defines the desired state of CloudProviderAccount.
@@ -40,15 +39,13 @@ type CloudProviderAccountSpec struct {
 
 	// PollIntervalInSeconds defines account poll interval (default value is 60, if not specified)
 	PollIntervalInSeconds *uint `json:"pollIntervalInSeconds,omitempty"`
-	// Cloud provider type
-	ProviderType CloudProvider `json:"providerType,omitempty"`
 	// Cloud provider account config
-	ConfigAWS *CloudProviderAccountConfigAWS `json:"configAWS,omitempty"`
+	AWSConfig *CloudProviderAccountAWSConfig `json:"awsConfig,omitempty"`
 	// Cloud provider account config
-	ConfigAzure *CloudProviderAccountConfigAzure `json:"configAzure,omitempty"`
+	AzureConfig *CloudProviderAccountAzureConfig `json:"azureConfig,omitempty"`
 }
 
-type CloudProviderAccountConfigAWS struct {
+type CloudProviderAccountAWSConfig struct {
 	// Cloud provider account identifier
 	AccountID string `json:"accountID,omitempty"`
 	// Cloud provider account access key ID
@@ -64,7 +61,7 @@ type CloudProviderAccountConfigAWS struct {
 	ExternalID string `json:"externalId,omitempty"`
 }
 
-type CloudProviderAccountConfigAzure struct {
+type CloudProviderAccountAzureConfig struct {
 	SubscriptionID   string `json:"subscriptionId,omitempty"`
 	ClientID         string `json:"clientId,omitempty"`
 	TenantID         string `json:"tenantId,omitempty"`

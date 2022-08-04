@@ -59,8 +59,7 @@ var _ = Describe("AWS cloud", func() {
 				},
 				Spec: v1alpha1.CloudProviderAccountSpec{
 					PollIntervalInSeconds: &pollIntv,
-					ProviderType:          v1alpha1.AWSCloudProvider,
-					ConfigAWS: &v1alpha1.CloudProviderAccountConfigAWS{
+					AWSConfig: &v1alpha1.CloudProviderAccountAWSConfig{
 						AccountID:       "TestAccount01",
 						AccessKeyID:     "keyId",
 						AccessKeySecret: "keySecret",
@@ -79,60 +78,8 @@ var _ = Describe("AWS cloud", func() {
 		})
 
 		Context("New account add fail scenarios", func() {
-			It("Should fail with empty account ID", func() {
-				account.Spec.ConfigAWS.AccountID = ""
-
-				c := newAWSCloud(mockawsCloudHelper)
-				err := c.AddProviderAccount(account)
-
-				Expect(err).ShouldNot(BeNil())
-				accCfg, found := c.cloudCommon.GetCloudAccountByName(&testAccountNamespacedName)
-				Expect(found).To(BeFalse())
-				Expect(accCfg).To(BeNil())
-			})
-
-			It("Should fail with blank account ID", func() {
-				account.Spec.ConfigAWS.AccountID = "			"
-
-				c := newAWSCloud(mockawsCloudHelper)
-				err := c.AddProviderAccount(account)
-
-				Expect(err).ShouldNot(BeNil())
-				accCfg, found := c.cloudCommon.GetCloudAccountByName(&testAccountNamespacedName)
-				Expect(found).To(BeFalse())
-				Expect(accCfg).To(BeNil())
-			})
-
 			It("Should fail for unsupported/unknown region", func() {
-				account.Spec.ConfigAWS.Region = "invalid"
-
-				c := newAWSCloud(mockawsCloudHelper)
-				err := c.AddProviderAccount(account)
-
-				Expect(err).ShouldNot(BeNil())
-				accCfg, found := c.cloudCommon.GetCloudAccountByName(&testAccountNamespacedName)
-				Expect(found).To(BeFalse())
-				Expect(accCfg).To(BeNil())
-			})
-
-			It("Should fail for with empty credential and roleArn", func() {
-				account.Spec.ConfigAWS.AccessKeyID = ""
-				account.Spec.ConfigAWS.AccessKeySecret = ""
-				account.Spec.ConfigAWS.RoleArn = ""
-
-				c := newAWSCloud(mockawsCloudHelper)
-				err := c.AddProviderAccount(account)
-
-				Expect(err).ShouldNot(BeNil())
-				accCfg, found := c.cloudCommon.GetCloudAccountByName(&testAccountNamespacedName)
-				Expect(found).To(BeFalse())
-				Expect(accCfg).To(BeNil())
-			})
-
-			It("Should fail for with blank credential and roleArn", func() {
-				account.Spec.ConfigAWS.AccessKeyID = "			"
-				account.Spec.ConfigAWS.AccessKeySecret = "			"
-				account.Spec.ConfigAWS.RoleArn = "          "
+				account.Spec.AWSConfig.Region = "invalid"
 
 				c := newAWSCloud(mockawsCloudHelper)
 				err := c.AddProviderAccount(account)
@@ -173,7 +120,7 @@ var _ = Describe("AWS cloud", func() {
 
 			It("Should discover few instances with get ALL selector using credentials", func() {
 				instanceIds := []string{"i-01", "i-02"}
-				account.Spec.ConfigAWS.RoleArn = ""
+				account.Spec.AWSConfig.RoleArn = ""
 				mockawsEC2.EXPECT().pagedDescribeInstancesWrapper(gomock.Any()).Return(getEc2InstanceObject(instanceIds), nil).AnyTimes()
 				mockawsEC2.EXPECT().pagedDescribeNetworkInterfaces(gomock.Any()).Return([]*ec2.NetworkInterface{}, nil).AnyTimes()
 				mockawsEC2.EXPECT().describeVpcsWrapper(gomock.Any()).Return(&ec2.DescribeVpcsOutput{}, nil).AnyTimes()
@@ -195,8 +142,8 @@ var _ = Describe("AWS cloud", func() {
 			})
 			It("Should discover few instances with get ALL selector using roleArn", func() {
 				instanceIds := []string{"i-01", "i-02"}
-				account.Spec.ConfigAWS.AccessKeyID = ""
-				account.Spec.ConfigAWS.AccessKeySecret = ""
+				account.Spec.AWSConfig.AccessKeyID = ""
+				account.Spec.AWSConfig.AccessKeySecret = ""
 				mockawsEC2.EXPECT().pagedDescribeInstancesWrapper(gomock.Any()).Return(getEc2InstanceObject(instanceIds), nil).AnyTimes()
 				mockawsEC2.EXPECT().pagedDescribeNetworkInterfaces(gomock.Any()).Return([]*ec2.NetworkInterface{}, nil).AnyTimes()
 				mockawsEC2.EXPECT().describeVpcsWrapper(gomock.Any()).Return(&ec2.DescribeVpcsOutput{}, nil).AnyTimes()
@@ -288,8 +235,7 @@ var _ = Describe("AWS cloud", func() {
 				},
 				Spec: v1alpha1.CloudProviderAccountSpec{
 					PollIntervalInSeconds: &pollIntv,
-					ProviderType:          v1alpha1.AWSCloudProvider,
-					ConfigAWS: &v1alpha1.CloudProviderAccountConfigAWS{
+					AWSConfig: &v1alpha1.CloudProviderAccountAWSConfig{
 						AccountID:       "TestAccount01",
 						AccessKeyID:     "keyId",
 						AccessKeySecret: "keySecret",

@@ -1,24 +1,25 @@
 # Cloud Controller Architecture
 
-The Cloud Controller supports micro-segmentation by realizing
-[Antrea NetworkPolicies](https://github.com/antrea-io/antrea/blob/main/docs/antrea-network-policy.md)
-on Public Cloud Virtual Machines. It leverages cloud network security groups to
-enforce Antrea NetworkPolicies. The Cloud Controller supports enforcing policy on AWS
-and Azure Cloud VMs. The support for different public cloud platforms are designed
-to be a pluggable architecture. Such design enables extending support to other cloud
-platforms in the future.
+The Cloud Controller supports micro-segmentation of public cloud virtual
+machines by realizing [Antrea NetworkPolicies](https://github.com/antrea-io/antrea/blob/main/docs/antrea-network-policy.md)
+on virtual machines. It leverages cloud network security groups to enforce
+Antrea NetworkPolicies. The Cloud Controller supports enforcing policies on AWS
+and Azure cloud VMs. The support for different public cloud platforms is
+designed to be a pluggable architecture. Such design enables extending support
+to other cloud platforms in the future.
 
-The Cloud Controller onboards public cloud VMs onto the Kubernetes cluster as
-`VirtualMachine` CRDs and converts them into `ExternalEntity` CRDs. The users
-will use `ExternalEntity` CRDs to define custom Antrea NetworkPolicies. The
-Cloud Controller translates these Antrea NetworkPolicies into cloud-native network
-security groups and security rules. These security groups are then attached to
-Public Cloud VMs.
+The Cloud Controller imports public cloud VMs onto the Kubernetes cluster as
+`VirtualMachine` CRs and converts them into `ExternalEntity` CRs. The users
+will use `ExternalEntity` CRD to define custom Antrea NetworkPolicies. The
+Cloud Controller translates these Antrea NetworkPolicies into cloud-native
+network security groups and security rules. These security groups are then
+attached to Public Cloud VMs. The Cloud Controller is deployed as a Kubernetes
+Deployment in the cluster.
 
 ## Components
 
-The following diagram illustrates the Cloud Controller components and the relevant
-resources in a Kubernetes cluster.
+The following diagram illustrates the Cloud Controller components and the
+relevant resources in a Kubernetes cluster.
 
 <img src="./assets/arch.png" width="1000" alt="Cloud Controller Components">
 
@@ -53,38 +54,41 @@ updated, and deleted. Then, the `etcd` is updated.
 ### Virtual Machine (VM) Controller
 
 The Virtual Machine Controller watches `VirtualMachine` CR and forwards the
-updated CR object to the Converter module.
+updated CR objects to the Converter module.
 
 ### Converter
 
-The Converter receives source CR objects from corresponding CRD controllers and
-converts them into matching target CRD objects, which will be consumed by
-Antrea Controller and NP Controller. Each target object has K8s Labels that
-matches cloud resource properties, such as Kind, Name, VPC / VNET, tags. It may
-also contain IP addresses of cloud resources when applicable.
+The Converter receives `VirtualMachine` CRs from VM controller and converts them
+into `ExternalEntity` CRs, which will be consumed by Cloud Controller and NP
+Controller. Each `ExternalEntity` object has K8s Labels that matches cloud
+resource properties, such as Kind, Name, VPC / VNET, tags. It may also contain
+IP addresses of cloud resources when applicable.
+
+The Converter has two packages:
 
 - The source package implements the target interface which the source is
   intended to be converted to. It also contains the core converter logic, which
   utilizes the helper functions in target package to generate target resource
-  and perform operations on target CRs in the API Server.
+  and perform operations on target CRs in the API Server. `VirtualMachine` is a
+  source object.
 - The target package defines an interface specifying information getters it
   needs and provides series of helper functions to populate target resource
-  objects.
+  objects. `ExternalEntity` is a target object.
 
 ### Antrea Controller
 
-The Antrea Controller watches to the changes in Antrea NetworkPolicy, and computes
-the scopes, translates to appropriate Antrea internal network policy, and disperses
-them accordingly to Antrea CNI agent or Cloud Controller. In order for it to support
-Cloud use case, the antrea controller understands `ExternalEntity` CRD and
-`externalEntitySelector` fields, and use them accordingly for ANP span computation
-and dispersion.
+The Antrea Controller watches to the changes in Antrea NetworkPolicy, and
+computes the scopes, compute the address groups, translates to appropriate
+Antrea internal policy structs, and disperses them accordingly to Antrea CNI
+agent or Cloud Controller. In order for it to support cloud use case, the antrea
+controller understands `ExternalEntity` CRD and `externalEntitySelector` fields,
+and use them accordingly for ANP span computation and dispersion.
 
 ### Network Policy (NP) Controller
 
 The NP controller watches for the `NetworkPolicy` events from the
-`antrea-controller`. The `antrea controller` guarantees that any internal
-network policy and the associated CRDs are pushed to the NP controller, while
+`antrea-controller`. The `antrea-controller` guarantees that any internal
+network policy and the associated CRs are pushed to the NP controller, while
 the NP controller guarantees that NetworkPolicies are applied to Public Cloud
 VMs managed by the `cloud controller` instance. It will translate network
 policies into one or more cloud security groups and cloud security rules. The NP

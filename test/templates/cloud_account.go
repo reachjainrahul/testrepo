@@ -41,8 +41,7 @@ metadata:
   name: {{.Name}}
   namespace: {{.Namespace}}
 spec:
-  providerType: {{.Provider}}
-  configAWS:
+  awsConfig:
     accountID: "id"
     accessKeyId: {{.Aws.Key}}
     accessKeySecret: {{.Aws.Secret}}
@@ -57,8 +56,7 @@ metadata:
   name: {{.Name}}
   namespace: {{.Namespace}}
 spec:
-  providerType: {{.Provider}}
-  configAzure:
+  azureConfig:
     subscriptionId: {{.Azure.SubscriptionID}}
     clientId:  {{.Azure.ClientID}}
     tenantId: {{.Azure.TenantID}}

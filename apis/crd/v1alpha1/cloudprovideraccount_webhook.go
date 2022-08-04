@@ -60,21 +60,59 @@ var _ webhook.Validator = &CloudProviderAccount{}
 func (r *CloudProviderAccount) ValidateCreate() error {
 	cloudprovideraccountlog.Info("validate create", "name", r.Name)
 
-	cloudProviderType := r.Spec.ProviderType
+	cloudProviderType, err := r.GetAccountProviderType()
+	if err != nil {
+		return err
+	}
 	switch cloudProviderType {
 	case AWSCloudProvider:
-		configAWS := r.Spec.ConfigAWS
-		if configAWS == nil {
-			return fmt.Errorf("configAWS cannot be nil")
+		awsConfig := r.Spec.AWSConfig
+
+		// validate account ID
+		if len(strings.TrimSpace(awsConfig.AccountID)) == 0 {
+			return fmt.Errorf("account id cannot be blank or empty")
 		}
-		if len(strings.TrimSpace(configAWS.AccountID)) == 0 ||
-			len(strings.TrimSpace(configAWS.Region)) == 0 {
-			return fmt.Errorf("accountID and region are required fields for AWS config")
+
+		// warning for using role based auth
+		if len(strings.TrimSpace(awsConfig.RoleArn)) != 0 {
+			cloudprovideraccountlog.Info("Role ARN configured will be used for cloud-account access")
+			// empty credentials when role based access is configured
+			awsConfig.AccessKeyID = ""
+			awsConfig.AccessKeySecret = ""
+		} else if len(strings.TrimSpace(awsConfig.AccessKeyID)) == 0 || len(strings.TrimSpace(awsConfig.AccessKeySecret)) == 0 {
+			return fmt.Errorf("must specify either credentials or role arn, cannot both be empty")
+		}
+
+		if len(strings.TrimSpace(awsConfig.Region)) == 0 {
+			return fmt.Errorf("region cannot be blank or empty")
 		}
 	case AzureCloudProvider:
-		// TODO
-	default:
-		return fmt.Errorf("unknown/unsupported cloud provier type %v (valid values AWS, Azure)", cloudProviderType)
+		azureConfig := r.Spec.AzureConfig
+
+		// validate subscription ID
+		if len(strings.TrimSpace(azureConfig.SubscriptionID)) == 0 {
+			return fmt.Errorf("subscription id cannot be blank or empty")
+		}
+
+		// validate tenant ID
+		if len(strings.TrimSpace(azureConfig.TenantID)) == 0 {
+			return fmt.Errorf("tenant id cannot be blank or empty")
+		}
+
+		// validate credentials
+		if len(strings.TrimSpace(azureConfig.IdentityClientID)) != 0 {
+			cloudprovideraccountlog.Info("Managed Identity Client ID configured will be used for cloud-account access")
+			// empty credentials when role based access is configured
+			azureConfig.ClientID = ""
+			azureConfig.ClientKey = ""
+		} else if len(strings.TrimSpace(azureConfig.ClientID)) == 0 || len(strings.TrimSpace(azureConfig.ClientKey)) == 0 {
+			return fmt.Errorf("must specify either credentials or managed identity client id, cannot both be empty")
+		}
+
+		// validate region
+		if len(strings.TrimSpace(azureConfig.Region)) == 0 {
+			return fmt.Errorf("region cannot be blank or empty")
+		}
 	}
 
 	if *r.Spec.PollIntervalInSeconds < 30 {
@@ -98,4 +136,14 @@ func (r *CloudProviderAccount) ValidateDelete() error {
 
 	// TODO(user): fill in your validation logic upon object deletion.
 	return nil
+}
+
+func (r *CloudProviderAccount) GetAccountProviderType() (CloudProvider, error) {
+	if r.Spec.AWSConfig != nil {
+		return AWSCloudProvider, nil
+	} else if r.Spec.AzureConfig != nil {
+		return AzureCloudProvider, nil
+	} else {
+		return "", fmt.Errorf("missing cloud provider config. Please add AWS or Azure Config")
+	}
 }

@@ -15,16 +15,16 @@
 package integration
 
 import (
-	"antrea.io/cloudcontroller/test/utils"
 	"context"
 	"errors"
 	"fmt"
-	"github.com/onsi/ginkgo/extensions/table"
 	"math/rand"
 	"path"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/onsi/ginkgo/extensions/table"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -33,6 +33,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	"antrea.io/cloudcontroller/test/utils"
 )
 
 var _ = Describe(fmt.Sprintf("%s: Entity selector test", focusCore), func() {
@@ -230,8 +231,7 @@ var _ = Describe(fmt.Sprintf("%s: Entity selector test", focusCore), func() {
 				},
 				Spec: v1alpha1.CloudProviderAccountSpec{
 					PollIntervalInSeconds: &pollInterval,
-					ProviderType:          v1alpha1.AWSCloudProvider,
-					ConfigAWS: &v1alpha1.CloudProviderAccountConfigAWS{
+					AWSConfig: &v1alpha1.CloudProviderAccountAWSConfig{
 						AccountID:       "id",
 						AccessKeyID:     accountParameters.Aws.Key,
 						AccessKeySecret: accountParameters.Aws.Secret,
@@ -247,8 +247,7 @@ var _ = Describe(fmt.Sprintf("%s: Entity selector test", focusCore), func() {
 				},
 				Spec: v1alpha1.CloudProviderAccountSpec{
 					PollIntervalInSeconds: &pollInterval,
-					ProviderType:          v1alpha1.AzureCloudProvider,
-					ConfigAzure: &v1alpha1.CloudProviderAccountConfigAzure{
+					AzureConfig: &v1alpha1.CloudProviderAccountAzureConfig{
 						SubscriptionID: accountParameters.Azure.SubscriptionID,
 						ClientID:       accountParameters.Azure.ClientID,
 						TenantID:       accountParameters.Azure.TenantID,

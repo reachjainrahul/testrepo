@@ -32,7 +32,7 @@ func GenerateVirtualMachineCRD(crdName string, cloudName string, cloudID string,
 		Provider:            cloudv1alpha1.CloudProvider(provider),
 		VirtualPrivateCloud: shortNetworkID,
 		Tags:                tags,
-		Status:              status,
+		State:               status,
 		NetworkInterfaces:   networkInterfaces,
 	}
 	annotationsMap := map[string]string{
@@ -52,7 +52,6 @@ func GenerateVirtualMachineCRD(crdName string, cloudName string, cloudID string,
 			Namespace:   namespace,
 			Annotations: annotationsMap,
 		},
-		Spec:   cloudv1alpha1.VirtualMachineSpec{},
 		Status: *vmStatus,
 	}
 

@@ -75,7 +75,11 @@ func (r *CloudProviderAccountReconciler) SetupWithManager(mgr ctrl.Manager) erro
 
 func (r *CloudProviderAccountReconciler) processCreate(namespacedName *types.NamespacedName,
 	account *cloudv1alpha1.CloudProviderAccount) error {
-	cloudType := r.addAccountProviderType(namespacedName, account.Spec.ProviderType)
+	accountCloudType, err := account.GetAccountProviderType()
+	if err != nil {
+		return err
+	}
+	cloudType := r.addAccountProviderType(namespacedName, accountCloudType)
 	cloudInterface, err := cloudprovider.GetCloudInterface(cloudType)
 	if err != nil {
 		return err

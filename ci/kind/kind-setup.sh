@@ -19,15 +19,16 @@
 # and docker bridge network connecting to worker Node.
 
 CLUSTER_NAME=""
-ANTREA_IMAGE="projects.registry.vmware.com/antrea/antrea-ubuntu:v1.7.0 "
-ANTREA_IMAGE+="antrea/cloud-controller:latest "
-ANTREA_IMAGE+="quay.io/jetstack/cert-manager-controller:v1.8.2 "
-ANTREA_IMAGE+="quay.io/jetstack/cert-manager-webhook:v1.8.2 "
-ANTREA_IMAGE+="quay.io/jetstack/cert-manager-cainjector:v1.8.2 "
-ANTREA_IMAGE+="kennethreitz/httpbin "
-ANTREA_IMAGE+="byrnedo/alpine-curl"
+ANTREA_IMAGES="projects.registry.vmware.com/antrea/antrea-ubuntu:v1.7.0 "
+ANTREA_IMAGES+="antrea/cloud-controller:latest "
+OTHER_IMAGES="quay.io/jetstack/cert-manager-controller:v1.8.2 "
+OTHER_IMAGES+="quay.io/jetstack/cert-manager-webhook:v1.8.2 "
+OTHER_IMAGES+="quay.io/jetstack/cert-manager-cainjector:v1.8.2 "
+OTHER_IMAGES+="kennethreitz/httpbin "
+OTHER_IMAGES+="byrnedo/alpine-curl"
 
-IMAGES=$ANTREA_IMAGE
+IMAGES=$ANTREA_IMAGES
+IMAGES+=$OTHER_IMAGES
 ANTREA_CNI=true
 POD_CIDR="10.10.0.0/16"
 NUM_WORKERS=2
@@ -45,7 +46,7 @@ function echoerr {
 _usage="
 Usage: $0 create CLUSTER_NAME [--pod-cidr POD_CIDR] [--antrea-cni true|false ] [--num-workers NUM_WORKERS] [--images IMAGES] [--subnets SUBNETS]
           destroy CLUSTER_NAME
-          load-images IMAGES CLUSTER_NAME
+          load-images CLUSTER_NAME IMAGES
           help
 where:
   create: create a kind cluster with name CLUSTER_NAME
@@ -184,6 +185,14 @@ function delete_networks {
 }
 
 function load_images {
+  if [[ -z $CLUSTER_NAME ]]; then
+    echoerr "cluster-name not provided"
+    exit 1
+  fi
+  if [[ -z $IMAGES ]]; then
+    echoerr "image names not provided"
+    exit 1
+  fi
   echo "load images"
   set +e
   for img in $IMAGES; do
@@ -302,8 +311,8 @@ while [[ $# -gt 0 ]]
       exit 0
       ;;
     load-images)
-      IMAGES="$2"
-      CLUSTER_NAME="$3"
+      CLUSTER_NAME="$2"
+      IMAGES="${@:3}"
       load_images
       exit 0
       ;;

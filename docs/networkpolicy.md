@@ -1,10 +1,10 @@
 # Cloud Controller NetworkPolicy
 
-Cloud Controller project does not consume the Antrea Network Policy(ANP) object
-directly. The ANP object is used by [antrea](https://antrea.io/) project, where
-`antrea controller` pod watches for the Antrea Network Policy(ANP) objects and
-converts each ANP object to an antrea internal [NetworkPolicy](https://github.com/antrea-io/antrea/blob/main/pkg/apis/controlplane/v1beta2/types.go#L202)
-object for further processing. This antrea internal `NetworkPolicy` object
+Cloud Controller project does not consume the Antrea NetworkPolicy(ANP) resource
+directly. The ANP object is used by [Antrea](https://antrea.io/) project, where
+`antrea-controller` Pod watches for the Antrea NetworkPolicy(ANP) objects and
+converts each ANP object to an Antrea internal [NetworkPolicy](https://github.com/antrea-io/antrea/blob/main/pkg/apis/controlplane/v1beta2/types.go#L202)
+object for further processing. This Antrea internal `NetworkPolicy` object
 will be used by Cloud Controller to enforce the network policies on public cloud 
 virtual machines.
 

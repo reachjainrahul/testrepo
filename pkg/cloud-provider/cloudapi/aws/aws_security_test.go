@@ -59,8 +59,7 @@ var _ = Describe("AWS Cloud Security", func() {
 			},
 			Spec: v1alpha1.CloudProviderAccountSpec{
 				PollIntervalInSeconds: &pollIntv,
-				ProviderType:          v1alpha1.AWSCloudProvider,
-				ConfigAWS: &v1alpha1.CloudProviderAccountConfigAWS{
+				AWSConfig: &v1alpha1.CloudProviderAccountAWSConfig{
 					AccountID:       "TestAccount01",
 					AccessKeyID:     "id",
 					AccessKeySecret: "secret",

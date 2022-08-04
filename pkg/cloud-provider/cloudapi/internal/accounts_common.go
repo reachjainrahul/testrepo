@@ -56,7 +56,7 @@ type CloudServiceConfigCreatorFunc func(namespacedName *types.NamespacedName, cl
 
 func (c *cloudCommon) newCloudAccountConfig(namespacedName *types.NamespacedName, credentials interface{},
 	pollInterval time.Duration, loggerFunc func() logging.Logger) (CloudAccountInterface, error) {
-	credentialsValidatorFunc := c.commonHelper.GetCloudCredentialsValidatorFunc()
+	credentialsValidatorFunc := c.commonHelper.SetAccountCredentialsFunc()
 	if credentialsValidatorFunc == nil {
 		return nil, fmt.Errorf("registered cloud-credentials validator function cannot be nil")
 	}
@@ -97,7 +97,7 @@ func (c *cloudCommon) newCloudAccountConfig(namespacedName *types.NamespacedName
 
 func (c *cloudCommon) updateCloudAccountConfig(credentials interface{}, config CloudAccountInterface) error {
 	currentConfig := config.(*cloudAccountConfig)
-	credentialsValidatorFunc := c.commonHelper.GetCloudCredentialsValidatorFunc()
+	credentialsValidatorFunc := c.commonHelper.SetAccountCredentialsFunc()
 	if credentialsValidatorFunc == nil {
 		return fmt.Errorf("registered cloud-credentials validator function cannot be nil")
 	}

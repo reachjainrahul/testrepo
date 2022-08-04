@@ -51,12 +51,6 @@ type CloudEntitySelectorSpec struct {
 	VMSelector []VirtualMachineSelector `json:"vmSelector,omitempty"`
 }
 
-// CloudEntitySelectorStatus defines the current state of CloudEntitySelector.
-type CloudEntitySelectorStatus struct {
-	// Status is current state of CloudEntitySelector.
-	Status string `json:"Status,omitempty"`
-}
-
 // +kubebuilder:object:root=true
 
 // +kubebuilder:resource:shortName="ces"
@@ -64,8 +58,7 @@ type CloudEntitySelectorStatus struct {
 type CloudEntitySelector struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              CloudEntitySelectorSpec   `json:"spec,omitempty"`
-	Status            CloudEntitySelectorStatus `json:"status,omitempty"`
+	Spec              CloudEntitySelectorSpec `json:"spec,omitempty"`
 }
 
 // +kubebuilder:object:root=true

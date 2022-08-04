@@ -43,10 +43,6 @@ type NetworkInterface struct {
 	IPs []IPAddress `json:"ips,omitempty"`
 }
 
-// VirtualMachineSpec defines the desired state of VirtualMachine.
-type VirtualMachineSpec struct {
-}
-
 // VirtualMachineStatus defines the observed state of VirtualMachine
 // It contains observable parameters.
 type VirtualMachineStatus struct {
@@ -58,10 +54,8 @@ type VirtualMachineStatus struct {
 	Tags map[string]string `json:"tags,omitempty"`
 	// NetworkInterfaces is array of NetworkInterfaces attached to this VirtualMachine.
 	NetworkInterfaces []NetworkInterface `json:"networkInterfaces,omitempty"`
-	// Status indicates current state of the VirtualMachine.
-	Status string `json:"status,omitempty"`
-	// Error is current error, if any, of the VirtualMachine.
-	Error string `json:"error,omitempty"`
+	// State indicates current state of the VirtualMachine.
+	State string `json:"state,omitempty"`
 }
 
 // +genclient
@@ -71,7 +65,7 @@ type VirtualMachineStatus struct {
 // +kubebuilder:resource:shortName="vm"
 // +kubebuilder:printcolumn:name="Cloud-Provider",type=string,JSONPath=`.status.provider`
 // +kubebuilder:printcolumn:name="Virtual-Private-Cloud",type=string,JSONPath=`.status.virtualPrivateCloud`
-// +kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.status`
+// +kubebuilder:printcolumn:name="State",type=string,JSONPath=`.status.state`
 // VirtualMachine is the Schema for the virtualmachines API
 // A virtualMachine object is created automatically based on
 // matching criteria specification of CloudEntitySelector.
@@ -79,7 +73,6 @@ type VirtualMachine struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   VirtualMachineSpec   `json:"spec,omitempty"`
 	Status VirtualMachineStatus `json:"status,omitempty"`
 }
 

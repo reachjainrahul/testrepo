@@ -33,37 +33,18 @@ type awsAccountCredentials struct {
 	externalID      string
 }
 
-// validateAccountCredentials validates account config.
-func validateAccountCredentials(credentials interface{}) (interface{}, error) {
-	configAWS := credentials.(*v1alpha1.CloudProviderAccountConfigAWS)
+// setAccountCredentials sets account credentials.
+func setAccountCredentials(credentials interface{}) (interface{}, error) {
+	awsConfig := credentials.(*v1alpha1.CloudProviderAccountAWSConfig)
 	accCreds := &awsAccountCredentials{
-		accountID:       strings.TrimSpace(configAWS.AccountID),
-		accessKeyID:     strings.TrimSpace(configAWS.AccessKeyID),
-		accessKeySecret: strings.TrimSpace(configAWS.AccessKeySecret),
-		region:          strings.TrimSpace(configAWS.Region),
-		roleArn:         strings.TrimSpace(configAWS.RoleArn),
-		externalID:      strings.TrimSpace(configAWS.ExternalID),
+		accountID:       strings.TrimSpace(awsConfig.AccountID),
+		accessKeyID:     strings.TrimSpace(awsConfig.AccessKeyID),
+		accessKeySecret: strings.TrimSpace(awsConfig.AccessKeySecret),
+		region:          strings.TrimSpace(awsConfig.Region),
+		roleArn:         strings.TrimSpace(awsConfig.RoleArn),
+		externalID:      strings.TrimSpace(awsConfig.ExternalID),
 	}
 
-	// validate account ID
-	if len(accCreds.accountID) == 0 {
-		return nil, fmt.Errorf("account id cannot be blank or empty")
-	}
-
-	// warning for using role based auth
-	if len(accCreds.roleArn) != 0 {
-		awsPluginLogger().Info("Role ARN configured will be used for cloud-account access")
-		// empty credentials when role based access is configured
-		accCreds.accessKeyID = ""
-		accCreds.accessKeySecret = ""
-	} else if len(accCreds.accessKeyID) == 0 || len(accCreds.accessKeySecret) == 0 {
-		return nil, fmt.Errorf("must specify either credentials or role arn, cannot both be empty")
-	}
-
-	// validate region
-	if len(accCreds.region) == 0 {
-		return nil, fmt.Errorf("region cannot be blank or empty")
-	}
 	// NOTE: currently only AWS standard partition regions supported (aws-cn, aws-us-gov etc are not
 	// supported). As we add support for other partitions, validation needs to be updated
 	regions := endpoints.AwsPartition().Regions()

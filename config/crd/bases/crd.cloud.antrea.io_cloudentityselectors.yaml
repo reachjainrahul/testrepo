@@ -90,13 +90,6 @@ spec:
                   type: object
                 type: array
             type: object
-          status:
-            description: CloudEntitySelectorStatus defines the current state of CloudEntitySelector.
-            properties:
-              Status:
-                description: Status is current state of CloudEntitySelector.
-                type: string
-            type: object
         type: object
     served: true
     storage: true

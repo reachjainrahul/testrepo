@@ -210,9 +210,10 @@ var _ = AfterSuite(func(done Done) {
 		if len(cluster) == 0 {
 			cluster = "default"
 		}
-		By(cluster + ": Check for controllers' cores")
+		By(cluster + ": Check for controllers' restarts")
 		err = utils.CheckRestart(kubeCtl)
 		if err != nil {
+			logf.Log.Error(err, "Error restarting cloud controller")
 			cl := cluster
 			controllersCored = &cl
 			break
@@ -259,6 +260,6 @@ var _ = AfterSuite(func(done Done) {
 		Expect(err).ToNot(HaveOccurred())
 	}
 	// Last, consider controller core as failure.
-	Expect(controllersCored).To(BeNil(), "Controller cores found")
+	Expect(controllersCored).To(BeNil(), "Controller restart detected")
 	close(done)
 }, 600)

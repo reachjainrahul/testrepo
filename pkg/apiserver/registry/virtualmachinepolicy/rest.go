@@ -39,6 +39,10 @@ type REST struct {
 	logger     logger.Logger
 }
 
+const (
+	NoneString = "<none>"
+)
+
 var (
 	_ rest.Scoper = &REST{}
 	_ rest.Getter = &REST{}
@@ -131,9 +135,9 @@ func (r *REST) convertToVMP(internal *cloud.NetworkPolicyStatus) *runtimev1alpha
 	npStatusList := make(map[string]*runtimev1alpha1.NetworkPolicyStatus)
 	for anp, status := range internal.NPStatus {
 		if status == cloud.NetworkPolicyStatusApplied {
-			npStatusList[anp] = &runtimev1alpha1.NetworkPolicyStatus{Realization: runtimev1alpha1.Success}
+			npStatusList[anp] = &runtimev1alpha1.NetworkPolicyStatus{Realization: runtimev1alpha1.Success, Reason: NoneString}
 		} else if strings.Contains(status, i.String()) {
-			npStatusList[anp] = &runtimev1alpha1.NetworkPolicyStatus{Realization: runtimev1alpha1.InProgress}
+			npStatusList[anp] = &runtimev1alpha1.NetworkPolicyStatus{Realization: runtimev1alpha1.InProgress, Reason: NoneString}
 			inProgress = true
 		} else {
 			npStatusList[anp] = &runtimev1alpha1.NetworkPolicyStatus{Realization: runtimev1alpha1.Failed, Reason: status}

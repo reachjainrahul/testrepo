@@ -79,13 +79,6 @@ spec:
                   type: object
                 type: array
             type: object
-          status:
-            description: CloudEntitySelectorStatus defines the current state of CloudEntitySelector.
-            properties:
-              Status:
-                description: Status is current state of CloudEntitySelector.
-                type: string
-            type: object
         type: object
     served: true
     storage: true
@@ -143,7 +136,7 @@ spec:
           spec:
             description: CloudProviderAccountSpec defines the desired state of CloudProviderAccount.
             properties:
-              configAWS:
+              awsConfig:
                 description: Cloud provider account config
                 properties:
                   accessKeyId:
@@ -165,7 +158,7 @@ spec:
                     description: Cloud provider role arn to be assumed
                     type: string
                 type: object
-              configAzure:
+              azureConfig:
                 description: Cloud provider account config
                 properties:
                   clientId:
@@ -184,12 +177,6 @@ spec:
               pollIntervalInSeconds:
                 description: PollIntervalInSeconds defines account poll interval (default value is 60, if not specified)
                 type: integer
-              providerType:
-                description: Cloud provider type
-                enum:
-                - Azure
-                - AWS
-                type: string
             type: object
           status:
             description: CloudProviderAccountStatus defines the observed state of CloudProviderAccount.
@@ -248,8 +235,8 @@ spec:
     - jsonPath: .status.virtualPrivateCloud
       name: Virtual-Private-Cloud
       type: string
-    - jsonPath: .status.status
-      name: Status
+    - jsonPath: .status.state
+      name: State
       type: string
     name: v1alpha1
     schema:
@@ -264,15 +251,9 @@ spec:
             type: string
           metadata:
             type: object
-          spec:
-            description: VirtualMachineSpec defines the desired state of VirtualMachine.
-            type: object
           status:
             description: VirtualMachineStatus defines the observed state of VirtualMachine It contains observable parameters.
             properties:
-              error:
-                description: Error is current error, if any, of the VirtualMachine.
-                type: string
               networkInterfaces:
                 description: NetworkInterfaces is array of NetworkInterfaces attached to this VirtualMachine.
                 items:
@@ -304,8 +285,8 @@ spec:
                 - Azure
                 - AWS
                 type: string
-              status:
-                description: Status indicates current state of the VirtualMachine.
+              state:
+                description: State indicates current state of the VirtualMachine.
                 type: string
               tags:
                 additionalProperties:

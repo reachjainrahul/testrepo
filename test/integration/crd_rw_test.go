@@ -80,8 +80,7 @@ var _ = Describe(fmt.Sprintf("%s: Basic CRD Read-Write", focusCore), func() {
 					Namespace: nameSpaceName,
 				},
 				Spec: v1alpha1.CloudProviderAccountSpec{
-					ProviderType: v1alpha1.AWSCloudProvider,
-					ConfigAWS: &v1alpha1.CloudProviderAccountConfigAWS{
+					AWSConfig: &v1alpha1.CloudProviderAccountAWSConfig{
 						AccountID:       "id",
 						AccessKeyID:     accountParameters.Aws.Key,
 						AccessKeySecret: accountParameters.Aws.Secret,
@@ -96,8 +95,7 @@ var _ = Describe(fmt.Sprintf("%s: Basic CRD Read-Write", focusCore), func() {
 					Namespace: nameSpaceName,
 				},
 				Spec: v1alpha1.CloudProviderAccountSpec{
-					ProviderType: v1alpha1.AzureCloudProvider,
-					ConfigAzure: &v1alpha1.CloudProviderAccountConfigAzure{
+					AzureConfig: &v1alpha1.CloudProviderAccountAzureConfig{
 						SubscriptionID: accountParameters.Azure.SubscriptionID,
 						ClientID:       accountParameters.Azure.ClientID,
 						TenantID:       accountParameters.Azure.TenantID,

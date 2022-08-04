@@ -47,95 +47,6 @@ var _ = Describe("Azure", func() {
 			testSubID, testRG, testVnet02)
 	)
 
-	Context("AddProviderAccount", func() {
-		var (
-			account                 *v1alpha1.CloudProviderAccount
-			mockCtrl                *gomock.Controller
-			mockAzureServicesHelper *MockazureServicesHelper
-		)
-		BeforeEach(func() {
-			var pollIntv uint = 2
-			account = &v1alpha1.CloudProviderAccount{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      testAccountNamespacedName.Name,
-					Namespace: testAccountNamespacedName.Namespace,
-				},
-				Spec: v1alpha1.CloudProviderAccountSpec{
-					PollIntervalInSeconds: &pollIntv,
-					ProviderType:          v1alpha1.AWSCloudProvider,
-					ConfigAzure: &v1alpha1.CloudProviderAccountConfigAzure{
-						SubscriptionID:   testSubID,
-						ClientID:         testClientID,
-						TenantID:         testTenantID,
-						ClientKey:        testClientKey,
-						Region:           testRegion,
-						IdentityClientID: testIdentityClientID,
-					},
-				},
-			}
-			mockCtrl = gomock.NewController(GinkgoT())
-			mockAzureServicesHelper = NewMockazureServicesHelper(mockCtrl)
-		})
-
-		AfterEach(func() {
-			mockCtrl.Finish()
-		})
-
-		Context("New account add fail scenarios", func() {
-			It("Should fail with empty subscription ID", func() {
-				account.Spec.ConfigAzure.SubscriptionID = ""
-
-				c := newAzureCloud(mockAzureServicesHelper)
-				err := c.AddProviderAccount(account)
-
-				Expect(err).ShouldNot(BeNil())
-				accCfg, found := c.cloudCommon.GetCloudAccountByName(testAccountNamespacedName)
-				Expect(found).To(BeFalse())
-				Expect(accCfg).To(BeNil())
-			})
-
-			It("Should fail with blank subscription ID", func() {
-				account.Spec.ConfigAzure.SubscriptionID = "			"
-
-				c := newAzureCloud(mockAzureServicesHelper)
-				err := c.AddProviderAccount(account)
-
-				Expect(err).ShouldNot(BeNil())
-				accCfg, found := c.cloudCommon.GetCloudAccountByName(testAccountNamespacedName)
-				Expect(found).To(BeFalse())
-				Expect(accCfg).To(BeNil())
-			})
-
-			It("Should fail with empty credential and identity", func() {
-				account.Spec.ConfigAzure.ClientID = ""
-				account.Spec.ConfigAzure.ClientKey = ""
-				account.Spec.ConfigAzure.IdentityClientID = ""
-
-				c := newAzureCloud(mockAzureServicesHelper)
-				err := c.AddProviderAccount(account)
-
-				Expect(err).ShouldNot(BeNil())
-				accCfg, found := c.cloudCommon.GetCloudAccountByName(testAccountNamespacedName)
-				Expect(found).To(BeFalse())
-				Expect(accCfg).To(BeNil())
-			})
-
-			It("Should fail with blank credential and identity", func() {
-				account.Spec.ConfigAzure.ClientID = "			"
-				account.Spec.ConfigAzure.ClientKey = "			"
-				account.Spec.ConfigAzure.IdentityClientID = "            "
-
-				c := newAzureCloud(mockAzureServicesHelper)
-				err := c.AddProviderAccount(account)
-
-				Expect(err).ShouldNot(BeNil())
-				accCfg, found := c.cloudCommon.GetCloudAccountByName(testAccountNamespacedName)
-				Expect(found).To(BeFalse())
-				Expect(accCfg).To(BeNil())
-			})
-		})
-	})
-
 	Context("AddAccountResourceSelector", func() {
 		var (
 			c        *azureCloud
@@ -169,8 +80,7 @@ var _ = Describe("Azure", func() {
 				},
 				Spec: v1alpha1.CloudProviderAccountSpec{
 					PollIntervalInSeconds: &pollIntv,
-					ProviderType:          v1alpha1.AzureCloudProvider,
-					ConfigAzure: &v1alpha1.CloudProviderAccountConfigAzure{
+					AzureConfig: &v1alpha1.CloudProviderAccountAzureConfig{
 						SubscriptionID:   testSubID,
 						ClientID:         testClientID,
 						TenantID:         testTenantID,
@@ -267,7 +177,7 @@ var _ = Describe("Azure", func() {
 				},
 			}
 
-			account.Spec.ConfigAzure.IdentityClientID = ""
+			account.Spec.AzureConfig.IdentityClientID = ""
 			err := c.AddProviderAccount(account)
 			Expect(err).Should(BeNil())
 			selector.Spec.VMSelector = vmSelector
@@ -296,8 +206,8 @@ var _ = Describe("Azure", func() {
 				},
 			}
 
-			account.Spec.ConfigAzure.ClientID = ""
-			account.Spec.ConfigAzure.ClientKey = ""
+			account.Spec.AzureConfig.ClientID = ""
+			account.Spec.AzureConfig.ClientKey = ""
 			err := c.AddProviderAccount(account)
 			Expect(err).Should(BeNil())
 			selector.Spec.VMSelector = vmSelector

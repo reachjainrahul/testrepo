@@ -3,16 +3,16 @@
 ## Prerequisites
 
 * [kubectl](https://kubernetes.io/docs/tasks/tools/) installed.
-* Active Kubernetes cluster, accessible using kubectl.
-* [Antrea](https://github.com/antrea-io/antrea/) deployed. Recommend v1.7
+* An active Kubernetes cluster, accessible using kubectl.
+* [Antrea](https://github.com/antrea-io/antrea/) deployed. Recommend v1.7.
 * [cert-manager](https://github.com/jetstack/cert-manager) deployed. Recommend
-  v1.8
+  v1.8.
 
 ## Installation
 
 ### Deploying Cloud Controller in a Kind cluster
 
-Create a Kind Cluster. Recommend Kind v0.12
+Create a Kind Cluster. Recommend Kind v0.12.
 
 ```bash
 $ ./ci/kind/kind-setup.sh create kind
@@ -36,9 +36,13 @@ to [the AKS installation guide](aks-installation.md).
 
 ## Importing Cloud VMs
 
+To manage security policies of VMs, we need to first import target VMs onto the
+`cloud-controller`. Below sections sets up access to public cloud account,
+select target VMs, and import VMs into the K8s cluster as `VirtualMachine` CRs.
+
 ### CloudProviderAccount
 
-To import cloud VMs, user needs to configure a `CloudProviderAccount` CRD, with
+To import cloud VMs, user needs to configure a `CloudProviderAccount` CR, with
 the cloud account credentials.
 
 * Sample `CloudProviderAccount` for AWS:
@@ -52,8 +56,7 @@ metadata:
   name: cloudprovideraccount-sample
   namespace: sample-ns
 spec:
-  providerType: "AWS"
-  configAWS:
+  awsConfig:
     accountID: "<REPLACE_ME>"
     accessKeyId: "<REPLACE_ME>"
     accessKeySecret: "<REPLACE_ME>"
@@ -72,8 +75,7 @@ metadata:
   name: cloudprovideraccount-sample
   namespace: sample-ns
 spec:
-  providerType: "Azure"
-  configAzure:
+  azureConfig:
     subscriptionId: "<REPLACE_ME>"
     clientId: "<REPLACE_ME>"
     tenantId: "<REPLACE_ME>"
@@ -84,7 +86,7 @@ EOF
 
 ### CloudEntitySelector
 
-Once a `CloudProviderAccount` CRD is added, virtual machines(VMs) may be
+Once a `CloudProviderAccount` CR is added, virtual machines (VMs) may be
 imported in the same Namespace via `CloudEntitySelector` CRD. The below example
 selects VMs in VPC `VPC_ID` from `cloudprovideraccount-sample` to import in
 `sample-ns` Namespace.
@@ -127,7 +129,7 @@ Currently, the following matching criteria are supported to import VMs.
 
 ### External Entity
 
-For each cloud VM, an ExternalEntity CRD is created, which can be used to
+For each cloud VM, an `ExternalEntity` CR is created, which can be used to
 configure AntreaNetworkPolicy(ANP).
 
 ```bash
@@ -199,10 +201,16 @@ Spec:
 Events:           <none>
 ```
 
-## Apply Antrea Network Policy
+## Apply Antrea NetworkPolicy
 
-Cloud VM CRDs may be referenced as `externalEntitySelectors` in `To`, `From`
-and `AppliedTo` fields of [Antrea NetworkPolicy (ANP)](https://github.com/antrea-io/antrea/blob/main/docs/antrea-network-policy.md).
+With the VMs imported into the cluster, we can now configure their security
+policies by setting and applying [Antrea NetworkPolicies (ANP)](https://github.com/antrea-io/antrea/blob/main/docs/antrea-network-policy.md)
+on them. The policy will be realized with cloud native security groups and
+security rules. Please refer to [NetworkPolicy documentation](networkpolicy.md)
+for more information on how ANPs are used, translated, and applied.
+
+Cloud VM CRs may be selected in `externalEntitySelectors` under `To`, `From` and
+`AppliedTo` fields of the Antrea `NetworkPolicy`.
 
 The below sample ANP allows ssh traffic to all VMs.
 
@@ -234,10 +242,12 @@ EOF
 Below shows the security groups on the AWS EC2 console after the above network
 policy is applied.
 
-<img src="./assets/cloud-sg.png" width="800" alt="CloudConsoleSGs"/>
+<img src="./assets/cloud-sg.png" width="1500" alt="CloudConsoleSGs"/>
 
-The ANP status on a virtual machine will be shown in the `Realization` field. In
-the below example, `vm-anp` is successfully applied to all VMs.
+The VirtualMachinePolicy API will display the policy realization status of all
+policies being applied to a VM. The ANP status on a virtual machine will be
+shown in the `Realization` field. In the below example, `vm-anp` is successfully
+applied to all VMs.
 
 ```bash
 $ kubectl get virtualmachinepolicy -A
@@ -248,18 +258,18 @@ sample-ns   i-02a0b61c39cb34e5c   SUCCESS       1
 sample-ns   i-0ae693c487e22dca8   SUCCESS       1
 ```
 
-The `ExternalEntitySelector` field in ANP supports, the following pre-defined
+The `externalEntitySelector` field in ANP supports the following pre-defined
 labels:
 
-* `kind.cloudcontroller`: Select based on CRD type. Currently, only supported CRD
-  types is `virtualmachine` in lower case.
-  `virtualmachine` may be used in `To`, `From`, `AppliedTo` ANP fields. Thus, an
-  ANP may be applied to virtual machines.
+* `kind.cloudcontroller`: Select based on CRD type. Currently, only supported
+  CRD types is `virtualmachine` in lower case. `virtualmachine` may be used in
+  `To`, `From`, `AppliedTo` ANP fields. Thus, an ANP may be applied to virtual
+  machines.
 * `vpc.cloudcontroller`: Select based on cloud resources VPC.
-* `name.cloudcontroller`: Select based on K8s resource name. The resource name is
-  meaningful only within the K8s cluster. For AWS, virtual machine name is the
-  AWS VM instance ID. For Azure virtual machine name is the hashed values of the
-  Azure VM resource ID.
+* `name.cloudcontroller`: Select based on K8s resource name. The resource name
+  is meaningful only within the K8s cluster. For AWS, virtual machine name is
+  the AWS VM instance ID. For Azure virtual machine name is the hashed values of
+  the Azure VM resource ID.
 * `KEY.tag.cloudcontroller`: Select based on cloud resource tag key/value pair,
   where KEY is the cloud resource tag key in lower case and label value is cloud
   resource tag value in lower case.

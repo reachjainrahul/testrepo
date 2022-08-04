@@ -5,8 +5,7 @@ metadata:
   name: cloudprovideraccount-sample
   namespace: sample-ns
 spec:
-  providerType: "Azure"
-  configAzure:
+  azureConfig:
     subscriptionId: "<REPLACE_ME>"
     clientId: "<REPLACE_ME>"
     tenantId: "<REPLACE_ME>"

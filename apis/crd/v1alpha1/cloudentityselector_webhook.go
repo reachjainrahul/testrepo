@@ -68,7 +68,12 @@ func (r *CloudEntitySelector) Default() {
 		cloudentityselectorlog.Error(err, "failed to find owner account", "account", *accountNameSpacedName)
 		return
 	}
-	if ownerAccount.Spec.ProviderType == AzureCloudProvider {
+	cloudProviderType, err := ownerAccount.GetAccountProviderType()
+	if err != nil {
+		cloudentityselectorlog.Error(err, "Invalid cloud provider type")
+		return
+	}
+	if cloudProviderType == AzureCloudProvider {
 		for _, m := range r.Spec.VMSelector {
 			// Convert azure ID to lower case, because Azure API do not preserve case info.
 			// Tags are required to be lower case when used in cloudcontroller.

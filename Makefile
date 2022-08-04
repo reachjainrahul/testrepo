@@ -7,7 +7,8 @@ CRD_OPTIONS ?= "crd"
 DOCKER_SRC=/usr/src/antrea.io/cloudcontroller
 DOCKER_GOPATH=/tmp/gopath
 DOCKER_GOCACHE=/tmp/gocache
-CONTROLLER_GEN_LIST={$$(go list ./... | grep apis/crd | paste -s -d, -)}
+GENERATE_CODE_LIST={$$(go list ./... | grep -e apis/crd -e apis/runtime | paste -s -d, -)}
+GENERATE_MANIFEST_LIST={$$(go list ./... | grep apis/crd | paste -s -d, -)}
 
 ifneq ($(CI),)
 DOCKERIZE :=
@@ -37,7 +38,7 @@ build-bin: docker-builder generate lint tidy
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: docker-builder
-	$(DOCKERIZE) controller-gen $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths=$(CONTROLLER_GEN_LIST) output:crd:artifacts:config=config/crd/bases
+	$(DOCKERIZE) controller-gen $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths=$(GENERATE_MANIFEST_LIST) output:crd:artifacts:config=config/crd/bases
 	$(DOCKERIZE) kustomize build config/default > ./config/cloud-controller.yml
 
 mock: docker-builder
@@ -66,7 +67,7 @@ add-copyright:
 
 # Generate code
 generate: docker-builder
-	$(DOCKERIZE) controller-gen object:headerFile="hack/boilerplate.go.txt" paths=$(CONTROLLER_GEN_LIST)
+	$(DOCKERIZE) controller-gen object:headerFile="hack/boilerplate.go.txt" paths=$(GENERATE_CODE_LIST)
 
 # Build the product images
 build: build-bin

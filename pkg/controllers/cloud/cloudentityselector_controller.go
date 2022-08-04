@@ -165,12 +165,16 @@ func (r *CloudEntitySelectorReconciler) addAccountPoller(selector *cloudv1alpha1
 	}
 	account := &cloudv1alpha1.CloudProviderAccount{}
 	_ = r.Get(context.TODO(), *accountNamespacedName, account)
+	accountCloudType, err := account.GetAccountProviderType()
+	if err != nil {
+		return nil, false
+	}
 	poller := &accountPoller{
 		Client:            r.Client,
 		scheme:            r.Scheme,
 		log:               r.Log,
 		pollIntvInSeconds: *account.Spec.PollIntervalInSeconds,
-		cloudType:         account.Spec.ProviderType,
+		cloudType:         accountCloudType,
 		namespacedName:    accountNamespacedName,
 		selector:          selector.DeepCopy(),
 		ch:                make(chan struct{}),

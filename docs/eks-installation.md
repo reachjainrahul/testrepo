@@ -19,9 +19,10 @@ export TF_VAR_eks_key_pair_name=YOUR_KEY_PAIR_TO_ACCESS_WORKER_NODE
 - `TF_VAR_eks_cluster_iam_role_name` may be created following this [AWS guide](https://docs.aws.amazon.com/eks/latest/userguide/service_IAM_role.html#create-service-role).
 - `TF_VAR_eks_iam_instance_profile_name` may be created following this [AWS guide](https://docs.aws.amazon.com/eks/latest/userguide/create-node-role.html).
 - `TF_VAR_eks_key_pair_name` must be configured following this
-  [AWS cli documentation](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ec2/import-key-pair.html),
-  and the ssh keys should be copied to `~/.ssh/id_rsa`. This key pair will be
-  used to access worker node via ssh.
+  [AWS cli documentation](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ec2/import-key-pair.html).
+  The public key imported to AWS should be `~/.ssh/id_rsa.pub`. Follow the
+  documentation to create a new key then import if this key doesn't exist. This
+  key pair will be used to access worker node via ssh.
 
 ## Create an EKS cluster via terraform
 
@@ -37,9 +38,11 @@ required bash and terraform scripts to the user home directory, under
 
 ### Create an EKS cluster
 
-Create an EKS cluster using the provided terraform scripts. Once EKS cluster is
-created, worker nodes are accessible via their external IP using ssh. Terraform
-state files and other runtime info will be stored under `~/tmp/terraform-eks/`.
+Create an EKS cluster using the provided terraform scripts. Once the EKS cluster
+is created, worker nodes are accessible via their external IP using ssh. 
+Terraform state files and other runtime info will be stored under
+`~/tmp/terraform-eks/`. You can also create an EKS cluster in other ways and
+deploy prerequisites manually.
 
 This will deploy `cert-manager v1.8.2` and `Antrea v1.8`.
 
@@ -82,12 +85,13 @@ Display EKS attributes.
 ~/terraform/eks destroy
 ```
 
-## Create an AWS VM cluster
+## Create AWS VMs
 
 Additionally, you can also create a compute VPC with 3 VMs using the terraform
-scripts. Each VM will have a public IP and an Apache Tomcat server deployed on
-port 80. Use curl `<PUBLIC_IP>:80` to access a sample web page. Create or obtain
-AWS key and secret and configure the below environment variables.
+scripts for testing purpose. Each VM will have a public IP and an Apache Tomcat
+server deployed on port 80. Use curl `<PUBLIC_IP>:80` to access a sample web
+page. Create or obtain AWS key and secret and configure the below environment
+variables.
 
 ```bash
 export TF_VAR_region=YOUR_REGION
@@ -102,7 +106,7 @@ export TF_VAR_aws_key_pair_name=YOU_AWS_KEY_PAIR
 ./hack/install-cloud-tools.sh
 ```
 
-### Create an AWS VM cluster
+### Create VMs
 
 ```bash
 ~/terraform/aws-tf create
@@ -111,13 +115,13 @@ export TF_VAR_aws_key_pair_name=YOU_AWS_KEY_PAIR
 Terraform state files and other runtime info will be stored under
 `~/tmp/terraform-aws/`
 
-### Get AWS VPC attributes
+### Get VPC attributes
 
 ```bash
 ~/terraform/aws-tf output
 ```
 
-### Destroy AWS VM cluster
+### Destroy VMs
 
 ```bash
 ~/terraform/aws-tf destroy
