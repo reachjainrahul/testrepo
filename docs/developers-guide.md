@@ -33,14 +33,14 @@ example CRD object for illustration.
    home directory.
 
 ```bash
-$ ln -s cmd/nephe-controller/main.go main.go
+ln -s cmd/nephe-controller/main.go main.go
 ```
 
 2. Run kubebuilder create API command, to create a new API group for the kind
    object. This command initiates a reconciler in `main.go`.
 
 ```bash
-$ kubebuilder create api --group cloud --version v1alpha1 --kind MyKind
+kubebuilder create api --group cloud --version v1alpha1 --kind MyKind
 ```
 
 The kubebuilder creates a skeleton CRD definition in
@@ -56,14 +56,14 @@ The kubebuilder creates a skeleton CRD definition in
 6. Remove `main.go` from project home directory.
 
 ```bash
-$ rm main.go
+rm main.go
 ```
 
 7. Then run following make commands.
 
 ```bash
-$ make
-$ make manifests
+make
+make manifests
 ```
 
 The first make command builds the controller binary, which in turn triggers code
@@ -79,16 +79,16 @@ To create a webhook for the newly created CRD, follow the below procedure:
    is bootstrapped in `main.go`.
 
 ```bash
-$ ln -s cmd/nephe-controller/main.go main.go
-$ kubebuilder create webhook --group cloud --version v1alpha1 --kind MyKind --defaulting --programmatic-validation
-$ rm main.go
+ln -s cmd/nephe-controller/main.go main.go
+kubebuilder create webhook --group cloud --version v1alpha1 --kind MyKind --defaulting --programmatic-validation
+rm main.go
 ```
 
 2. Auto-generate other required implementations and K8s configuration manifests.
 
 ```bash
-$ make
-$ make manifests
+make
+make manifests
 ```
 
 3. In `config/crd/kustomization.yaml`, uncomment patches to the CRD.
@@ -107,7 +107,11 @@ Nephe manifest deploys one `nephe-controller` Deployment. All the
 `Nephe Controller` related resources are namespaced under `kube-system`.
 
 ```bash
-$ kubectl get deployment -A
+kubectl get deployment -A
+```
+
+```text
+# Output
 NAMESPACE            NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
 cert-manager         cert-manager              1/1     1            1           41m
 cert-manager         cert-manager-cainjector   1/1     1            1           41m
@@ -117,7 +121,7 @@ kube-system          nephe-controller          1/1     1            1           
 kube-system          coredns                   2/2     2            2           43m
 local-path-storage   local-path-provisioner    1/1     1            1           43m
 
-$ kubectl get pods -A 
+kubectl get pods -A 
 NAMESPACE            NAME                                         READY   STATUS    RESTARTS   AGE
 cert-manager         cert-manager-677874db78-mxp8g                1/1     Running   0          42m
 cert-manager         cert-manager-cainjector-6c5bf7b759-spn9w     1/1     Running   0          42m
@@ -144,19 +148,19 @@ local-path-storage   local-path-provisioner-5ddd94ff66-gdqzg      1/1     Runnin
 Create a Kind setup in the local machine.
 
 ```bash
-$ ./ci/kind/kind-setup.sh create kind
+./ci/kind/kind-setup.sh create kind
 ```
 
 Get help for Kind setup.
 
 ```bash
-$ ./ci/kind/kind-setup.sh help
+./ci/kind/kind-setup.sh help
 ````
 
 Apply manifest.
 
 ```bash
-$ kubectl apply -f ./config/nephe.yml
+kubectl apply -f ./config/nephe.yml
 ``` 
 
 ### Cloud based cluster deployment
@@ -167,15 +171,15 @@ cloud based cluster deployment.
 Load the `antrea/nephe` image and apply manifest to AKS cluster.
 
 ```bash
-$ ./terraform/aks load antrea/nephe:latest
-$ ./terraform/aks kubectl apply -f ./config/nephe.yml
+./terraform/aks load antrea/nephe:latest
+./terraform/aks kubectl apply -f ./config/nephe.yml
 ```
 
 Load the `antrea/nephe` image and apply manifest to EKS cluster.
 
 ```bash
-$ ./terraform/eks load antrea/nephe:latest
-$ ./terraform/eks kubectl apply -f ./config/nephe.yml
+./terraform/eks load antrea/nephe:latest
+./terraform/eks kubectl apply -f ./config/nephe.yml
 ```
 
 ## Unit Test
@@ -190,13 +194,13 @@ add package/interfaces to [mockgen](../hack/mockgen.sh).
 To generate mock:
 
 ```bash
-$ make mock
+make mock
 ```
 
 To run unit tests:
 
 ```bash
-$ make unit-test
+make unit-test
 ```
 
 ## Integration Test
@@ -220,26 +224,26 @@ allow terraform to create an AWS VPC. Please refer to [eks guide](eks-installati
 for the deployment details.
 
 ```bash
-$ export TF_VAR_aws_access_key_id=YOUR_AWS_KEY
-$ export TF_VAR_aws_access_key_secret=YOUR_AWS_KEY_SECRET
-$ export TF_VAR_aws_key_pair_name=YOU_AWS_KEY_PAIR
-$ export TF_VAR_region=YOUR_AWS_REGION
-$ export TF_VAR_owner=YOUR_ID
+export TF_VAR_aws_access_key_id=YOUR_AWS_KEY
+export TF_VAR_aws_access_key_secret=YOUR_AWS_KEY_SECRET
+export TF_VAR_aws_key_pair_name=YOU_AWS_KEY_PAIR
+export TF_VAR_region=YOUR_AWS_REGION
+export TF_VAR_owner=YOUR_ID
 ```
 
 To run integration test,
 
 ```bash
-$ ci/kind/kind-setup.sh create kind
-$ make integration-test-aws
+ci/kind/kind-setup.sh create kind
+make integration-test-aws
 ```
 
 You can also run integration tests on an existing K8s setup.
 
 ```bash
-$ make
-$ kind load docker-image antrea/nephe
-$ make integration-test-aws
+make
+kind load docker-image antrea/nephe
+make integration-test-aws
 ```
 
 ## Azure Integration Test
@@ -249,23 +253,23 @@ and a compute VNET with 3 VMs. Please refer to [aks guide](aks-installation.md)
 for the deployment details.
 
 ```bash
-$ export TF_VAR_azure_client_id=YOUR_AZURE_CLIENT_ID
-$ export TF_VAR_azure_client_subscription_id=YOUR_AZURE_CLIENT_SUBSCRIPTION_ID
-$ export TF_VAR_azure_client_secret=YOUR_AZURE_CLIENT_SECRET
-$ export TF_VAR_azure_client_tenant_id=YOUR_AZURE_TENANT_ID
+export TF_VAR_azure_client_id=YOUR_AZURE_CLIENT_ID
+export TF_VAR_azure_client_subscription_id=YOUR_AZURE_CLIENT_SUBSCRIPTION_ID
+export TF_VAR_azure_client_secret=YOUR_AZURE_CLIENT_SECRET
+export TF_VAR_azure_client_tenant_id=YOUR_AZURE_TENANT_ID
 ```
 
 To run integration test:
 
 ```bash
-$ ci/kind/kind-setup.sh create kind
-$ make integration-test-azure
+ci/kind/kind-setup.sh create kind
+make integration-test-azure
 ```
 
 You can also run integration tests on an existing K8s setup:
 
 ```bash
-$ make
-$ kind load docker-image antrea/nephe
-$ make integration-test-azure
+make
+kind load docker-image antrea/nephe
+make integration-test-azure
 ```

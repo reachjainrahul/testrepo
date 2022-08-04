@@ -15,13 +15,13 @@
 Create a Kind cluster. Recommend Kind v0.12.
 
 ```bash
-$ ./ci/kind/kind-setup.sh create kind
+./ci/kind/kind-setup.sh create kind
 ```
 
 Install Nephe.
 
 ```bash
-$ kubectl apply -f config/nephe.yml
+kubectl apply -f config/nephe.yml
 ```
 
 ### Deploying Nephe in EKS cluster
@@ -48,8 +48,8 @@ the cloud account credentials.
 * Sample `CloudProviderAccount` for AWS:
 
 ```bash
-$ kubectl create namespace sample-ns
-$ cat <<EOF | kubectl apply -f -
+kubectl create namespace sample-ns
+cat <<EOF | kubectl apply -f -
 apiVersion: crd.cloud.antrea.io/v1alpha1
 kind: CloudProviderAccount
 metadata:
@@ -67,8 +67,8 @@ EOF
 * Sample `CloudProviderAccount` for Azure:
 
 ```bash
-$ kubectl create namespace sample-ns
-$ cat <<EOF | kubectl apply -f -
+kubectl create namespace sample-ns
+cat <<EOF | kubectl apply -f -
 apiVersion: crd.cloud.antrea.io/v1alpha1
 kind: CloudProviderAccount
 metadata:
@@ -92,7 +92,7 @@ selects VMs in VPC `VPC_ID` from `cloudprovideraccount-sample` to import in
 `sample-ns` Namespace.
 
 ```bash
-$ cat <<EOF | kubectl apply -f -
+cat <<EOF | kubectl apply -f -
 apiVersion: crd.cloud.antrea.io/v1alpha1
 kind: CloudEntitySelector
 metadata:
@@ -110,8 +110,12 @@ If there are any virtual machines in VPC `VPC_ID`, those virtual machines will
 be imported. Invoke kubectl commands to get the details of imported VMs.
 
 ```bash
-$ kubectl get virtualmachines -A
-$ kubectl get vm -A
+kubectl get virtualmachines -A
+kubectl get vm -A
+```
+
+```text
+# Output
 NAMESPACE        NAME                  CLOUD-PROVIDER   VIRTUAL-PRIVATE-CLOUD   STATUS
 sample-ns        i-01b09fee2f216c1d7   AWS              vpc-02d3e1e0f15a56f4b   running
 sample-ns        i-02a0b61c39cb34e5c   AWS              vpc-02d3e1e0f15a56f4b   running
@@ -133,72 +137,97 @@ For each cloud VM, an `ExternalEntity` CR is created, which can be used to
 configure Antrea `NetworkPolicy` (ANP).
 
 ```bash
-$ kubectl get externalentities -A
-$ kubectl get ee -A
+kubectl get externalentities -A
+kubectl get ee -A
+```
+
+```text
+# Output
 NAMESPACE   NAME                                 AGE
-sample-ns   virtualmachine-i-05331c205bc6df47f   2m9s
-sample-ns   virtualmachine-i-072a347128237cc63   2m9s
-sample-ns   virtualmachine-i-08c3eb2ada5f85e02   2m9s
+sample-ns   virtualmachine-i-0033eb4a6c846451d   13m
+sample-ns   virtualmachine-i-05e3fb66922d56e0a   13m
+sample-ns   virtualmachine-i-0a20bae92ddcdb60b   13m
 ```
 
 ```bash
-$ kubectl describe ee virtualmachine-i-05331c205bc6df47f -n sample-ns
-Name:         virtualmachine-i-05331c205bc6df47f
+kubectl describe vm i-0033eb4a6c846451d -n sample-ns
+```
+
+```text
+# Output
+Name:         i-0033eb4a6c846451d
 Namespace:    sample-ns
-Labels:       environment.tag.nephe=nephe
-              kind.nephe=virtualmachine
-              login.tag.nephe=ubuntu
-              name.nephe=i-05331c205bc6df47f
-              name.tag.nephe=vpc-0cfddb48a8119837e-ubuntu1
-              namespace.nephe=sample-ns
-              svcusercloudantreaio.tag.nephe=vm-http8080
-              terraform.tag.nephe=true
-              vpc.nephe=vpc-0cfddb48a8119837e
-Annotations:  <none>
-API Version:  crd.antrea.io/v1alpha2
-Kind:         ExternalEntity
+Labels:       <none>
+Annotations:  cloud-assigned-id: i-0033eb4a6c846451d
+              cloud-assigned-name: vpc-0d6bb6a4a880bd9ad-ubuntu1-kumaranand
+              cloud-assigned-vpc-id: vpc-0d6bb6a4a880bd9ad
+API Version:  crd.cloud.antrea.io/v1alpha1
+Kind:         VirtualMachine
 Metadata:
-  Creation Timestamp:  2022-07-20T20:57:42Z
+  Creation Timestamp:  2022-08-12T05:34:29Z
   Generation:          1
   Managed Fields:
-    API Version:  crd.antrea.io/v1alpha2
+    API Version:  crd.cloud.antrea.io/v1alpha1
     Fields Type:  FieldsV1
     fieldsV1:
       f:metadata:
-        f:labels:
+        f:annotations:
           .:
-          f:environment.tag.nephe:
-          f:kind.nephe:
-          f:login.tag.nephe:
-          f:name.nephe:
-          f:name.tag.nephe:
-          f:namespace.nephe:
-          f:svcusercloudantreaio.tag.nephe:
-          f:terraform.tag.nephe:
-          f:vpc.nephe:
+          f:cloud-assigned-id:
+          f:cloud-assigned-name:
+          f:cloud-assigned-vpc-id:
         f:ownerReferences:
-      f:spec:
+          .:
+          k:{"uid":"b5b48b74-53bc-4943-836f-9d58a4f245e8"}:
+            .:
+            f:apiVersion:
+            f:blockOwnerDeletion:
+            f:controller:
+            f:kind:
+            f:name:
+            f:uid:
+      f:status:
         .:
-        f:endpoints:
-        f:externalNode:
+        f:networkInterfaces:
+        f:provider:
+        f:state:
+        f:tags:
+          .:
+          f:Environment:
+          f:Login:
+          f:Name:
+          f:Terraform:
+        f:virtualPrivateCloud:
     Manager:    nephe-controller
     Operation:  Update
-    Time:       2022-07-20T20:57:42Z
+    Time:       2022-08-12T05:34:29Z
   Owner References:
     API Version:           crd.cloud.antrea.io/v1alpha1
     Block Owner Deletion:  true
     Controller:            true
-    Kind:                  VirtualMachine
-    Name:                  i-05331c205bc6df47f
-    UID:                   e10dec87-6ced-40ee-8527-8a8e1869af7c
-  Resource Version:        8243
-  UID:                     38b5b036-10c2-4f4f-8bb7-75a25e51a1cb
-Spec:
-  Endpoints:
-    Ip:           10.0.1.28
-    Ip:           54.193.85.45
-  External Node:  nephe-controller
-Events:           <none>
+    Kind:                  CloudEntitySelector
+    Name:                  cloudentityselector-aws
+    UID:                   b5b48b74-53bc-4943-836f-9d58a4f245e8
+  Resource Version:        378157
+  UID:                     acbf686e-b3d3-421c-bd42-37308e7fd060
+Status:
+  Network Interfaces:
+    Ips:
+      Address:       10.0.1.173
+      Address Type:  InternalIP
+      Address:       54.177.32.161
+      Address Type:  ExternalIP
+    Mac:             02:4c:d7:4a:f4:f3
+    Name:            eni-0bef7c10929c98111
+  Provider:          AWS
+  State:             running
+  Tags:
+    Environment:          nephe
+    Login:                ubuntu
+    Name:                 vpc-0d6bb6a4a880bd9ad-ubuntu1-kumaranand
+    Terraform:            true
+  Virtual Private Cloud:  vpc-0d6bb6a4a880bd9ad
+Events:                   <none>
 ```
 
 ## Apply Antrea NetworkPolicy
@@ -215,7 +244,7 @@ Cloud VM CRs may be selected in `externalEntitySelectors` under `To`, `From` and
 The below sample ANP allows ssh traffic to all VMs.
 
 ```bash
-$ cat <<EOF | kubectl apply -f -
+cat <<EOF | kubectl apply -f -
 apiVersion: crd.antrea.io/v1alpha1
 kind: NetworkPolicy
 metadata:
@@ -250,12 +279,16 @@ shown in the `Realization` field. In the below example, `vm-anp` is successfully
 applied to all VMs.
 
 ```bash
-$ kubectl get virtualmachinepolicy -A
-$ kubectl get vmp -A
+kubectl get virtualmachinepolicy -A
+kubectl get vmp -A
+```
+
+```text
+# Output
 NAMESPACE   VM NAME               REALIZATION   COUNT
-sample-ns   i-01b09fee2f216c1d7   SUCCESS       1
-sample-ns   i-02a0b61c39cb34e5c   SUCCESS       1
-sample-ns   i-0ae693c487e22dca8   SUCCESS       1
+sample-ns   i-05e3fb66922d56e0a   SUCCESS       1
+sample-ns   i-0a20bae92ddcdb60b   SUCCESS       1
+sample-ns   i-0033eb4a6c846451d   SUCCESS       1
 ```
 
 The `externalEntitySelector` field in ANP supports the following pre-defined

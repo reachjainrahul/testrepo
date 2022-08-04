@@ -1,7 +1,7 @@
 # Nephe Architecture
 
 Nephe supports micro-segmentation of public cloud virtual machines by
-realizing [AntreaNetworkPolicies](https://github.com/antrea-io/antrea/blob/main/docs/antrea-network-policy.md)
+realizing [Antrea NetworkPolicies](https://github.com/antrea-io/antrea/blob/main/docs/antrea-network-policy.md)
 on virtual machines. It leverages cloud network security groups to enforce
 Antrea `NetworkPolicies`. Nephe supports enforcing policies on AWS and Azure cloud
 VMs. The support for different public cloud platforms is
