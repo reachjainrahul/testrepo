@@ -13,6 +13,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial framework to deploy Antrea `Cloud Controller` in a single cluster.
 - CRD definitions: VirtualMachine, CloudProviderAccount and CloudEntitySelector. 
-- Agentless Antrea NetworkPolicy on AWS/Azure VMs.
+- Antrea NetworkPolicy on AWS/Azure VMs.
 
 
