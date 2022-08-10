@@ -9,7 +9,7 @@ spec:
   appliedTo:
   - externalEntitySelector:
       matchLabels:
-         kind.cloudcontroller: virtualmachine
+         kind.nephe: virtualmachine
   ingress:
   - action: Allow
     from:

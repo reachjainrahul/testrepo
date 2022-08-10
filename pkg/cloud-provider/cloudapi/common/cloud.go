@@ -19,10 +19,10 @@ import (
 
 	"k8s.io/apimachinery/pkg/types"
 
-	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	"antrea.io/cloudcontroller/pkg/cloud-provider/securitygroup"
+	"antrea.io/nephe/apis/crd/v1alpha1"
+	"antrea.io/nephe/pkg/cloud-provider/securitygroup"
 
-	cloudv1alpha1 "antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	cloudv1alpha1 "antrea.io/nephe/apis/crd/v1alpha1"
 )
 
 var (
@@ -84,7 +84,7 @@ type SecurityInterface interface {
 		egressRules []*securitygroup.EgressRule) error
 	// UpdateSecurityGroupMembers updates membership of cloud security group corresponding to provided address group. Only
 	// provided computeResources will remain attached to cloud security group. UpdateSecurityGroupMembers will also make sure that
-	// after membership update, if compute resource is no longer attached to any cloudcontroller created cloud security group, then
+	// after membership update, if compute resource is no longer attached to any nephe created cloud security group, then
 	// compute resource will get moved to cloud default security group
 	UpdateSecurityGroupMembers(addressGroupIdentifier *securitygroup.CloudResourceID, computeResourceIdentifier []*securitygroup.CloudResource,
 		membershipOnly bool) error

@@ -28,11 +28,11 @@ import (
 
 	antreanetworking "antrea.io/antrea/pkg/apis/controlplane/v1beta2"
 	antreanetcore "antrea.io/antrea/pkg/apis/crd/v1alpha2"
-	cloud "antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	cloudcommon "antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/common"
-	"antrea.io/cloudcontroller/pkg/cloud-provider/securitygroup"
-	"antrea.io/cloudcontroller/pkg/controllers/config"
-	converter "antrea.io/cloudcontroller/pkg/converter/target"
+	cloud "antrea.io/nephe/apis/crd/v1alpha1"
+	cloudcommon "antrea.io/nephe/pkg/cloud-provider/cloudapi/common"
+	"antrea.io/nephe/pkg/cloud-provider/securitygroup"
+	"antrea.io/nephe/pkg/controllers/config"
+	converter "antrea.io/nephe/pkg/converter/target"
 )
 
 // InProgress indicates a securityGroup operation is in progress.

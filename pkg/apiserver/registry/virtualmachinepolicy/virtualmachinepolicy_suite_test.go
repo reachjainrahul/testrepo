@@ -17,7 +17,7 @@ package virtualmachinepolicy_test
 import (
 	"testing"
 
-	"antrea.io/cloudcontroller/pkg/logging"
+	"antrea.io/nephe/pkg/logging"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

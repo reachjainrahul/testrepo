@@ -25,7 +25,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	"antrea.io/nephe/apis/crd/v1alpha1"
 )
 
 var _ = Describe("Azure", func() {

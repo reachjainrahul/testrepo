@@ -51,7 +51,7 @@ locals {
 }
 
 locals {
-  resource_group_name = "cloudcontroller-aks-${local.owner_name}-${random_string.suffix.result}"
+  resource_group_name = "nephe-aks-${local.owner_name}-${random_string.suffix.result}"
 }
 
 resource "random_string" "suffix" {
@@ -109,6 +109,6 @@ resource "azurerm_kubernetes_cluster" "k8s" {
   kubernetes_version = "1.21.9"
 
   tags = {
-    Environment = "cloudcontroller"
+    Environment = "nephe"
   }
 }

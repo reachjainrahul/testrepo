@@ -15,7 +15,7 @@
 package source
 
 import (
-	"antrea.io/cloudcontroller/pkg/converter/target"
+	"antrea.io/nephe/pkg/converter/target"
 )
 
 type retryRecord struct {

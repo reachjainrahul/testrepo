@@ -34,9 +34,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
-	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	runtimev1alpha1 "antrea.io/cloudcontroller/apis/runtime/v1alpha1"
-	k8stemplates "antrea.io/cloudcontroller/test/templates"
+	"antrea.io/nephe/apis/crd/v1alpha1"
+	runtimev1alpha1 "antrea.io/nephe/apis/runtime/v1alpha1"
+	k8stemplates "antrea.io/nephe/test/templates"
 )
 
 // RestartDeployment restarts an existing deployment.
@@ -335,9 +335,9 @@ func ExecuteCurlCmds(vpc CloudVPC, kubctl *KubeCtl,
 	return ExecuteCmds(vpc, kubctl, srcIDs, ns, cmds, oks, retries)
 }
 
-// CheckRestart returns error if cloud controller has restarted.
+// CheckRestart returns error if nephe controller has restarted.
 func CheckRestart(kubctl *KubeCtl) error {
-	controllers := []string{"cloud-controller"}
+	controllers := []string{"nephe-controller"}
 	for _, c := range controllers {
 		cmd := fmt.Sprintf(
 			"get  pods -l control-plane=%s -n kube-system -o=jsonpath={.items[0].status.containerStatuses[0].restartCount}", c)
@@ -446,7 +446,7 @@ func CollectCRDs(kubectl *KubeCtl, dir string) error {
 // CollectControllerLogs collect logs from controllers.
 func CollectControllerLogs(kubctl *KubeCtl, dir string) error {
 	controllerInfo := map[string][]string{
-		"cloud-controller":  {"control-plane", "cloud-controller", ""},
+		"nephe-controller":  {"control-plane", "nephe-controller", ""},
 		"antrea-controller": {"component", "kube-system", ""},
 	}
 	it := []string{"-p", ""}

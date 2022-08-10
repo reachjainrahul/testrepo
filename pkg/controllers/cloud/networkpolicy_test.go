@@ -37,13 +37,13 @@ import (
 
 	antreanetworking "antrea.io/antrea/pkg/apis/controlplane/v1beta2"
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
-	cloud "antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	cloudcommon "antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/common"
-	"antrea.io/cloudcontroller/pkg/cloud-provider/securitygroup"
-	"antrea.io/cloudcontroller/pkg/controllers/config"
-	"antrea.io/cloudcontroller/pkg/converter/target"
-	cloudtest "antrea.io/cloudcontroller/pkg/testing/cloudsecurity"
-	"antrea.io/cloudcontroller/pkg/testing/controllerruntimeclient"
+	cloud "antrea.io/nephe/apis/crd/v1alpha1"
+	cloudcommon "antrea.io/nephe/pkg/cloud-provider/cloudapi/common"
+	"antrea.io/nephe/pkg/cloud-provider/securitygroup"
+	"antrea.io/nephe/pkg/controllers/config"
+	"antrea.io/nephe/pkg/converter/target"
+	cloudtest "antrea.io/nephe/pkg/testing/cloudsecurity"
+	"antrea.io/nephe/pkg/testing/controllerruntimeclient"
 )
 
 var _ = Describe("NetworkPolicy", func() {

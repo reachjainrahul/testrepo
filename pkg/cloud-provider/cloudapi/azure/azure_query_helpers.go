@@ -18,7 +18,7 @@ import (
 	"sort"
 	"strings"
 
-	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	"antrea.io/nephe/apis/crd/v1alpha1"
 )
 
 func convertSelectorToComputeQuery(selector *v1alpha1.CloudEntitySelector, subscriptionIDs []string,

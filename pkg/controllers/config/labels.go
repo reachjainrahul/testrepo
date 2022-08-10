@@ -16,7 +16,7 @@ package config
 
 const (
 	// Well known labels on ExternalEntities so that they can be selected by Antrea NetworkPolicies.
-	ExternalEntityLabelKeyPostfix    = "cloudcontroller"
+	ExternalEntityLabelKeyPostfix    = "nephe"
 	ExternalEntityLabelKeyNamespace  = "namespace." + ExternalEntityLabelKeyPostfix
 	ExternalEntityLabelKeyKind       = "kind." + ExternalEntityLabelKeyPostfix
 	ExternalEntityLabelKeyName       = "name." + ExternalEntityLabelKeyPostfix

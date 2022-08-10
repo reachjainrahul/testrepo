@@ -17,9 +17,9 @@ package azure
 import (
 	"strings"
 
-	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	"antrea.io/cloudcontroller/pkg/cloud-provider/securitygroup"
-	"antrea.io/cloudcontroller/pkg/cloud-provider/utils"
+	"antrea.io/nephe/apis/crd/v1alpha1"
+	"antrea.io/nephe/pkg/cloud-provider/securitygroup"
+	"antrea.io/nephe/pkg/cloud-provider/utils"
 )
 
 var azureStatusMap = map[string]string{
@@ -36,8 +36,8 @@ func computeInstanceToVirtualMachineCRD(instance *virtualMachineTable, namespace
 
 	vmTags := instance.Tags
 	for key, value := range vmTags {
-		// skip any tags added by cloudcontroller for internal processing
-		_, hasAGPrefix, hasATPrefix := securitygroup.IsCloudControllerCreatedSG(key)
+		// skip any tags added by nephe for internal processing
+		_, hasAGPrefix, hasATPrefix := securitygroup.IsNepheControllerCreatedSG(key)
 		if hasAGPrefix || hasATPrefix {
 			continue
 		}

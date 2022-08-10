@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: cloud-controller-service
+  name: nephe-controller-service
   namespace: system
 spec:
   ports:
@@ -10,34 +10,34 @@ spec:
     protocol: TCP
     targetPort: 5443
   selector:
-    control-plane: cloud-controller
+    control-plane: nephe-controller
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cloud-controller
+  name: nephe-controller
   namespace: system
   labels:
-    control-plane: cloud-controller
+    control-plane: nephe-controller
 spec:
   selector:
     matchLabels:
-      control-plane: cloud-controller
+      control-plane: nephe-controller
   replicas: 1
   template:
     metadata:
       labels:
-        control-plane: cloud-controller
+        control-plane: nephe-controller
     spec:
       containers:
       - command:
-        - /cloud-controller
+        - /nephe-controller
         args:
         - --enable-leader-election
         - --enable-debug-log
-        image: antrea/cloud-controller:latest
+        image: antrea/nephe:latest
         imagePullPolicy: IfNotPresent
-        name: cloud-controller
+        name: nephe-controller
         resources:
           limits:
             cpu: 1000m

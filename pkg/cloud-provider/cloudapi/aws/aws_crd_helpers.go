@@ -17,8 +17,8 @@ package aws
 import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 
-	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	"antrea.io/cloudcontroller/pkg/cloud-provider/utils"
+	"antrea.io/nephe/apis/crd/v1alpha1"
+	"antrea.io/nephe/pkg/cloud-provider/utils"
 )
 
 const ResourceNameTagKey = "Name"

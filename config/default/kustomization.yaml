@@ -6,7 +6,7 @@ namespace: kube-system
 # "wordpress" becomes "alices-wordpress".
 # Note that it should also match with the prefix (text before '-') of the namespace
 # field above.
-# namePrefix: cloudcontroller-
+# namePrefix: nephe-
 
 # Labels to add to all resources and selectors.
 #commonLabels:
@@ -64,7 +64,7 @@ vars:
   objref:
     kind: Service
     version: v1
-    name: cloud-controller-webhook-service
+    name: nephe-controller-webhook-service
   fieldref:
     fieldpath: metadata.namespace
 #- name: SERVICE_NAME

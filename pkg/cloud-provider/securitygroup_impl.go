@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"sync"
 
-	cloudcommon "antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/common"
-	"antrea.io/cloudcontroller/pkg/cloud-provider/securitygroup"
+	cloudcommon "antrea.io/nephe/pkg/cloud-provider/cloudapi/common"
+	"antrea.io/nephe/pkg/cloud-provider/securitygroup"
 )
 
 type SecurityGroupImpl struct{}

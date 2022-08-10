@@ -1,13 +1,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cloud-controller
+  name: nephe-controller
   namespace: system
 spec:
   template:
     spec:
       containers:
-        - name: cloud-controller
+        - name: nephe-controller
           ports:
             - containerPort: 9443
               name: webhook-server

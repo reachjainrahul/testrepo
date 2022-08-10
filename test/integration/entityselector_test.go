@@ -32,8 +32,8 @@ import (
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
-	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	"antrea.io/cloudcontroller/test/utils"
+	"antrea.io/nephe/apis/crd/v1alpha1"
+	"antrea.io/nephe/test/utils"
 )
 
 var _ = Describe(fmt.Sprintf("%s: Entity selector test", focusAws), func() {

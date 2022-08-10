@@ -76,7 +76,7 @@ func (r *CloudEntitySelector) Default() {
 	if cloudProviderType == AzureCloudProvider {
 		for _, m := range r.Spec.VMSelector {
 			// Convert azure ID to lower case, because Azure API do not preserve case info.
-			// Tags are required to be lower case when used in cloudcontroller.
+			// Tags are required to be lower case when used in nephe.
 			if m.VpcMatch != nil {
 				m.VpcMatch.MatchID = strings.ToLower(m.VpcMatch.MatchID)
 				m.VpcMatch.MatchName = strings.ToLower(m.VpcMatch.MatchName)

@@ -15,7 +15,7 @@
 package utils
 
 import (
-	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	"antrea.io/nephe/apis/crd/v1alpha1"
 )
 
 // GetVMIPAddresses returns IP addresses of all network interfaces attached to the vm.

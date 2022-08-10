@@ -45,11 +45,11 @@ data "aws_caller_identity" "current" {}
 data "aws_availability_zones" "available" {}
 
 locals {
-  vpc_name = "cloudcontroller-eks-vpc-${var.owner}-${random_string.suffix.result}"
+  vpc_name = "nephe-eks-vpc-${var.owner}-${random_string.suffix.result}"
 }
 
 locals {
-  cluster_name = "cloudcontroller-eks-${var.owner}-${random_string.suffix.result}"
+  cluster_name = "nephe-eks-${var.owner}-${random_string.suffix.result}"
 }
 
 resource "random_string" "suffix" {
@@ -58,7 +58,7 @@ resource "random_string" "suffix" {
 }
 
 resource "aws_security_group" "all_worker_mgmt" {
-  name_prefix = "cloudcontroller-eks"
+  name_prefix = "nephe-eks"
   vpc_id      = module.vpc.vpc_id
 
   ingress {
@@ -86,7 +86,7 @@ module "vpc" {
 
   tags = {
     Terraform   = "true"
-    Environment = "cloudcontroller"
+    Environment = "nephe"
   }
 
   public_subnet_tags = {
@@ -104,7 +104,7 @@ module "eks" {
 
   tags = {
     Terraform   = "true"
-    Environment = "cloudcontroller"
+    Environment = "nephe"
   }
 
   vpc_id = module.vpc.vpc_id

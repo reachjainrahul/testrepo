@@ -22,8 +22,8 @@ package common
 import (
 	reflect "reflect"
 
-	v1alpha1 "antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	securitygroup "antrea.io/cloudcontroller/pkg/cloud-provider/securitygroup"
+	v1alpha1 "antrea.io/nephe/apis/crd/v1alpha1"
+	securitygroup "antrea.io/nephe/pkg/cloud-provider/securitygroup"
 	gomock "github.com/golang/mock/gomock"
 	types "k8s.io/apimachinery/pkg/types"
 )

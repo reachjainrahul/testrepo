@@ -26,7 +26,7 @@ import (
 	"go.uber.org/multierr"
 	"k8s.io/apimachinery/pkg/types"
 
-	"antrea.io/cloudcontroller/pkg/cloud-provider/securitygroup"
+	"antrea.io/nephe/pkg/cloud-provider/securitygroup"
 )
 
 const (
@@ -113,7 +113,7 @@ func (ec2Cfg *ec2ServiceConfig) createOrGetSecurityGroups(vpcID string, cloudSgN
 
 func (ec2Cfg *ec2ServiceConfig) createCloudSecurityGroup(cloudSGName string, vpcID string) error {
 	groupInput := &ec2.CreateSecurityGroupInput{
-		Description: aws.String("Managed by cloud controller"),
+		Description: aws.String("Managed by nephe controller"),
 		GroupName:   aws.String(cloudSGName),
 		VpcId:       aws.String(vpcID),
 	}
@@ -377,26 +377,26 @@ func (ec2Cfg *ec2ServiceConfig) updateSecurityGroupMembers(groupCloudSgID *strin
 
 		isGroupSgAttached := false
 		numAppliedToGroupSgsAttached := 0
-		networkInterfaceCloudControllerCreatedCloudSgsSet := make(map[string]struct{})
+		networkInterfaceNepheControllerCreatedCloudSgsSet := make(map[string]struct{})
 		networkInterfaceOtherCloudSgsSet := make(map[string]struct{})
 		networkInterfaceCloudSgs := networkInterface.Groups
 		for _, group := range networkInterfaceCloudSgs {
 			cloudSgName := strings.ToLower(*group.GroupName)
-			_, isCloudControllerCreatedAddrGroup, isCloudControllerCreatedAppliedToGroup :=
-				securitygroup.IsCloudControllerCreatedSG(cloudSgName)
-			if !isCloudControllerCreatedAppliedToGroup && !isCloudControllerCreatedAddrGroup {
+			_, isNepheControllerCreatedAddrGroup, isNepheControllerCreatedAppliedToGroup :=
+				securitygroup.IsNepheControllerCreatedSG(cloudSgName)
+			if !isNepheControllerCreatedAppliedToGroup && !isNepheControllerCreatedAddrGroup {
 				networkInterfaceOtherCloudSgsSet[*group.GroupId] = struct{}{}
 				continue
 			}
 
-			if isCloudControllerCreatedAppliedToGroup {
+			if isNepheControllerCreatedAppliedToGroup {
 				numAppliedToGroupSgsAttached++
 			}
 
 			if strings.Compare(cloudSgName, groupCloudSgName) == 0 {
 				isGroupSgAttached = true
 			}
-			networkInterfaceCloudControllerCreatedCloudSgsSet[*group.GroupId] = struct{}{}
+			networkInterfaceNepheControllerCreatedCloudSgsSet[*group.GroupId] = struct{}{}
 		}
 
 		// if network interface is owned by any of member virtual machines or member interface, its sg needs update
@@ -404,9 +404,9 @@ func (ec2Cfg *ec2ServiceConfig) updateSecurityGroupMembers(groupCloudSgID *strin
 		_, isNicMemberNetworkInterface := memberNetworkInterfaces[*networkInterface.NetworkInterfaceId]
 		if isGroupSgAttached {
 			if !isNicAttachedToMemberVM && !isNicMemberNetworkInterface {
-				delete(networkInterfaceCloudControllerCreatedCloudSgsSet, *groupCloudSgID)
+				delete(networkInterfaceNepheControllerCreatedCloudSgsSet, *groupCloudSgID)
 
-				networkInterfaceCloudSgsSetToAttach := networkInterfaceCloudControllerCreatedCloudSgsSet
+				networkInterfaceCloudSgsSetToAttach := networkInterfaceNepheControllerCreatedCloudSgsSet
 
 				// If network interface has only one AT sg attached, and we are processing AT sg to be removed, network interface
 				// will be attached to default sg along with any attached AG sg(s)
@@ -417,22 +417,22 @@ func (ec2Cfg *ec2ServiceConfig) updateSecurityGroupMembers(groupCloudSgID *strin
 				// address group will be the only sg attached to network interface, attach default sg along with AG security group.
 				if membershipOnly && numAppliedToGroupSgsAttached == 0 {
 					networkInterfaceCloudSgsSetToAttach = buildEc2SgsToAttachForCaseMemberOnlySgWithNoATSgAttached(
-						networkInterfaceCloudControllerCreatedCloudSgsSet, networkInterfaceOtherCloudSgsSet, vpcDefaultSgID)
+						networkInterfaceNepheControllerCreatedCloudSgsSet, networkInterfaceOtherCloudSgsSet, vpcDefaultSgID)
 				}
 
 				networkInterfacesToModify[*networkInterface.NetworkInterfaceId] = networkInterfaceCloudSgsSetToAttach
 			}
 		} else {
 			if isNicAttachedToMemberVM || isNicMemberNetworkInterface {
-				networkInterfaceCloudControllerCreatedCloudSgsSet[*groupCloudSgID] = struct{}{}
+				networkInterfaceNepheControllerCreatedCloudSgsSet[*groupCloudSgID] = struct{}{}
 
-				networkInterfaceCloudSgsSetToAttach := networkInterfaceCloudControllerCreatedCloudSgsSet
+				networkInterfaceCloudSgsSetToAttach := networkInterfaceNepheControllerCreatedCloudSgsSet
 
 				// if network interface is not attached to AT sg and we processing attach of AG sg, keep all existing sgs. Also,
 				// if AG sg will be the only sg attached to network interface, attach default sg along with AG sg.
 				if membershipOnly && numAppliedToGroupSgsAttached == 0 {
 					networkInterfaceCloudSgsSetToAttach = buildEc2SgsToAttachForCaseMemberOnlySgWithNoATSgAttached(
-						networkInterfaceCloudControllerCreatedCloudSgsSet, networkInterfaceOtherCloudSgsSet, vpcDefaultSgID)
+						networkInterfaceNepheControllerCreatedCloudSgsSet, networkInterfaceOtherCloudSgsSet, vpcDefaultSgID)
 				}
 
 				networkInterfacesToModify[*networkInterface.NetworkInterfaceId] = networkInterfaceCloudSgsSetToAttach
@@ -471,11 +471,11 @@ func (ec2Cfg *ec2ServiceConfig) processNetworkInterfaceModifyConcurrently(networ
 	return err
 }
 
-func buildEc2SgsToAttachForCaseMemberOnlySgWithNoATSgAttached(networkInterfaceCloudControllerCreatedCloudSgsSet map[string]struct{},
+func buildEc2SgsToAttachForCaseMemberOnlySgWithNoATSgAttached(networkInterfaceNepheControllerCreatedCloudSgsSet map[string]struct{},
 	networkInterfaceOtherCloudSgsSet map[string]struct{}, vpcDefaultSgID string) map[string]struct{} {
 	networkInterfaceCloudSgsSet := make(map[string]struct{})
-	// add all cloudcontroller created sgs
-	for key, value := range networkInterfaceCloudControllerCreatedCloudSgsSet {
+	// add all nephe created sgs
+	for key, value := range networkInterfaceNepheControllerCreatedCloudSgsSet {
 		networkInterfaceCloudSgsSet[key] = value
 	}
 	// add all other sgs
@@ -483,8 +483,8 @@ func buildEc2SgsToAttachForCaseMemberOnlySgWithNoATSgAttached(networkInterfaceCl
 		networkInterfaceCloudSgsSet[key] = value
 	}
 	// add vpc default sg id, if network interface is going to have all member-only sgs.
-	// so the first time, when nic is getting attached to member-only cloudcontroller sg(s), it will not be
-	// moved out of its existing non-cloudcontroller created sg. And if there are no non-antrea created sg(s)
+	// so the first time, when nic is getting attached to member-only nephe sg(s), it will not be
+	// moved out of its existing non-nephe created sg. And if there are no non-antrea created sg(s)
 	// attached then vpc default sg will also be attached to it
 	if len(networkInterfaceOtherCloudSgsSet) == 0 {
 		networkInterfaceCloudSgsSet[vpcDefaultSgID] = struct{}{}
@@ -493,7 +493,7 @@ func buildEc2SgsToAttachForCaseMemberOnlySgWithNoATSgAttached(networkInterfaceCl
 	return networkInterfaceCloudSgsSet
 }
 
-func (ec2Cfg *ec2ServiceConfig) getCloudControllerManagedSecurityGroupsCloudView() []securitygroup.SynchronizationContent {
+func (ec2Cfg *ec2ServiceConfig) getNepheControllerManagedSecurityGroupsCloudView() []securitygroup.SynchronizationContent {
 	vpcIDs := ec2Cfg.getCachedVpcIDs()
 	if len(vpcIDs) == 0 {
 		return []securitygroup.SynchronizationContent{}
@@ -518,7 +518,7 @@ func (ec2Cfg *ec2ServiceConfig) getCloudControllerManagedSecurityGroupsCloudView
 	memberCloudResourcesWithOtherSGsAttachedMap := make(map[string]struct{})
 	for _, networkInterface := range networkInterfaces {
 		isAttachedToOtherSG := false
-		isAttachedToCloudControllerSG := false
+		isAttachedToNepheControllerSG := false
 
 		networkInterfaceID := *networkInterface.NetworkInterfaceId
 		networkInterfaceCloudSgs := networkInterface.Groups
@@ -539,10 +539,10 @@ func (ec2Cfg *ec2ServiceConfig) getCloudControllerManagedSecurityGroupsCloudView
 			cloudResources := managedSgIDToMemberCloudResourcesMap[sgID]
 			cloudResources = append(cloudResources, cloudResource)
 			managedSgIDToMemberCloudResourcesMap[sgID] = cloudResources
-			isAttachedToCloudControllerSG = true
+			isAttachedToNepheControllerSG = true
 		}
 
-		if isAttachedToCloudControllerSG && isAttachedToOtherSG {
+		if isAttachedToNepheControllerSG && isAttachedToOtherSG {
 			memberCloudResourcesWithOtherSGsAttachedMap[networkInterfaceID] = struct{}{}
 		}
 	}
@@ -555,7 +555,7 @@ func (ec2Cfg *ec2ServiceConfig) getCloudControllerManagedSecurityGroupsCloudView
 
 		// find AT or AG
 		isMembershipOnly := false
-		SgName, isAG, _ := securitygroup.IsCloudControllerCreatedSG(cloudSgName)
+		SgName, isAG, _ := securitygroup.IsNepheControllerCreatedSG(cloudSgName)
 		if isAG {
 			isMembershipOnly = true
 		}
@@ -598,7 +598,7 @@ func getCloudSecurityGroupsByType(cloudSecurityGroups []*ec2.SecurityGroup) (map
 		sgID := *cloudSecurityGroup.GroupId
 		cloudSgName := *cloudSecurityGroup.GroupName
 
-		_, isAG, isAT := securitygroup.IsCloudControllerCreatedSG(cloudSgName)
+		_, isAG, isAT := securitygroup.IsNepheControllerCreatedSG(cloudSgName)
 		if isAG || isAT {
 			managedSgIDToCloudSecurityGroupObj[sgID] = cloudSecurityGroup
 		} else {
@@ -839,7 +839,7 @@ func (c *awsCloud) GetEnforcedSecurity() []securitygroup.SynchronizationContent 
 				awsPluginLogger().Error(err, "enforced-security-cloud-view GET for account skipped", "account", accCfg.GetNamespacedName())
 				return
 			}
-			sendCh <- ec2Service.getCloudControllerManagedSecurityGroupsCloudView()
+			sendCh <- ec2Service.getNepheControllerManagedSecurityGroupsCloudView()
 		}(accNamespacedNameCopy, ch)
 	}
 

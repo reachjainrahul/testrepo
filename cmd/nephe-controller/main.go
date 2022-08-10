@@ -24,11 +24,11 @@ import (
 
 	antreanetworking "antrea.io/antrea/pkg/apis/controlplane/v1beta2"
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
-	crdv1alpha1 "antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	runtimev1alpha1 "antrea.io/cloudcontroller/apis/runtime/v1alpha1"
-	"antrea.io/cloudcontroller/pkg/apiserver"
-	controllers "antrea.io/cloudcontroller/pkg/controllers/cloud"
-	"antrea.io/cloudcontroller/pkg/logging"
+	crdv1alpha1 "antrea.io/nephe/apis/crd/v1alpha1"
+	runtimev1alpha1 "antrea.io/nephe/apis/runtime/v1alpha1"
+	"antrea.io/nephe/pkg/apiserver"
+	controllers "antrea.io/nephe/pkg/controllers/cloud"
+	"antrea.io/nephe/pkg/logging"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -135,7 +135,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&apiserver.CloudControllerAPIServer{}).SetupWithManager(mgr,
+	if err = (&apiserver.NepheControllerAPIServer{}).SetupWithManager(mgr,
 		npController.GetVirtualMachinePolicyIndexer(), logging.GetLogger("apiServer")); err != nil {
 		setupLog.Error(err, "unable to create APIServer")
 		os.Exit(1)

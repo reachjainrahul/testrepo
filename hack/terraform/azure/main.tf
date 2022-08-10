@@ -23,11 +23,11 @@ resource "azurerm_resource_group" "vm" {
 }
 
 locals {
-  resource_group_name = "cloudcontroller-vnet-${var.owner}-${random_string.suffix.result}"
+  resource_group_name = "nephe-vnet-${var.owner}-${random_string.suffix.result}"
 }
 
 locals {
-  vnet_name_random = "cloudcontroller-vnet-${random_id.suffix.hex}"
+  vnet_name_random = "nephe-vnet-${random_id.suffix.hex}"
 }
 
 resource "random_id" "suffix" {
@@ -67,7 +67,7 @@ module "vm_cluster" {
 
   tags = {
     Terraform   = "true"
-    Environment = "cloudcontroller"
+    Environment = "nephe"
     Name        = var.azure_vm_os_types[count.index].name
   }
 }

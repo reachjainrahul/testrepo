@@ -17,11 +17,11 @@ package aws
 import (
 	"k8s.io/apimachinery/pkg/types"
 
-	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	cloudv1alpha1 "antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	cloudcommon "antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/common"
-	"antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/internal"
-	"antrea.io/cloudcontroller/pkg/logging"
+	"antrea.io/nephe/apis/crd/v1alpha1"
+	cloudv1alpha1 "antrea.io/nephe/apis/crd/v1alpha1"
+	cloudcommon "antrea.io/nephe/pkg/cloud-provider/cloudapi/common"
+	"antrea.io/nephe/pkg/cloud-provider/cloudapi/internal"
+	"antrea.io/nephe/pkg/logging"
 )
 
 var awsPluginLogger = func() logging.Logger {

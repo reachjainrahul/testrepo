@@ -2,8 +2,8 @@ domain: cloud.antrea.io
 layout:
 - go.kubebuilder.io/v3
 multigroup: true
-projectName: cloudcontroller
-repo: antrea.io/cloudcontroller
+projectName: nephe
+repo: antrea.io/nephe
 resources:
 - api:
     crdVersion: v1
@@ -12,7 +12,7 @@ resources:
   domain: cloud.antrea.io
   group: crd
   kind: CloudEntitySelector
-  path: antrea.io/cloudcontroller/apis/crd/v1alpha1
+  path: antrea.io/nephe/apis/crd/v1alpha1
   version: v1alpha1
   webhooks:
     defaulting: true
@@ -25,7 +25,7 @@ resources:
   domain: cloud.antrea.io
   group: crd
   kind: VirtualMachine
-  path: antrea.io/cloudcontroller/apis/crd/v1alpha1
+  path: antrea.io/nephe/apis/crd/v1alpha1
   version: v1alpha1
   webhooks:
     defaulting: true
@@ -38,7 +38,7 @@ resources:
   domain: cloud.antrea.io
   group: crd
   kind: NetworkInterface
-  path: antrea.io/cloudcontroller/apis/crd/v1alpha1
+  path: antrea.io/nephe/apis/crd/v1alpha1
   version: v1alpha1
 - api:
     crdVersion: v1
@@ -47,7 +47,7 @@ resources:
   domain: cloud.antrea.io
   group: crd
   kind: CloudProviderAccount
-  path: antrea.io/cloudcontroller/apis/crd/v1alpha1
+  path: antrea.io/nephe/apis/crd/v1alpha1
   version: v1alpha1
   webhooks:
     defaulting: true

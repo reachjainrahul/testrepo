@@ -33,10 +33,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
-	cloudv1alpha1 "antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	runtimev1alpha1 "antrea.io/cloudcontroller/apis/runtime/v1alpha1"
-	"antrea.io/cloudcontroller/pkg/logging"
-	"antrea.io/cloudcontroller/test/utils"
+	cloudv1alpha1 "antrea.io/nephe/apis/crd/v1alpha1"
+	runtimev1alpha1 "antrea.io/nephe/apis/runtime/v1alpha1"
+	"antrea.io/nephe/pkg/logging"
+	"antrea.io/nephe/test/utils"
 )
 
 const (
@@ -66,7 +66,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&manifest, "manifest-path", "./config/cloud-controller.yml", "The relative path to manifest.")
+	flag.StringVar(&manifest, "manifest-path", "./config/nephe.yml", "The relative path to manifest.")
 	flag.BoolVar(&preserveSetupOnFail, "preserve-setup-on-fail", false, "Preserve the setup if a test failed.")
 	flag.StringVar(&supportBundleDir, "support-bundle-dir", "", "Support bundles are saved in this dir when specified.")
 	flag.StringVar(&cloudProviders, "cloud-provider", string(cloudv1alpha1.AzureCloudProvider),
@@ -104,13 +104,13 @@ var _ = BeforeSuite(func(done Done) {
 	Expect(err).ToNot(HaveOccurred())
 	Expect(kubeCtl).ToNot(BeNil())
 
-	cloudControllerManifests := make(map[string]string)
+	nepheControllerManifests := make(map[string]string)
 	k8sClients = make(map[string]client.Client)
 	clusters = strings.Split(clusterContexts, ",")
 	for _, cluster := range clusters {
 		bytes, err := ioutil.ReadFile(manifest)
 		Expect(err).ToNot(HaveOccurred())
-		cloudControllerManifests[cluster] = string(bytes)
+		nepheControllerManifests[cluster] = string(bytes)
 
 		c, err := utils.NewK8sClient(scheme, cluster)
 		Expect(err).ToNot(HaveOccurred())
@@ -142,7 +142,7 @@ var _ = BeforeSuite(func(done Done) {
 	}()
 
 	for _, cluster := range clusters {
-		cloudControllerManifest := cloudControllerManifests[cluster]
+		nepheControllerManifest := nepheControllerManifests[cluster]
 		kubeCtl.SetContext(cluster)
 		cl := k8sClients[cluster]
 		if len(cluster) == 0 {
@@ -161,12 +161,12 @@ var _ = BeforeSuite(func(done Done) {
 		err = utils.RestartOrWaitDeployment(cl, "antrea-controller", "kube-system", time.Second*120, false)
 		Expect(err).ToNot(HaveOccurred())
 
-		By(cluster + ": Applying cloud controller manifest")
-		err = kubeCtl.Apply("", []byte(cloudControllerManifest))
+		By(cluster + ": Applying nephe controller manifest")
+		err = kubeCtl.Apply("", []byte(nepheControllerManifest))
 		Expect(err).ToNot(HaveOccurred())
 
-		By(cluster + ": Check cloud controller is ready")
-		err = utils.RestartOrWaitDeployment(cl, "cloud-controller", "kube-system", time.Second*120, false)
+		By(cluster + ": Check nephe controller is ready")
+		err = utils.RestartOrWaitDeployment(cl, "nephe-controller", "kube-system", time.Second*120, false)
 		Expect(err).ToNot(HaveOccurred())
 	}
 	// Check create VPC status.
@@ -208,7 +208,7 @@ var _ = AfterSuite(func(done Done) {
 		By(cluster + ": Check for controllers' restarts")
 		err = utils.CheckRestart(kubeCtl)
 		if err != nil {
-			logf.Log.Error(err, "Error restarting cloud controller")
+			logf.Log.Error(err, "Error restarting nephe controller")
 			cl := cluster
 			controllersCored = &cl
 			break

@@ -26,9 +26,9 @@ import (
 	"go.uber.org/multierr"
 	"k8s.io/apimachinery/pkg/types"
 
-	"antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/common"
-	"antrea.io/cloudcontroller/pkg/cloud-provider/securitygroup"
-	"antrea.io/cloudcontroller/pkg/cloud-provider/utils"
+	"antrea.io/nephe/pkg/cloud-provider/cloudapi/common"
+	"antrea.io/nephe/pkg/cloud-provider/securitygroup"
+	"antrea.io/nephe/pkg/cloud-provider/utils"
 )
 
 const (
@@ -197,8 +197,8 @@ func (computeCfg *computeServiceConfig) processAddressGroupMembership(addressGro
 				azurePluginLogger().Error(err, "asg ID format not valid", "asgID", asgID)
 				continue
 			}
-			_, isCloudControllerCreatedAG, _ := securitygroup.IsCloudControllerCreatedSG(asgNameLowercase)
-			if !isCloudControllerCreatedAG {
+			_, isNepheControllerCreatedAG, _ := securitygroup.IsNepheControllerCreatedSG(asgNameLowercase)
+			if !isNepheControllerCreatedAG {
 				continue
 			}
 			if strings.Compare(asgNameLowercase, cloudAsgNameLowercase) == 0 {
@@ -274,20 +274,20 @@ func (computeCfg *computeServiceConfig) buildEffectiveNSGSecurityRulesToApply(ap
 	var currentNsgIngressRules []network.SecurityRule
 	var currentNsgEgressRules []network.SecurityRule
 	currentNsgSecurityRules := nsgObj.SecurityRules
-	appliedToGroupCloudControllerName := appliedToGroupID.GetCloudName(false)
-	azurePluginLogger().Info("building security rules", "applied to security group", appliedToGroupCloudControllerName)
+	appliedToGroupNepheControllerName := appliedToGroupID.GetCloudName(false)
+	azurePluginLogger().Info("building security rules", "applied to security group", appliedToGroupNepheControllerName)
 	for _, rule := range *currentNsgSecurityRules {
-		// skip any rules not created by cloudcontroller
+		// skip any rules not created by nephe
 		if rule.Description == nil {
 			continue
 		}
 		ruleAddrGroupName := *rule.Description
-		_, _, isCloudControllerCreatedRule := securitygroup.IsCloudControllerCreatedSG(ruleAddrGroupName)
-		if !isCloudControllerCreatedRule {
+		_, _, isNepheControllerCreatedRule := securitygroup.IsNepheControllerCreatedSG(ruleAddrGroupName)
+		if !isNepheControllerCreatedRule {
 			continue
 		}
 		// skip any rules created by current processing appliedToGroup (as we have new rules for this group)
-		if strings.Compare(ruleAddrGroupName, appliedToGroupCloudControllerName) == 0 {
+		if strings.Compare(ruleAddrGroupName, appliedToGroupNepheControllerName) == 0 {
 			continue
 		}
 		if rule.Direction == network.SecurityRuleDirectionInbound {
@@ -297,19 +297,19 @@ func (computeCfg *computeServiceConfig) buildEffectiveNSGSecurityRulesToApply(ap
 		}
 	}
 
-	agAsgMapByCloudControllerName, atAsgMapByCloudControllerName, err := getCloudControllerCreatedAsgByNameForResourceGroup(
+	agAsgMapByNepheControllerName, atAsgMapByNepheControllerName, err := getNepheControllerCreatedAsgByNameForResourceGroup(
 		computeCfg.asgAPIClient, rgName)
 	if err != nil {
 		return []network.SecurityRule{}, err
 	}
 
 	newIngressSecurityRules, err := convertIngressToAzureNsgSecurityRules(appliedToGroupID, ingressRules,
-		agAsgMapByCloudControllerName, atAsgMapByCloudControllerName)
+		agAsgMapByNepheControllerName, atAsgMapByNepheControllerName)
 	if err != nil {
 		return []network.SecurityRule{}, err
 	}
 	newEgressSecurityRules, err := convertEgressToAzureNsgSecurityRules(appliedToGroupID, egressRules,
-		agAsgMapByCloudControllerName, atAsgMapByCloudControllerName)
+		agAsgMapByNepheControllerName, atAsgMapByNepheControllerName)
 	if err != nil {
 		return []network.SecurityRule{}, err
 	}
@@ -335,20 +335,20 @@ func (computeCfg *computeServiceConfig) buildEffectivePeerNSGSecurityRulesToAppl
 	var currentNsgIngressRules []network.SecurityRule
 	var currentNsgEgressRules []network.SecurityRule
 	currentNsgSecurityRules := nsgObj.SecurityRules
-	appliedToGroupCloudControllerName := appliedToGroupID.GetCloudName(false)
-	azurePluginLogger().Info("building peering security rules", "applied to security group", appliedToGroupCloudControllerName)
+	appliedToGroupNepheControllerName := appliedToGroupID.GetCloudName(false)
+	azurePluginLogger().Info("building peering security rules", "applied to security group", appliedToGroupNepheControllerName)
 	for _, rule := range *currentNsgSecurityRules {
-		// skip any rules not created by cloudcontroller
+		// skip any rules not created by nephe
 		if rule.Description == nil {
 			continue
 		}
 		ruleAddrGroupName := *rule.Description
-		_, _, isCloudControllerCreatedRule := securitygroup.IsCloudControllerCreatedSG(ruleAddrGroupName)
-		if !isCloudControllerCreatedRule {
+		_, _, isNepheControllerCreatedRule := securitygroup.IsNepheControllerCreatedSG(ruleAddrGroupName)
+		if !isNepheControllerCreatedRule {
 			continue
 		}
 		// skip any rules created by current processing appliedToGroup (as we have new rules for this group)
-		if strings.Compare(ruleAddrGroupName, appliedToGroupCloudControllerName) == 0 {
+		if strings.Compare(ruleAddrGroupName, appliedToGroupNepheControllerName) == 0 {
 			continue
 		}
 		if rule.Direction == network.SecurityRuleDirectionInbound {
@@ -358,18 +358,18 @@ func (computeCfg *computeServiceConfig) buildEffectivePeerNSGSecurityRulesToAppl
 		}
 	}
 
-	agAsgMapByCloudControllerName, _, err := getCloudControllerCreatedAsgByNameForResourceGroup(computeCfg.asgAPIClient, rgName)
+	agAsgMapByNepheControllerName, _, err := getNepheControllerCreatedAsgByNameForResourceGroup(computeCfg.asgAPIClient, rgName)
 	if err != nil {
 		return []network.SecurityRule{}, err
 	}
 
 	newIngressSecurityRules, err := convertIngressToAzurePeerNsgSecurityRules(appliedToGroupID, ingressRules,
-		agAsgMapByCloudControllerName, ruleIP)
+		agAsgMapByNepheControllerName, ruleIP)
 	if err != nil {
 		return []network.SecurityRule{}, err
 	}
 	newEgressSecurityRules, err := convertEgressToAzurePeerNsgSecurityRules(appliedToGroupID, egressRules,
-		agAsgMapByCloudControllerName, ruleIP)
+		agAsgMapByNepheControllerName, ruleIP)
 	if err != nil {
 		return []network.SecurityRule{}, err
 	}
@@ -424,9 +424,9 @@ func (computeCfg *computeServiceConfig) removeReferencesToSecurityGroup(id *secu
 	}
 	tokens := strings.Split(id.Vpc, "/")
 	suffix := tokens[len(tokens)-1]
-	perVnetNsgCloudControllerName := appliedToSG.GetCloudName(false) + "-" + suffix
+	perVnetNsgNepheControllerName := appliedToSG.GetCloudName(false) + "-" + suffix
 
-	nsgObj, err := computeCfg.nsgAPIClient.get(context.Background(), rgName, perVnetNsgCloudControllerName, "")
+	nsgObj, err := computeCfg.nsgAPIClient.get(context.Background(), rgName, perVnetNsgNepheControllerName, "")
 	if err != nil {
 		return err
 	}
@@ -476,12 +476,12 @@ func (computeCfg *computeServiceConfig) removeReferencesToSecurityGroup(id *secu
 	if !nsgUpdateRequired {
 		return nil
 	}
-	err = updateNetworkSecurityGroupRules(computeCfg.nsgAPIClient, location, rgName, perVnetNsgCloudControllerName, rulesToKeep)
+	err = updateNetworkSecurityGroupRules(computeCfg.nsgAPIClient, location, rgName, perVnetNsgNepheControllerName, rulesToKeep)
 
 	return err
 }
 
-func getAsgsToAdd(asgs *[]network.ApplicationSecurityGroup, addrGroupCloudControllerName string) (
+func getAsgsToAdd(asgs *[]network.ApplicationSecurityGroup, addrGroupNepheControllerName string) (
 	*[]network.ApplicationSecurityGroup, bool) {
 	var asgsToKeep []network.ApplicationSecurityGroup
 	updated := false
@@ -491,7 +491,7 @@ func getAsgsToAdd(asgs *[]network.ApplicationSecurityGroup, addrGroupCloudContro
 			azurePluginLogger().Error(err, "invalid azure resource ID")
 			continue
 		}
-		if strings.Compare(strings.ToLower(asgName), addrGroupCloudControllerName) == 0 {
+		if strings.Compare(strings.ToLower(asgName), addrGroupNepheControllerName) == 0 {
 			updated = true
 			continue
 		}
@@ -505,7 +505,7 @@ func getAsgsToAdd(asgs *[]network.ApplicationSecurityGroup, addrGroupCloudContro
 
 func (computeCfg *computeServiceConfig) processAndBuildAGSgView(networkInterfaces []*networkInterfaceTable,
 	antreaATSgNameSet map[string]struct{}) ([]securitygroup.SynchronizationContent, error) {
-	cloudControllerAGSgNameToMemberCloudResourcesMap := make(map[string][]securitygroup.CloudResource)
+	nepheControllerAGSgNameToMemberCloudResourcesMap := make(map[string][]securitygroup.CloudResource)
 	asgIDToVnetIDMap := make(map[string]string)
 	for _, networkInterface := range networkInterfaces {
 		if networkInterface.VirtualMachineID == nil {
@@ -515,12 +515,12 @@ func (computeCfg *computeServiceConfig) processAndBuildAGSgView(networkInterface
 		attachedAsgIDs := networkInterface.ApplicationSecurityGroupIDs
 		for _, asgID := range attachedAsgIDs {
 			asgIDLowerCase := strings.ToLower(*asgID)
-			// proceed only if network-interface attached to cloud-controller ASG
+			// proceed only if network-interface attached to nephe ASG
 			_, _, nsgName, err := extractFieldsFromAzureResourceID(asgIDLowerCase)
 			if err != nil {
 				continue
 			}
-			SgName, isAG, _ := securitygroup.IsCloudControllerCreatedSG(nsgName)
+			SgName, isAG, _ := securitygroup.IsNepheControllerCreatedSG(nsgName)
 			if !isAG {
 				continue
 			}
@@ -532,23 +532,23 @@ func (computeCfg *computeServiceConfig) processAndBuildAGSgView(networkInterface
 					Vpc:  vnetIDLowerCase,
 				},
 			}
-			cloudResources := cloudControllerAGSgNameToMemberCloudResourcesMap[SgName]
+			cloudResources := nepheControllerAGSgNameToMemberCloudResourcesMap[SgName]
 			cloudResources = append(cloudResources, cloudResource)
-			cloudControllerAGSgNameToMemberCloudResourcesMap[SgName] = cloudResources
+			nepheControllerAGSgNameToMemberCloudResourcesMap[SgName] = cloudResources
 
 			asgIDToVnetIDMap[asgIDLowerCase] = vnetIDLowerCase
 		}
 	}
 
-	addressGroupSgEnforcedView, err := computeCfg.getAGGroupView(cloudControllerAGSgNameToMemberCloudResourcesMap, asgIDToVnetIDMap,
+	addressGroupSgEnforcedView, err := computeCfg.getAGGroupView(nepheControllerAGSgNameToMemberCloudResourcesMap, asgIDToVnetIDMap,
 		antreaATSgNameSet)
 	return addressGroupSgEnforcedView, err
 }
 
 func (computeCfg *computeServiceConfig) processAndBuildATSgView(networkInterfaces []*networkInterfaceTable) (
 	[]securitygroup.SynchronizationContent, map[string]struct{}, error) {
-	cloudControllerATSgNameToMemberCloudResourcesMap := make(map[string][]securitygroup.CloudResource)
-	perVnetNsgIDToCloudControllerAppliedToSGNameSet := make(map[string]map[string]struct{})
+	nepheControllerATSgNameToMemberCloudResourcesMap := make(map[string][]securitygroup.CloudResource)
+	perVnetNsgIDToNepheControllerAppliedToSGNameSet := make(map[string]map[string]struct{})
 	nsgIDToVnetIDMap := make(map[string]string)
 	for _, networkInterface := range networkInterfaces {
 		if networkInterface.VirtualMachineID == nil {
@@ -558,22 +558,22 @@ func (computeCfg *computeServiceConfig) processAndBuildATSgView(networkInterface
 			continue
 		}
 		nsgIDLowerCase := strings.ToLower(*networkInterface.NetworkSecurityGroupID)
-		// proceed only if network-interface attached to cloud-controller per-vnet NSG
+		// proceed only if network-interface attached to nephe per-vnet NSG
 		_, _, nsgName, err := extractFieldsFromAzureResourceID(nsgIDLowerCase)
 		if err != nil {
 			continue
 		}
-		sgName, _, isAT := securitygroup.IsCloudControllerCreatedSG(nsgName)
+		sgName, _, isAT := securitygroup.IsNepheControllerCreatedSG(nsgName)
 		if !isAT {
 			continue
 		}
 		vnetIDLowerCase := strings.ToLower(*networkInterface.VnetID)
 		nsgIDToVnetIDMap[nsgIDLowerCase] = vnetIDLowerCase
 		if strings.Compare(sgName, strings.ToLower(appliedToSecurityGroupNamePerVnet)) == 0 {
-			// from tags find cloud-controller AT SG(s) and build membership map
-			newCloudControllerAppliedToSGNameSet := make(map[string]struct{})
+			// from tags find nephe AT SG(s) and build membership map
+			newNepheControllerAppliedToSGNameSet := make(map[string]struct{})
 			for key := range networkInterface.Tags[0] {
-				ATSgName, _, isATSG := securitygroup.IsCloudControllerCreatedSG(key)
+				ATSgName, _, isATSG := securitygroup.IsNepheControllerCreatedSG(key)
 				if !isATSG {
 					continue
 				}
@@ -584,44 +584,44 @@ func (computeCfg *computeServiceConfig) processAndBuildATSgView(networkInterface
 						Vpc:  vnetIDLowerCase,
 					},
 				}
-				cloudResources := cloudControllerATSgNameToMemberCloudResourcesMap[ATSgName]
+				cloudResources := nepheControllerATSgNameToMemberCloudResourcesMap[ATSgName]
 				cloudResources = append(cloudResources, cloudResource)
-				cloudControllerATSgNameToMemberCloudResourcesMap[ATSgName] = cloudResources
+				nepheControllerATSgNameToMemberCloudResourcesMap[ATSgName] = cloudResources
 
-				newCloudControllerAppliedToSGNameSet[ATSgName] = struct{}{}
+				newNepheControllerAppliedToSGNameSet[ATSgName] = struct{}{}
 			}
-			if len(newCloudControllerAppliedToSGNameSet) > 0 {
-				existingCloudControllerAppliedToSGNameSet := perVnetNsgIDToCloudControllerAppliedToSGNameSet[nsgIDLowerCase]
-				completeSet := mergeSet(existingCloudControllerAppliedToSGNameSet, newCloudControllerAppliedToSGNameSet)
-				perVnetNsgIDToCloudControllerAppliedToSGNameSet[nsgIDLowerCase] = completeSet
+			if len(newNepheControllerAppliedToSGNameSet) > 0 {
+				existingNepheControllerAppliedToSGNameSet := perVnetNsgIDToNepheControllerAppliedToSGNameSet[nsgIDLowerCase]
+				completeSet := mergeSet(existingNepheControllerAppliedToSGNameSet, newNepheControllerAppliedToSGNameSet)
+				perVnetNsgIDToNepheControllerAppliedToSGNameSet[nsgIDLowerCase] = completeSet
 			}
 		}
 	}
 
-	appliedToSgEnforcedView, antreaAtSgNameSet, err := computeCfg.getATGroupView(cloudControllerATSgNameToMemberCloudResourcesMap,
-		perVnetNsgIDToCloudControllerAppliedToSGNameSet, nsgIDToVnetIDMap)
+	appliedToSgEnforcedView, antreaAtSgNameSet, err := computeCfg.getATGroupView(nepheControllerATSgNameToMemberCloudResourcesMap,
+		perVnetNsgIDToNepheControllerAppliedToSGNameSet, nsgIDToVnetIDMap)
 	return appliedToSgEnforcedView, antreaAtSgNameSet, err
 }
 
-func (computeCfg *computeServiceConfig) getATGroupView(cloudControllerATSGNameToCloudResourcesMap map[string][]securitygroup.CloudResource,
-	perVnetNsgIDToCloudControllerATSGNameSet map[string]map[string]struct{}, nsgIDToVnetID map[string]string) (
+func (computeCfg *computeServiceConfig) getATGroupView(nepheControllerATSGNameToCloudResourcesMap map[string][]securitygroup.CloudResource,
+	perVnetNsgIDToNepheControllerATSGNameSet map[string]map[string]struct{}, nsgIDToVnetID map[string]string) (
 	[]securitygroup.SynchronizationContent, map[string]struct{}, error) {
 	networkSecurityGroups, err := computeCfg.nsgAPIClient.listAllComplete(context.Background())
 	if err != nil {
 		return []securitygroup.SynchronizationContent{}, nil, err
 	}
 
-	cloudControllerATSgNameSet := make(map[string]struct{})
+	nepheControllerATSgNameSet := make(map[string]struct{})
 	var enforcedSecurityCloudView []securitygroup.SynchronizationContent
 	for _, networkSecurityGroup := range networkSecurityGroups {
 		nsgIDLowercase := strings.ToLower(*networkSecurityGroup.ID)
 		vnetIDLowercase := nsgIDToVnetID[nsgIDLowercase]
-		appliedToSgNameSet, found := perVnetNsgIDToCloudControllerATSGNameSet[nsgIDLowercase]
+		appliedToSgNameSet, found := perVnetNsgIDToNepheControllerATSGNameSet[nsgIDLowercase]
 		if !found {
 			continue
 		}
-		cloudControllerATSgNameToIngressRulesMap, cloudControllerATSgNameToEgressRulesMap :=
-			convertToCloudControllerRulesByAppliedToSGName(networkSecurityGroup.SecurityRules, vnetIDLowercase)
+		nepheControllerATSgNameToIngressRulesMap, nepheControllerATSgNameToEgressRulesMap :=
+			convertToNepheControllerRulesByAppliedToSGName(networkSecurityGroup.SecurityRules, vnetIDLowercase)
 
 		for atSgName := range appliedToSgNameSet {
 			resource := securitygroup.CloudResourceID{
@@ -631,21 +631,21 @@ func (computeCfg *computeServiceConfig) getATGroupView(cloudControllerATSGNameTo
 			groupSyncObj := securitygroup.SynchronizationContent{
 				Resource:       resource,
 				MembershipOnly: false,
-				Members:        cloudControllerATSGNameToCloudResourcesMap[atSgName],
-				IngressRules:   cloudControllerATSgNameToIngressRulesMap[atSgName],
-				EgressRules:    cloudControllerATSgNameToEgressRulesMap[atSgName],
+				Members:        nepheControllerATSGNameToCloudResourcesMap[atSgName],
+				IngressRules:   nepheControllerATSgNameToIngressRulesMap[atSgName],
+				EgressRules:    nepheControllerATSgNameToEgressRulesMap[atSgName],
 			}
 			enforcedSecurityCloudView = append(enforcedSecurityCloudView, groupSyncObj)
 
-			cloudControllerATSgNameSet[atSgName] = struct{}{}
+			nepheControllerATSgNameSet[atSgName] = struct{}{}
 		}
 	}
 
-	return enforcedSecurityCloudView, cloudControllerATSgNameSet, nil
+	return enforcedSecurityCloudView, nepheControllerATSgNameSet, nil
 }
 
-func (computeCfg *computeServiceConfig) getAGGroupView(cloudControllerAGSgNameToCloudResourcesMap map[string][]securitygroup.CloudResource,
-	asgIDToVnetID map[string]string, cloudControllerATSgNameSet map[string]struct{}) ([]securitygroup.SynchronizationContent, error) {
+func (computeCfg *computeServiceConfig) getAGGroupView(nepheControllerAGSgNameToCloudResourcesMap map[string][]securitygroup.CloudResource,
+	asgIDToVnetID map[string]string, nepheControllerATSgNameSet map[string]struct{}) ([]securitygroup.SynchronizationContent, error) {
 	appSecurityGroups, err := computeCfg.asgAPIClient.listAllComplete(context.Background())
 	if err != nil {
 		return []securitygroup.SynchronizationContent{}, err
@@ -660,13 +660,13 @@ func (computeCfg *computeServiceConfig) getAGGroupView(cloudControllerAGSgNameTo
 			continue
 		}
 
-		AGSgName, isAG, _ := securitygroup.IsCloudControllerCreatedSG(cloudAsgName)
+		AGSgName, isAG, _ := securitygroup.IsNepheControllerCreatedSG(cloudAsgName)
 		if !isAG {
 			continue
 		}
 
 		// skip asg if it belongs to AT SG
-		_, found := cloudControllerATSgNameSet[AGSgName]
+		_, found := nepheControllerATSgNameSet[AGSgName]
 		if found {
 			continue
 		}
@@ -679,7 +679,7 @@ func (computeCfg *computeServiceConfig) getAGGroupView(cloudControllerAGSgNameTo
 		groupSyncObj := securitygroup.SynchronizationContent{
 			Resource:       resource,
 			MembershipOnly: true,
-			Members:        cloudControllerAGSgNameToCloudResourcesMap[AGSgName],
+			Members:        nepheControllerAGSgNameToCloudResourcesMap[AGSgName],
 		}
 		enforcedSecurityCloudView = append(enforcedSecurityCloudView, groupSyncObj)
 	}
@@ -785,7 +785,7 @@ func (c *azureCloud) UpdateSecurityGroupRules(addressGroupIdentifier *securitygr
 	}
 	tokens := strings.Split(addressGroupIdentifier.Vpc, "/")
 	suffix := tokens[len(tokens)-1]
-	appliedToGroupPerVnetNsgCloudControllerName := appliedToSgID.GetCloudName(false) + "-" + suffix
+	appliedToGroupPerVnetNsgNepheControllerName := appliedToSgID.GetCloudName(false) + "-" + suffix
 	// convert to azure security rules and build effective rules to be applied to AT sg azure NSG
 	rules := []network.SecurityRule{}
 	flag := 0
@@ -802,7 +802,7 @@ func (c *azureCloud) UpdateSecurityGroupRules(addressGroupIdentifier *securitygr
 				break
 			}
 			rules, err = computeService.buildEffectivePeerNSGSecurityRulesToApply(addressGroupIdentifier, ingressRules, egressRules,
-				appliedToGroupPerVnetNsgCloudControllerName, rgName, ruleIP)
+				appliedToGroupPerVnetNsgNepheControllerName, rgName, ruleIP)
 			if err != nil {
 				azurePluginLogger().Error(err, "fail to build effective rules to be applied")
 				return err
@@ -812,14 +812,14 @@ func (c *azureCloud) UpdateSecurityGroupRules(addressGroupIdentifier *securitygr
 	}
 	if flag == 0 {
 		rules, err = computeService.buildEffectiveNSGSecurityRulesToApply(addressGroupIdentifier, ingressRules, egressRules,
-			appliedToGroupPerVnetNsgCloudControllerName, rgName)
+			appliedToGroupPerVnetNsgNepheControllerName, rgName)
 		if err != nil {
 			azurePluginLogger().Error(err, "fail to build effective rules to be applied")
 			return err
 		}
 	}
 	// update network security group with rules
-	err = updateNetworkSecurityGroupRules(computeService.nsgAPIClient, location, rgName, appliedToGroupPerVnetNsgCloudControllerName, rules)
+	err = updateNetworkSecurityGroupRules(computeService.nsgAPIClient, location, rgName, appliedToGroupPerVnetNsgNepheControllerName, rules)
 	if err != nil {
 		return err
 	}
@@ -931,7 +931,7 @@ func (c *azureCloud) GetEnforcedSecurity() []securitygroup.SynchronizationConten
 				azurePluginLogger().Error(err, "enforced-security-cloud-view GET for account skipped", "account", accCfg.GetNamespacedName())
 				return
 			}
-			sendCh <- computeService.getCloudControllerManagedSecurityGroupsCloudView()
+			sendCh <- computeService.getNepheControllerManagedSecurityGroupsCloudView()
 		}(accNamespacedNameCopy, ch)
 	}
 
@@ -943,7 +943,7 @@ func (c *azureCloud) GetEnforcedSecurity() []securitygroup.SynchronizationConten
 	return enforcedSecurityCloudView
 }
 
-func (computeCfg *computeServiceConfig) getCloudControllerManagedSecurityGroupsCloudView() []securitygroup.SynchronizationContent {
+func (computeCfg *computeServiceConfig) getNepheControllerManagedSecurityGroupsCloudView() []securitygroup.SynchronizationContent {
 	vnetIDs := computeCfg.getCachedVnetIDs()
 	if len(vnetIDs) == 0 {
 		return []securitygroup.SynchronizationContent{}

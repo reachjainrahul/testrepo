@@ -24,9 +24,9 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 
-	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	cloudcommon "antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/common"
-	"antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/internal"
+	"antrea.io/nephe/apis/crd/v1alpha1"
+	cloudcommon "antrea.io/nephe/pkg/cloud-provider/cloudapi/common"
+	"antrea.io/nephe/pkg/cloud-provider/cloudapi/internal"
 )
 
 type computeServiceConfig struct {

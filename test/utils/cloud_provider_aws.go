@@ -24,8 +24,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
-	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	k8stemplates "antrea.io/cloudcontroller/test/templates"
+	"antrea.io/nephe/apis/crd/v1alpha1"
+	k8stemplates "antrea.io/nephe/test/templates"
 )
 
 type awsVPC struct {

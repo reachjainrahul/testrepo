@@ -1,4 +1,4 @@
-module antrea.io/cloudcontroller
+module antrea.io/nephe
 
 go 1.17
 

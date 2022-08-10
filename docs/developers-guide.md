@@ -6,7 +6,7 @@ To install `kubebuilder version 3`, please refer to
 
 ## Prerequisites
 
-The following tools are required to build, test and run Cloud Controller
+The following tools are required to build, test and run Nephe
 `cloud-controller`.
 
 - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)

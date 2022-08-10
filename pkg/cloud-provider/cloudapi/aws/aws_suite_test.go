@@ -20,7 +20,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"antrea.io/cloudcontroller/pkg/logging"
+	"antrea.io/nephe/pkg/logging"
 )
 
 func TestAws(t *testing.T) {

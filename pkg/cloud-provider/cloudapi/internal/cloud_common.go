@@ -22,8 +22,8 @@ import (
 	"go.uber.org/multierr"
 	"k8s.io/apimachinery/pkg/types"
 
-	cloudv1alpha1 "antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	"antrea.io/cloudcontroller/pkg/logging"
+	cloudv1alpha1 "antrea.io/nephe/apis/crd/v1alpha1"
+	"antrea.io/nephe/pkg/logging"
 )
 
 // CloudCommonHelperInterface interface needs to be implemented by each cloud-plugin. It provides a way to inject

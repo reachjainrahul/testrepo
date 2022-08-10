@@ -12,7 +12,7 @@ spec:
       clientConfig:
         caBundle: Cg==
         service:
-          name: cloud-controller-webhook-service
+          name: nephe-controller-webhook-service
           namespace: kube-system
           path: /convert
       conversionReviewVersions:
@@ -103,7 +103,7 @@ spec:
       clientConfig:
         caBundle: Cg==
         service:
-          name: cloud-controller-webhook-service
+          name: nephe-controller-webhook-service
           namespace: kube-system
           path: /convert
       conversionReviewVersions:
@@ -211,7 +211,7 @@ spec:
       clientConfig:
         caBundle: Cg==
         service:
-          name: cloud-controller-webhook-service
+          name: nephe-controller-webhook-service
           namespace: kube-system
           path: /convert
       conversionReviewVersions:
@@ -552,7 +552,7 @@ subjects:
 apiVersion: v1
 kind: Service
 metadata:
-  name: cloud-controller-service
+  name: nephe-controller-service
   namespace: kube-system
 spec:
   ports:
@@ -560,46 +560,46 @@ spec:
     protocol: TCP
     targetPort: 5443
   selector:
-    control-plane: cloud-controller
+    control-plane: nephe-controller
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: cloud-controller-webhook-service
+  name: nephe-controller-webhook-service
   namespace: kube-system
 spec:
   ports:
   - port: 443
     targetPort: 9443
   selector:
-    control-plane: cloud-controller
+    control-plane: nephe-controller
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    control-plane: cloud-controller
-  name: cloud-controller
+    control-plane: nephe-controller
+  name: nephe-controller
   namespace: kube-system
 spec:
   replicas: 1
   selector:
     matchLabels:
-      control-plane: cloud-controller
+      control-plane: nephe-controller
   template:
     metadata:
       labels:
-        control-plane: cloud-controller
+        control-plane: nephe-controller
     spec:
       containers:
       - args:
         - --enable-leader-election
         - --enable-debug-log
         command:
-        - /cloud-controller
-        image: antrea/cloud-controller:latest
+        - /nephe-controller
+        image: antrea/nephe:latest
         imagePullPolicy: IfNotPresent
-        name: cloud-controller
+        name: nephe-controller
         ports:
         - containerPort: 9443
           name: webhook-server
@@ -639,7 +639,7 @@ spec:
   group: runtime.cloud.antrea.io
   groupPriorityMinimum: 100
   service:
-    name: cloud-controller-service
+    name: nephe-controller-service
     namespace: kube-system
   version: v1alpha1
   versionPriority: 100
@@ -671,7 +671,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: kube-system/serving-cert
-  name: cloud-controller-mutating-webhook-configuration
+  name: nephe-controller-mutating-webhook-configuration
 webhooks:
 - admissionReviewVersions:
   - v1
@@ -679,7 +679,7 @@ webhooks:
   clientConfig:
     caBundle: Cg==
     service:
-      name: cloud-controller-webhook-service
+      name: nephe-controller-webhook-service
       namespace: kube-system
       path: /mutate-crd-cloud-antrea-io-v1alpha1-virtualmachine
   failurePolicy: Fail
@@ -701,7 +701,7 @@ webhooks:
   clientConfig:
     caBundle: Cg==
     service:
-      name: cloud-controller-webhook-service
+      name: nephe-controller-webhook-service
       namespace: kube-system
       path: /mutate-crd-cloud-antrea-io-v1alpha1-cloudentityselector
   failurePolicy: Fail
@@ -723,7 +723,7 @@ webhooks:
   clientConfig:
     caBundle: Cg==
     service:
-      name: cloud-controller-webhook-service
+      name: nephe-controller-webhook-service
       namespace: kube-system
       path: /mutate-crd-cloud-antrea-io-v1alpha1-cloudprovideraccount
   failurePolicy: Fail
@@ -744,7 +744,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: kube-system/serving-cert
-  name: cloud-controller-validating-webhook-configuration
+  name: nephe-controller-validating-webhook-configuration
 webhooks:
 - admissionReviewVersions:
   - v1
@@ -752,7 +752,7 @@ webhooks:
   clientConfig:
     caBundle: Cg==
     service:
-      name: cloud-controller-webhook-service
+      name: nephe-controller-webhook-service
       namespace: kube-system
       path: /validate-crd-cloud-antrea-io-v1alpha1-virtualmachine
   failurePolicy: Fail
@@ -774,7 +774,7 @@ webhooks:
   clientConfig:
     caBundle: Cg==
     service:
-      name: cloud-controller-webhook-service
+      name: nephe-controller-webhook-service
       namespace: kube-system
       path: /validate-crd-cloud-antrea-io-v1alpha1-cloudentityselector
   failurePolicy: Fail
@@ -796,7 +796,7 @@ webhooks:
   clientConfig:
     caBundle: Cg==
     service:
-      name: cloud-controller-webhook-service
+      name: nephe-controller-webhook-service
       namespace: kube-system
       path: /validate-crd-cloud-antrea-io-v1alpha1-cloudprovideraccount
   failurePolicy: Fail
