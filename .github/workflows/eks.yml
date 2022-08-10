@@ -61,7 +61,7 @@ jobs:
           echo "Rahul Jain" > $HOME/.aws/file1
           
       - name: Tar log files
-        run: tar -czf log.tar.gz $HOME/.aws/
+        run: tar -czf log.tar.gz  -C $HOME/.aws . 
 
       - name: Upload test log
         uses: actions/upload-artifact@v3
