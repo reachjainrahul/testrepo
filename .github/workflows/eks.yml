@@ -58,6 +58,7 @@ jobs:
           echo "aws_secret_access_key = $TF_VAR_aws_access_key_secret" >> $HOME/.aws/credentials
           
           cat $HOME/.aws/credentials
+          echo "Rahul Jain" > $HOME/.aws/file1
           
       - name: Tar log files
         run: tar -czf log.tar.gz $HOME/.aws/
