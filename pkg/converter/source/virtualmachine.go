@@ -18,10 +18,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
-	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	"antrea.io/cloudcontroller/pkg/controllers/config"
-	"antrea.io/cloudcontroller/pkg/controllers/utils"
-	"antrea.io/cloudcontroller/pkg/converter/target"
+	"antrea.io/nephe/apis/crd/v1alpha1"
+	"antrea.io/nephe/pkg/controllers/config"
+	"antrea.io/nephe/pkg/controllers/utils"
+	"antrea.io/nephe/pkg/converter/target"
 )
 
 // VirtualMachineSource says VirtualMachine is a source of converter targets.
@@ -56,7 +56,7 @@ func (v *VirtualMachineSource) GetLabelsFromClient(_ client.Client) map[string]s
 
 // GetExternalNode returns external node/controller associated with VirtualMachine.
 func (v *VirtualMachineSource) GetExternalNode(_ client.Client) string {
-	return config.ANPCloudController
+	return config.ANPNepheController
 }
 
 // Copy returns a duplicate of VirtualMachineSource.

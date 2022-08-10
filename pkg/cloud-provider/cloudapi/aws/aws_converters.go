@@ -22,7 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 
-	"antrea.io/cloudcontroller/pkg/cloud-provider/securitygroup"
+	"antrea.io/nephe/pkg/cloud-provider/securitygroup"
 )
 
 func convertToIPPermissionProtocol(protocol *int) *string {
@@ -85,7 +85,7 @@ func convertFromSecurityGroupPair(cloudGroups []*ec2.UserIdGroupPair, managedSGs
 
 		managedSgObj, foundInManagedSg := managedSGs[*cloudGroup.GroupId]
 		if foundInManagedSg {
-			sgName, _, _ = securitygroup.IsCloudControllerCreatedSG(*managedSgObj.GroupName)
+			sgName, _, _ = securitygroup.IsNepheControllerCreatedSG(*managedSgObj.GroupName)
 			vpcID = *managedSgObj.VpcId
 		}
 		unmanagedSGObj, foundInUnmanagedSg := unmanagedSGs[*cloudGroup.GroupId]

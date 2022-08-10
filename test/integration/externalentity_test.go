@@ -32,10 +32,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
-	"antrea.io/cloudcontroller/pkg/controllers/config"
-	"antrea.io/cloudcontroller/pkg/converter/target"
-	"antrea.io/cloudcontroller/pkg/testing"
-	"antrea.io/cloudcontroller/test/utils"
+	"antrea.io/nephe/pkg/controllers/config"
+	"antrea.io/nephe/pkg/converter/target"
+	"antrea.io/nephe/pkg/testing"
+	"antrea.io/nephe/test/utils"
 )
 
 var _ = Describe(fmt.Sprintf("%s,%s: ExternalEntity", focusAws, focusAzure), func() {
@@ -132,12 +132,12 @@ var _ = Describe(fmt.Sprintf("%s,%s: ExternalEntity", focusAws, focusAzure), fun
 		spec := &antreatypes.ExternalEntitySpec{
 			Endpoints:    expectedEndpoints[:epNum],
 			Ports:        expectPorts,
-			ExternalNode: config.ANPCloudController,
+			ExternalNode: config.ANPNepheController,
 		}
 		checkEndpoints(eeFetchKey, spec)
 
 		if restartController {
-			err = utils.RestartOrWaitDeployment(k8sClient, "cloud-controller", "kube-system", time.Second*120, true)
+			err = utils.RestartOrWaitDeployment(k8sClient, "nephe-controller", "kube-system", time.Second*120, true)
 			Expect(err).ToNot(HaveOccurred())
 			// After restart controller, test need to permit time to allow ExternalEntitySources to be re-learnt.
 			time.Sleep(time.Second * 10)
@@ -151,7 +151,7 @@ var _ = Describe(fmt.Sprintf("%s,%s: ExternalEntity", focusAws, focusAzure), fun
 			spec := &antreatypes.ExternalEntitySpec{
 				Endpoints:    expectedEndpoints[1:],
 				Ports:        expectPorts,
-				ExternalNode: config.ANPCloudController,
+				ExternalNode: config.ANPNepheController,
 			}
 			checkEndpoints(eeFetchKey, spec)
 
@@ -171,7 +171,7 @@ var _ = Describe(fmt.Sprintf("%s,%s: ExternalEntity", focusAws, focusAzure), fun
 			spec = &antreatypes.ExternalEntitySpec{
 				Endpoints:    expectedEndpoints,
 				Ports:        expectPorts,
-				ExternalNode: config.ANPCloudController,
+				ExternalNode: config.ANPNepheController,
 			}
 			checkEndpoints(eeFetchKey, spec)
 		}

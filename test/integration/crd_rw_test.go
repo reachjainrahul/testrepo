@@ -32,8 +32,8 @@ import (
 
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
 
-	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	"antrea.io/cloudcontroller/test/utils"
+	"antrea.io/nephe/apis/crd/v1alpha1"
+	"antrea.io/nephe/test/utils"
 )
 
 var _ = Describe(fmt.Sprintf("%s,%s: Basic CRD Read-Write", focusAws, focusAzure), func() {

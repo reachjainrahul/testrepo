@@ -9,7 +9,7 @@ on:
 env:
   KIND_VERSION: v0.12.0
   KUBECTL_VERSION: v1.24.1
-  TERRAFORM_VERSION: 0.13.5
+  TERRAFORM_VERSION: 1.2.2
 
 jobs:
   check-changes:
@@ -47,7 +47,7 @@ jobs:
           unzip ./terraform.zip
           chmod +x ./terraform && mv ./terraform /usr/local/bin/terraform
       - uses: actions/checkout@v3
-      - name: Build Cloud Controller Docker image
+      - name: Build Nephe Docker image
         run: |
           make build
       - name: Pull Docker Images to be used in the tests
@@ -69,7 +69,7 @@ jobs:
           TF_VAR_azure_client_subscription_id: ${{ secrets.AZURE_CLIENT_SUBSCRIPTION_ID }}
           TF_VAR_azure_client_tenant_id: ${{ secrets.AZURE_CLIENT_TENANT_ID }}
           TF_VAR_region: ${{ secrets.region }}
-          TF_VAR_owner: "cloudcontroller"
+          TF_VAR_owner: "nephe"
           AZURE_SSH_PRIV_KEY: ${{ secrets.AZURE_SSH_PRIV_KEY }}
           AZURE_SSH_PUB_KEY: ${{ secrets.AZURE_SSH_PUB_KEY }}
         run: |
@@ -101,7 +101,7 @@ jobs:
           TF_VAR_azure_client_subscription_id: ${{ secrets.AZURE_CLIENT_SUBSCRIPTION_ID }}
           TF_VAR_azure_client_tenant_id: ${{ secrets.AZURE_CLIENT_TENANT_ID }}
           TF_VAR_region: ${{ secrets.region }}
-          TF_VAR_owner: "cloudcontroller"
+          TF_VAR_owner: "nephe"
         run: |
            ~/terraform/azure-tf destroy
   

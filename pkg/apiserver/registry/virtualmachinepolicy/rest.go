@@ -29,8 +29,8 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"strings"
 
-	runtimev1alpha1 "antrea.io/cloudcontroller/apis/runtime/v1alpha1"
-	"antrea.io/cloudcontroller/pkg/controllers/cloud"
+	runtimev1alpha1 "antrea.io/nephe/apis/runtime/v1alpha1"
+	"antrea.io/nephe/pkg/controllers/cloud"
 )
 
 // REST implements rest.Storage for VirtualMachinePolicy.

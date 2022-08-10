@@ -17,9 +17,9 @@ package virtualmachinepolicy_test
 import (
 	"context"
 
-	"antrea.io/cloudcontroller/apis/runtime/v1alpha1"
-	. "antrea.io/cloudcontroller/pkg/apiserver/registry/virtualmachinepolicy"
-	"antrea.io/cloudcontroller/pkg/controllers/cloud"
+	"antrea.io/nephe/apis/runtime/v1alpha1"
+	. "antrea.io/nephe/pkg/apiserver/registry/virtualmachinepolicy"
+	"antrea.io/nephe/pkg/controllers/cloud"
 	logger "github.com/go-logr/logr"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

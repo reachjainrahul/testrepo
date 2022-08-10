@@ -36,10 +36,10 @@ import (
 	antreanetworking "antrea.io/antrea/pkg/apis/controlplane/v1beta2"
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
 	antreanetworkingclient "antrea.io/antrea/pkg/client/clientset/versioned/typed/controlplane/v1beta2"
-	cloud "antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	"antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/common"
-	"antrea.io/cloudcontroller/pkg/cloud-provider/securitygroup"
-	"antrea.io/cloudcontroller/pkg/controllers/config"
+	cloud "antrea.io/nephe/apis/crd/v1alpha1"
+	"antrea.io/nephe/pkg/cloud-provider/cloudapi/common"
+	"antrea.io/nephe/pkg/cloud-provider/securitygroup"
+	"antrea.io/nephe/pkg/controllers/config"
 )
 
 const (
@@ -597,7 +597,7 @@ func (r *NetworkPolicyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 func (r *NetworkPolicyReconciler) resetWatchers() error {
 	var err error
 	options := metav1.ListOptions{
-		FieldSelector: fields.OneTermEqualSelector("nodeName", config.ANPCloudController).String(),
+		FieldSelector: fields.OneTermEqualSelector("nodeName", config.ANPNepheController).String(),
 	}
 	for {
 		if r.addrGroupWatcher, err = r.antreaClient.AddressGroups().Watch(context.Background(), options); err != nil {

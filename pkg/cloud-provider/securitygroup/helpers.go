@@ -18,25 +18,25 @@ import (
 	"strings"
 )
 
-func IsCloudControllerCreatedSG(cloudSgName string) (string, bool, bool) {
+func IsNepheControllerCreatedSG(cloudSgName string) (string, bool, bool) {
 	var sgName string
-	isCloudControllerCreatedAddressGroup := false
-	isCloudControllerCreatedAppliedToGroup := false
+	isNepheControllerCreatedAddressGroup := false
+	isNepheControllerCreatedAppliedToGroup := false
 
-	suffix := strings.TrimPrefix(cloudSgName, CloudControllerAddressGroupPrefix)
+	suffix := strings.TrimPrefix(cloudSgName, NepheControllerAddressGroupPrefix)
 	if len(suffix) < len(cloudSgName) {
-		isCloudControllerCreatedAddressGroup = true
+		isNepheControllerCreatedAddressGroup = true
 		sgName = strings.ToLower(suffix)
 	}
 
-	if !isCloudControllerCreatedAddressGroup {
-		suffix := strings.TrimPrefix(cloudSgName, CloudControllerAppliedToPrefix)
+	if !isNepheControllerCreatedAddressGroup {
+		suffix := strings.TrimPrefix(cloudSgName, NepheControllerAppliedToPrefix)
 		if len(suffix) < len(cloudSgName) {
-			isCloudControllerCreatedAppliedToGroup = true
+			isNepheControllerCreatedAppliedToGroup = true
 			sgName = strings.ToLower(suffix)
 		}
 	}
-	return sgName, isCloudControllerCreatedAddressGroup, isCloudControllerCreatedAppliedToGroup
+	return sgName, isNepheControllerCreatedAddressGroup, isNepheControllerCreatedAppliedToGroup
 }
 
 func FindResourcesBasedOnKind(cloudResources []*CloudResource) (map[string]struct{}, map[string]struct{}) {

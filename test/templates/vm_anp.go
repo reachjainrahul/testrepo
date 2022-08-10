@@ -64,16 +64,16 @@ spec:
   - externalEntitySelector:
       matchLabels:
 {{- if .AppliedTo.Kind }}
-        kind.cloudcontroller: {{.AppliedTo.Kind}}
+        kind.nephe: {{.AppliedTo.Kind}}
 {{ end }}
 {{- if .AppliedTo.CloudInstanceName }}
-        name.cloudcontroller: {{.AppliedTo.CloudInstanceName }}
+        name.nephe: {{.AppliedTo.CloudInstanceName }}
 {{ end }}
 {{- if .AppliedTo.VPC }}
-        vpc.cloudcontroller: {{ .AppliedTo.VPC }}
+        vpc.nephe: {{ .AppliedTo.VPC }}
 {{ end }}
 {{- range $k, $v := .AppliedTo.Tags }}
-        {{$k}}.tag.cloudcontroller: {{$v}}
+        {{$k}}.tag.nephe: {{$v}}
 {{ end }}
 {{ end }} {{- /* .AppliedTo */}}
 {{- if .From }}
@@ -92,16 +92,16 @@ spec:
       - externalEntitySelector:
           matchLabels:
 {{- if .From.Entity.Kind }}
-            kind.cloudcontroller: {{.From.Entity.Kind}}
+            kind.nephe: {{.From.Entity.Kind}}
 {{ end }}
 {{- if .From.Entity.CloudInstanceName }}
-            name.cloudcontroller: {{ .From.Entity.CloudInstanceName }}
+            name.nephe: {{ .From.Entity.CloudInstanceName }}
 {{ end }}
 {{- if .From.Entity.VPC }}
-            vpc.cloudcontroller: {{ .From.Entity.VPC }}
+            vpc.nephe: {{ .From.Entity.VPC }}
 {{ end }}
 {{- range $k, $v := .From.Entity.Tags }}
-            {{$k}}.tag.cloudcontroller: {{$v}}
+            {{$k}}.tag.nephe: {{$v}}
 {{ end }}
 {{ end }} {{/*.From.Entity */}}
 {{- if .From.Namespace }}
@@ -135,16 +135,16 @@ spec:
       - externalEntitySelector:
 {{- if .To.Entity.Kind }}
           matchLabels:
-            kind.cloudcontroller: {{.To.Entity.Kind}}
+            kind.nephe: {{.To.Entity.Kind}}
 {{ end }}
 {{- if .To.Entity.CloudInstanceName }}
-            name.cloudcontroller: {{ .To.Entity.CloudInstanceName }}
+            name.nephe: {{ .To.Entity.CloudInstanceName }}
 {{ end }}
 {{- if .To.Entity.VPC }}
-            vpc.cloudcontroller: {{ .To.Entity.VPC }}
+            vpc.nephe: {{ .To.Entity.VPC }}
 {{ end }}
 {{- range $k, $v := .To.Entity.Tags }}
-            {{$k}}.tag.cloudcontroller: {{$v}}
+            {{$k}}.tag.nephe: {{$v}}
 {{ end }}
 {{ end }} {{/* .To.Entity */}}
 {{- if .To.Namespace }}

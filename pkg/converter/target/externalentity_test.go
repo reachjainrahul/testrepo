@@ -15,7 +15,7 @@
 package target_test
 
 import (
-	converter "antrea.io/cloudcontroller/pkg/converter/target"
+	converter "antrea.io/nephe/pkg/converter/target"
 	"context"
 	mock "github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -27,9 +27,9 @@ import (
 
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
 
-	cloud "antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	"antrea.io/cloudcontroller/pkg/testing"
-	"antrea.io/cloudcontroller/pkg/testing/controllerruntimeclient"
+	cloud "antrea.io/nephe/apis/crd/v1alpha1"
+	"antrea.io/nephe/pkg/testing"
+	"antrea.io/nephe/pkg/testing/controllerruntimeclient"
 )
 
 var _ = Describe("Externalentity", func() {

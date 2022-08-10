@@ -21,9 +21,9 @@ import (
 	"strings"
 
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
-	cloud "antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	"antrea.io/cloudcontroller/pkg/converter/source"
-	"antrea.io/cloudcontroller/pkg/converter/target"
+	cloud "antrea.io/nephe/apis/crd/v1alpha1"
+	"antrea.io/nephe/pkg/converter/source"
+	"antrea.io/nephe/pkg/converter/target"
 )
 
 func SetupVirtualMachine(vm *cloud.VirtualMachine, name, namespace string, nics ...*cloud.NetworkInterface) {

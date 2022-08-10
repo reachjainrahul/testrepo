@@ -15,7 +15,7 @@
 package cloud
 
 import (
-	v1alpha1 "antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	v1alpha1 "antrea.io/nephe/apis/crd/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"

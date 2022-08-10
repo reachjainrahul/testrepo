@@ -23,8 +23,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	cloud "antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	"antrea.io/cloudcontroller/pkg/cloud-provider/securitygroup"
+	cloud "antrea.io/nephe/apis/crd/v1alpha1"
+	"antrea.io/nephe/pkg/cloud-provider/securitygroup"
 )
 
 const (

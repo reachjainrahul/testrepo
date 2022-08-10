@@ -25,7 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
-	"antrea.io/cloudcontroller/pkg/controllers/config"
+	"antrea.io/nephe/pkg/controllers/config"
 )
 
 const (

@@ -15,7 +15,7 @@
 package source
 
 import (
-	cloudv1alpha1 "antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	cloudv1alpha1 "antrea.io/nephe/apis/crd/v1alpha1"
 )
 
 var (

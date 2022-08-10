@@ -20,7 +20,7 @@ import (
 	"reflect"
 	"strings"
 
-	cloud "antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	cloud "antrea.io/nephe/apis/crd/v1alpha1"
 )
 
 /*
@@ -102,9 +102,9 @@ Antrea internal NetworkPolicy To SecurityGroup Mapping strategy
 type CloudResourceType string
 
 const (
-	CloudControllerPrefix             = "cloudcontroller-"
-	CloudControllerAddressGroupPrefix = CloudControllerPrefix + "ag-"
-	CloudControllerAppliedToPrefix    = CloudControllerPrefix + "at-"
+	NepheControllerPrefix             = "nephe-"
+	NepheControllerAddressGroupPrefix = NepheControllerPrefix + "ag-"
+	NepheControllerAppliedToPrefix    = NepheControllerPrefix + "at-"
 )
 
 var ProtocolNameNumMap = map[string]int{
@@ -142,9 +142,9 @@ type CloudResourceID struct {
 
 func (c *CloudResourceID) GetCloudName(membershipOnly bool) string {
 	if membershipOnly {
-		return fmt.Sprintf("%v%v", CloudControllerAddressGroupPrefix, strings.ToLower(c.Name))
+		return fmt.Sprintf("%v%v", NepheControllerAddressGroupPrefix, strings.ToLower(c.Name))
 	}
-	return fmt.Sprintf("%v%v", CloudControllerAppliedToPrefix, strings.ToLower(c.Name))
+	return fmt.Sprintf("%v%v", NepheControllerAppliedToPrefix, strings.ToLower(c.Name))
 }
 
 func (c *CloudResourceID) String() string {

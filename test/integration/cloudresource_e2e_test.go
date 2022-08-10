@@ -29,9 +29,9 @@ import (
 	v1 "k8s.io/api/core/v1"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
-	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	k8stemplates "antrea.io/cloudcontroller/test/templates"
-	"antrea.io/cloudcontroller/test/utils"
+	"antrea.io/nephe/apis/crd/v1alpha1"
+	k8stemplates "antrea.io/nephe/test/templates"
+	"antrea.io/nephe/test/utils"
 )
 
 var (
@@ -520,7 +520,7 @@ var _ = Describe(fmt.Sprintf("%s: NetworkPolicy On Cloud Resources", focusAzure)
 			[]string{apachePort}, false)
 		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, false)
 		By("Restarting controllers now...")
-		err = utils.RestartOrWaitDeployment(k8sClient, "cloud-controller", "kube-system", time.Second*200, true)
+		err = utils.RestartOrWaitDeployment(k8sClient, "nephe-controller", "kube-system", time.Second*200, true)
 		Expect(err).ToNot(HaveOccurred())
 		time.Sleep(time.Second * 30)
 		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, true)
@@ -538,7 +538,7 @@ var _ = Describe(fmt.Sprintf("%s: NetworkPolicy On Cloud Resources", focusAzure)
 		var err error
 
 		By("New NetworkPolicy")
-		replicas, err = utils.StopDeployment(k8sClient, "cloud-controller", "kube-system", time.Second*120)
+		replicas, err = utils.StopDeployment(k8sClient, "nephe-controller", "kube-system", time.Second*120)
 		Expect(err).NotTo(HaveOccurred())
 		anpParams.AppliedTo = configANPApplyTo(kind, ids[appliedIdx], "", "", "")
 		oks := make([]bool, len(ids)-1)
@@ -547,7 +547,7 @@ var _ = Describe(fmt.Sprintf("%s: NetworkPolicy On Cloud Resources", focusAzure)
 			[]string{apachePort}, false)
 		err = utils.ConfigureK8s(kubeCtl, anpParams, k8stemplates.CloudAntreaNetworkPolicy, false)
 		Expect(err).ToNot(HaveOccurred())
-		err = utils.StartOrWaitDeployment(k8sClient, "cloud-controller", "kube-system", replicas, time.Second*120)
+		err = utils.StartOrWaitDeployment(k8sClient, "nephe-controller", "kube-system", replicas, time.Second*120)
 		Expect(err).NotTo(HaveOccurred())
 		// wait for aggregated api server to ready.
 		err = utils.WaitApiServer(k8sClient, time.Second*60)
@@ -555,7 +555,7 @@ var _ = Describe(fmt.Sprintf("%s: NetworkPolicy On Cloud Resources", focusAzure)
 		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, true)
 
 		By("Changed NetworkPolicy")
-		replicas, err = utils.StopDeployment(k8sClient, "cloud-controller", "kube-system", time.Second*120)
+		replicas, err = utils.StopDeployment(k8sClient, "nephe-controller", "kube-system", time.Second*120)
 		Expect(err).NotTo(HaveOccurred())
 		oks = make([]bool, len(ids)-1)
 		for i := range oks {
@@ -565,19 +565,19 @@ var _ = Describe(fmt.Sprintf("%s: NetworkPolicy On Cloud Resources", focusAzure)
 			[]string{apachePort}, false)
 		err = utils.ConfigureK8s(kubeCtl, anpParams, k8stemplates.CloudAntreaNetworkPolicy, false)
 		Expect(err).ToNot(HaveOccurred())
-		err = utils.StartOrWaitDeployment(k8sClient, "cloud-controller", "kube-system", replicas, time.Second*120)
+		err = utils.StartOrWaitDeployment(k8sClient, "nephe-controller", "kube-system", replicas, time.Second*120)
 		Expect(err).NotTo(HaveOccurred())
 		err = utils.WaitApiServer(k8sClient, time.Second*60)
 		Expect(err).NotTo(HaveOccurred())
 		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, true)
 
 		By("Stale NetworkPolicy")
-		replicas, err = utils.StopDeployment(k8sClient, "cloud-controller", "kube-system", time.Second*120)
+		replicas, err = utils.StopDeployment(k8sClient, "nephe-controller", "kube-system", time.Second*120)
 		Expect(err).NotTo(HaveOccurred())
 		oks = make([]bool, len(ids)-1)
 		err = utils.ConfigureK8s(kubeCtl, anpParams, k8stemplates.CloudAntreaNetworkPolicy, true)
 		Expect(err).ToNot(HaveOccurred())
-		err = utils.StartOrWaitDeployment(k8sClient, "cloud-controller", "kube-system", replicas, time.Second*120)
+		err = utils.StartOrWaitDeployment(k8sClient, "nephe-controller", "kube-system", replicas, time.Second*120)
 		Expect(err).NotTo(HaveOccurred())
 		err = utils.WaitApiServer(k8sClient, time.Second*60)
 		Expect(err).NotTo(HaveOccurred())

@@ -10,7 +10,7 @@
 
 ## Installation
 
-### Deploying Cloud Controller in a Kind cluster
+### Deploying Nephe in a Kind cluster
 
 Create a Kind Cluster. Recommend Kind v0.12.
 
@@ -18,26 +18,26 @@ Create a Kind Cluster. Recommend Kind v0.12.
 $ ./ci/kind/kind-setup.sh create kind
 ```
 
-Install Cloud Controller.
+Install Nephe.
 
 ```bash
-$ kubectl apply -f config/cloud-controller.yml
+$ kubectl apply -f config/nephe.yml
 ```
 
-### Deploying Cloud Controller in EKS cluster
+### Deploying Nephe in EKS cluster
 
-To deploy Cloud Controller on an EKS cluster, please refer
+To deploy Nephe on an EKS cluster, please refer
 to [the EKS installation guide](eks-installation.md).
 
-### Deploying Cloud Controller in AKS cluster
+### Deploying Nephe in AKS cluster
 
-To deploy Cloud Controller on an AKS cluster, please refer
+To deploy Nephe on an AKS cluster, please refer
 to [the AKS installation guide](aks-installation.md).
 
 ## Importing Cloud VMs
 
 To manage security policies of VMs, we need to first import target VMs onto the
-`cloud-controller`. Below sections sets up access to public cloud account,
+`nephe-controller`. Below sections sets up access to public cloud account,
 select target VMs, and import VMs into the K8s cluster as `VirtualMachine` CRs.
 
 ### CloudProviderAccount
@@ -145,15 +145,15 @@ sample-ns   virtualmachine-i-08c3eb2ada5f85e02   2m9s
 $ kubectl describe ee virtualmachine-i-05331c205bc6df47f -n sample-ns
 Name:         virtualmachine-i-05331c205bc6df47f
 Namespace:    sample-ns
-Labels:       environment.tag.cloudcontroller=cloudcontroller
-              kind.cloudcontroller=virtualmachine
-              login.tag.cloudcontroller=ubuntu
-              name.cloudcontroller=i-05331c205bc6df47f
-              name.tag.cloudcontroller=vpc-0cfddb48a8119837e-ubuntu1
-              namespace.cloudcontroller=sample-ns
-              svcusercloudantreaio.tag.cloudcontroller=vm-http8080
-              terraform.tag.cloudcontroller=true
-              vpc.cloudcontroller=vpc-0cfddb48a8119837e
+Labels:       environment.tag.nephe=nephe
+              kind.nephe=virtualmachine
+              login.tag.nephe=ubuntu
+              name.nephe=i-05331c205bc6df47f
+              name.tag.nephe=vpc-0cfddb48a8119837e-ubuntu1
+              namespace.nephe=sample-ns
+              svcusercloudantreaio.tag.nephe=vm-http8080
+              terraform.tag.nephe=true
+              vpc.nephe=vpc-0cfddb48a8119837e
 Annotations:  <none>
 API Version:  crd.antrea.io/v1alpha2
 Kind:         ExternalEntity
@@ -167,15 +167,15 @@ Metadata:
       f:metadata:
         f:labels:
           .:
-          f:environment.tag.cloudcontroller:
-          f:kind.cloudcontroller:
-          f:login.tag.cloudcontroller:
-          f:name.cloudcontroller:
-          f:name.tag.cloudcontroller:
-          f:namespace.cloudcontroller:
-          f:svcusercloudantreaio.tag.cloudcontroller:
-          f:terraform.tag.cloudcontroller:
-          f:vpc.cloudcontroller:
+          f:environment.tag.nephe:
+          f:kind.nephe:
+          f:login.tag.nephe:
+          f:name.nephe:
+          f:name.tag.nephe:
+          f:namespace.nephe:
+          f:svcusercloudantreaio.tag.nephe:
+          f:terraform.tag.nephe:
+          f:vpc.nephe:
         f:ownerReferences:
       f:spec:
         .:
@@ -226,7 +226,7 @@ spec:
   appliedTo:
   - externalEntitySelector:
       matchLabels:
-         kind.cloudcontroller: virtualmachine
+         kind.nephe: virtualmachine
   ingress:
   - action: Allow
     from:
@@ -261,15 +261,15 @@ sample-ns   i-0ae693c487e22dca8   SUCCESS       1
 The `externalEntitySelector` field in ANP supports the following pre-defined
 labels:
 
-* `kind.cloudcontroller`: Select based on CRD type. Currently, only supported
+* `kind.nephe`: Select based on CRD type. Currently, only supported
   CRD types is `virtualmachine` in lower case. `virtualmachine` may be used in
   `To`, `From`, `AppliedTo` ANP fields. Thus, an ANP may be applied to virtual
   machines.
-* `vpc.cloudcontroller`: Select based on cloud resources VPC.
-* `name.cloudcontroller`: Select based on K8s resource name. The resource name
+* `vpc.nephe`: Select based on cloud resources VPC.
+* `name.nephe`: Select based on K8s resource name. The resource name
   is meaningful only within the K8s cluster. For AWS, virtual machine name is
   the AWS VM instance ID. For Azure virtual machine name is the hashed values of
   the Azure VM resource ID.
-* `KEY.tag.cloudcontroller`: Select based on cloud resource tag key/value pair,
+* `KEY.tag.nephe`: Select based on cloud resource tag key/value pair,
   where KEY is the cloud resource tag key in lower case and label value is cloud
   resource tag value in lower case.

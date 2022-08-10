@@ -32,10 +32,10 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
-	cloudv1alpha1 "antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	"antrea.io/cloudcontroller/pkg/controllers/config"
-	"antrea.io/cloudcontroller/pkg/converter/source"
-	"antrea.io/cloudcontroller/pkg/converter/target"
+	cloudv1alpha1 "antrea.io/nephe/apis/crd/v1alpha1"
+	"antrea.io/nephe/pkg/controllers/config"
+	"antrea.io/nephe/pkg/converter/source"
+	"antrea.io/nephe/pkg/converter/target"
 )
 
 var _ = Describe("VirtualmachineConverter", func() {
@@ -99,7 +99,7 @@ var _ = Describe("VirtualmachineConverter", func() {
 				labels[k+config.ExternalEntityLabelKeyTagPostfix] = v
 			}
 			ee.Labels = labels
-			ee.Spec.ExternalNode = config.ANPCloudController
+			ee.Spec.ExternalNode = config.ANPNepheController
 			expectedExternalEntities[name] = ee
 		}
 	})

@@ -2,12 +2,12 @@ apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
   creationTimestamp: null
-  name: cloud-controller-mutating-webhook-configuration
+  name: nephe-controller-mutating-webhook-configuration
 webhooks:
   - clientConfig:
       caBundle: Cg==
       service:
-        name: cloud-controller-webhook-service
+        name: nephe-controller-webhook-service
         namespace: system
         path: /mutate-crd-cloud-antrea-io-v1alpha1-virtualmachine
     failurePolicy: Fail
@@ -27,7 +27,7 @@ webhooks:
   - clientConfig:
       caBundle: Cg==
       service:
-        name: cloud-controller-webhook-service
+        name: nephe-controller-webhook-service
         namespace: system
         path: /mutate-crd-cloud-antrea-io-v1alpha1-cloudentityselector
     failurePolicy: Fail
@@ -47,7 +47,7 @@ webhooks:
   - clientConfig:
       caBundle: Cg==
       service:
-        name: cloud-controller-webhook-service
+        name: nephe-controller-webhook-service
         namespace: system
         path: /mutate-crd-cloud-antrea-io-v1alpha1-cloudprovideraccount
     failurePolicy: Fail
@@ -69,12 +69,12 @@ apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   creationTimestamp: null
-  name: cloud-controller-validating-webhook-configuration
+  name: nephe-controller-validating-webhook-configuration
 webhooks:
   - clientConfig:
       caBundle: Cg==
       service:
-        name: cloud-controller-webhook-service
+        name: nephe-controller-webhook-service
         namespace: system
         path: /validate-crd-cloud-antrea-io-v1alpha1-virtualmachine
     failurePolicy: Fail
@@ -94,7 +94,7 @@ webhooks:
   - clientConfig:
       caBundle: Cg==
       service:
-        name: cloud-controller-webhook-service
+        name: nephe-controller-webhook-service
         namespace: system
         path: /validate-crd-cloud-antrea-io-v1alpha1-cloudentityselector
     failurePolicy: Fail
@@ -114,7 +114,7 @@ webhooks:
   - clientConfig:
       caBundle: Cg==
       service:
-        name: cloud-controller-webhook-service
+        name: nephe-controller-webhook-service
         namespace: system
         path: /validate-crd-cloud-antrea-io-v1alpha1-cloudprovideraccount
     failurePolicy: Fail

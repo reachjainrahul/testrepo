@@ -1,10 +1,10 @@
 # Image URL to use all building/pushing image targets
-IMG ?= antrea/cloud-controller:latest
-BUILDER_IMG ?= cloudcontroller/builder:latest
+IMG ?= antrea/nephe:latest
+BUILDER_IMG ?= nephe/builder:latest
 
 CRD_OPTIONS ?= "crd"
 
-DOCKER_SRC=/usr/src/antrea.io/cloudcontroller
+DOCKER_SRC=/usr/src/antrea.io/nephe
 DOCKER_GOPATH=/tmp/gopath
 DOCKER_GOCACHE=/tmp/gocache
 GENERATE_CODE_LIST={$$(go list ./... | grep -e apis/crd -e apis/runtime | paste -s -d, -)}
@@ -35,14 +35,14 @@ build-bin: docker-builder generate tidy
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: docker-builder
 	$(DOCKERIZE) controller-gen $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths=$(GENERATE_MANIFEST_LIST) output:crd:artifacts:config=config/crd/bases
-	$(DOCKERIZE) kustomize build config/default > ./config/cloud-controller.yml
+	$(DOCKERIZE) kustomize build config/default > ./config/nephe.yml
 
 mock: docker-builder
 	$(DOCKERIZE) hack/mockgen.sh
 
 # Run unit-tests
 unit-test: mock
-	$(DOCKERIZE) go test -v -cover -count 1 $$(go list antrea.io/cloudcontroller/pkg/...) --ginkgo.v
+	$(DOCKERIZE) go test -v -cover -count 1 $$(go list antrea.io/nephe/pkg/...) --ginkgo.v
 
 # Run lint against code
 golangci-lint: docker-builder
@@ -114,8 +114,8 @@ $(CONTROLLER_GEN):
 # Run integration-tests
 integration-test-aws:
 	ginkgo -v --failFast --focus=".*Test-aws.*" test/integration/ -- \
-	    -manifest-path=../../config/cloud-controller.yml -preserve-setup-on-fail=true -cloud-provider=AWS
+	    -manifest-path=../../config/nephe.yml -preserve-setup-on-fail=true -cloud-provider=AWS
 
 integration-test-azure:
 	ginkgo -v --failFast --focus=".*Test-azure.*" test/integration/ -- \
-        -manifest-path=../../config/cloud-controller.yml -preserve-setup-on-fail=true -cloud-provider=Azure
+        -manifest-path=../../config/nephe.yml -preserve-setup-on-fail=true -cloud-provider=Azure

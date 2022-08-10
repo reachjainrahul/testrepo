@@ -16,5 +16,5 @@ package config
 
 const (
 	// Used to disperse NetworkPolicies.
-	ANPCloudController = "cloud-controller"
+	ANPNepheController = "nephe-controller"
 )

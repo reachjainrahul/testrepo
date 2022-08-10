@@ -25,9 +25,9 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	cloudv1alpha1 "antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	cloudprovider "antrea.io/cloudcontroller/pkg/cloud-provider"
-	"antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/common"
+	cloudv1alpha1 "antrea.io/nephe/apis/crd/v1alpha1"
+	cloudprovider "antrea.io/nephe/pkg/cloud-provider"
+	"antrea.io/nephe/pkg/cloud-provider/cloudapi/common"
 )
 
 // CloudProviderAccountReconciler reconciles a CloudProviderAccount object.

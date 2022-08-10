@@ -33,13 +33,13 @@ jobs:
     runs-on: [ubuntu-latest]
     steps:
       - uses: actions/checkout@v3
-      - name: Build Cloud Controller Docker image without pushing to registry
+      - name: Build Nephe Docker image without pushing to registry
         # TODO: Replace repository name and branch as main
         if: ${{ github.repository != 'reachjainrahul/testrepo' || github.event_name != 'push' || github.ref != 'refs/heads/master' }}
         run: |
           make build
 
-      - name: Build and push Cloud Controller Docker image to registry
+      - name: Build and push Nephe Docker image to registry
         if: ${{ github.repository == 'reachjainrahul/testrepo' && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -47,4 +47,4 @@ jobs:
         run: |
           echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
           make build
-          docker push antrea/cloud-controller:latest
+          docker push antrea/nephe:latest

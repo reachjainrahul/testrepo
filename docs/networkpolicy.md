@@ -84,7 +84,7 @@ designed to be asynchronous.
 
 This NSG internally is referred to as cloud membership only security group, as
 it contains only the GroupMembers. This type of NSG is created with a prefix
-`cloudcontroller-ag-adressgroupname`, where the prefix `ag-` implies it is just
+`nephe-ag-adressgroupname`, where the prefix `ag-` implies it is just
 an `AddressGroup` based NSG. 
 
 - Each Antrea AddressGroup is mapped to zero or more cloud membership only
@@ -95,7 +95,7 @@ an `AddressGroup` based NSG.
 ### AppliedTo NSG
 
 This NSG will be applied to the public cloud VMs. This type of NSG is created
-with a prefix `cloudcontroller-at-appliedtogroupname`, where the prefix `at-`
+with a prefix `nephe-at-appliedtogroupname`, where the prefix `at-`
 implies it is an `AppliedTo` based NSG.
 
 - Each Antrea AppliedGroup is mapped to zero or more cloud `AppliedTo NSG`
@@ -212,7 +212,7 @@ The AddressGroup `0e106911-348f-57d1-9bf6-1615fb830aaf` corresponds to the
 `from` field of ANP. This group contains only one ExternalEntity as the Group
 Members. The `cloud controller` will convert this AddressGroup into an 
 `AddressGroup NSG` with NSG name as
-`cloudcontroller-ag-0e106911-348f-57d1-9bf6-1615fb830aaf`.
+`nephe-ag-0e106911-348f-57d1-9bf6-1615fb830aaf`.
 
 ```bash
 kubectl describe addressgroups 0e106911-348f-57d1-9bf6-1615fb830aaf
@@ -245,7 +245,7 @@ The AppliedToGroup `8f0aae3c-5315-54d4-8a4d-6184398f6584` corresponds to the
 `appliedTo` field of the ANP. This group contains all the 3 ExternalEntity as
 the Group Members. The `cloud controller` will convert this AppliedToGroup into
 an `AppliedTo NSG` with NSG name as
-`cloudcontroller-at-8f0aae3c-5315-54d4-8a4d-6184398f6584` and it will attach this
+`nephe-at-8f0aae3c-5315-54d4-8a4d-6184398f6584` and it will attach this
 NSG to all the 3 VMs.
 
 ```bash

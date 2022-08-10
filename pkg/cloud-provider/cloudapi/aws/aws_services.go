@@ -24,7 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/sts"
 	"k8s.io/apimachinery/pkg/types"
 
-	"antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/internal"
+	"antrea.io/nephe/pkg/cloud-provider/cloudapi/internal"
 )
 
 const (

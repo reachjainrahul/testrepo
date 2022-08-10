@@ -15,4 +15,4 @@
 
 
 set -eo pipefail
-DOCKER_BUILDKIT=1 docker build -t antrea/cloud-controller:latest --target product -f ./build/images/Dockerfile .
+DOCKER_BUILDKIT=1 docker build -t antrea/nephe:latest --target product -f ./build/images/Dockerfile .

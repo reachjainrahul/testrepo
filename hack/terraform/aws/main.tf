@@ -20,7 +20,7 @@ provider "aws" {
 ##################################################################
 
 locals {
-  vpc_name = "cloudcontroller-vpc-${var.owner}-${random_string.suffix.result}"
+  vpc_name = "nephe-vpc-${var.owner}-${random_string.suffix.result}"
 }
 
 data "aws_subnets" "all" {
@@ -61,7 +61,7 @@ module "vpc" {
 
   tags = {
     Terraform   = "true"
-    Environment = "cloudcontroller"
+    Environment = "nephe"
   }
 }
 
@@ -69,13 +69,13 @@ module "security_group" {
   source          = "terraform-aws-modules/security-group/aws"
   version         = "3.18.0"
   count           = length(var.aws_security_groups_postfix)
-  name            = "cloudcontroller-at-${var.aws_security_groups_postfix[count.index]}"
+  name            = "nephe-at-${var.aws_security_groups_postfix[count.index]}"
   vpc_id          = module.vpc.vpc_id
   use_name_prefix = false
 
   tags = {
     Terraform   = "true"
-    Environment = "cloudcontroller"
+    Environment = "nephe"
   }
 }
 
@@ -97,7 +97,7 @@ resource "aws_default_security_group" "default_security_group" {
   }
   tags = {
     Terraform   = "true"
-    Environment = "cloudcontroller"
+    Environment = "nephe"
   }
 }
 
@@ -123,7 +123,7 @@ module "ec2_cluster" {
 
   tags = {
     Terraform   = "true"
-    Environment = "cloudcontroller"
+    Environment = "nephe"
     Login       = var.aws_vm_os_types[count.index].login
   }
 }

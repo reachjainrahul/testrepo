@@ -17,8 +17,8 @@ package azure
 import (
 	"strings"
 
-	"antrea.io/cloudcontroller/apis/crd/v1alpha1"
-	"antrea.io/cloudcontroller/pkg/cloud-provider/cloudapi/internal"
+	"antrea.io/nephe/apis/crd/v1alpha1"
+	"antrea.io/nephe/pkg/cloud-provider/cloudapi/internal"
 )
 
 type azureAccountCredentials struct {

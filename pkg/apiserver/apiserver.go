@@ -29,17 +29,17 @@ import (
 	"k8s.io/client-go/tools/cache"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 
-	runtimev1alpha1 "antrea.io/cloudcontroller/apis/runtime/v1alpha1"
-	"antrea.io/cloudcontroller/pkg/apiserver/registry/virtualmachinepolicy"
+	runtimev1alpha1 "antrea.io/nephe/apis/runtime/v1alpha1"
+	"antrea.io/nephe/pkg/apiserver/registry/virtualmachinepolicy"
 )
 
 var (
 	// APIService listening port number.
 	apiServerPort = 5443
-	// Match Cloud Controller Service Name
-	cloudControllerSvcName = "cloud-controller-service"
-	// Match Cloud Controller Service Domain Name
-	cloudControllerDomainName = "cloud-controller-service.kube-system.svc"
+	// Match Nephe Controller Service Name
+	nepheControllerSvcName = "nephe-controller-service"
+	// Match Nephe Controller Service Domain Name
+	nepheControllerDomainName = "nephe-controller-service.kube-system.svc"
 )
 
 // ExtraConfig holds custom apiserver config.
@@ -62,8 +62,8 @@ func NewConfig(codecs serializer.CodecFactory, indexer cache.Indexer) (*Config, 
 	// tls.crt and tls.key is populated by cert-manager injector.
 	recommend.SecureServing.ServerCert.PairName = "tls"
 	recommend.SecureServing.ServerCert.CertDirectory = "/tmp/k8s-apiserver/serving-certs"
-	if err := recommend.SecureServing.MaybeDefaultWithSelfSignedCerts(cloudControllerSvcName,
-		[]string{cloudControllerDomainName}, []net.IP{net.ParseIP("127.0.0.1")}); err != nil {
+	if err := recommend.SecureServing.MaybeDefaultWithSelfSignedCerts(nepheControllerSvcName,
+		[]string{nepheControllerDomainName}, []net.IP{net.ParseIP("127.0.0.1")}); err != nil {
 		return nil, err
 	}
 
@@ -86,13 +86,13 @@ func NewConfig(codecs serializer.CodecFactory, indexer cache.Indexer) (*Config, 
 	return config, nil
 }
 
-// CloudControllerAPIServer contains state for a Kubernetes cluster master/api server.
-type CloudControllerAPIServer struct {
+// NepheControllerAPIServer contains state for a Kubernetes cluster master/api server.
+type NepheControllerAPIServer struct {
 	genericAPIServer *genericapiserver.GenericAPIServer
 	logger           logger.Logger
 }
 
-func (s *CloudControllerAPIServer) Start(stop context.Context) error {
+func (s *NepheControllerAPIServer) Start(stop context.Context) error {
 	s.logger.Info("Starting APIServer")
 	err := s.genericAPIServer.PrepareRun().Run(stop.Done())
 	if err != nil {
@@ -101,7 +101,7 @@ func (s *CloudControllerAPIServer) Start(stop context.Context) error {
 	return err
 }
 
-func (s *CloudControllerAPIServer) SetupWithManager(
+func (s *NepheControllerAPIServer) SetupWithManager(
 	mgr controllerruntime.Manager,
 	indexer cache.Indexer,
 	logger logger.Logger) error {
@@ -147,10 +147,10 @@ func (cfg *Config) Complete() CompletedConfig {
 	return CompletedConfig{&c}
 }
 
-// New returns a new instance of CloudControllerAPIServer from the given config.
+// New returns a new instance of NepheControllerAPIServer from the given config.
 func (c completedConfig) New(scheme *runtime.Scheme, codecs serializer.CodecFactory,
 	logger logger.Logger) (*genericapiserver.GenericAPIServer, error) {
-	genericServer, err := c.GenericConfig.New("cloud-controller-apiserver", genericapiserver.NewEmptyDelegate())
+	genericServer, err := c.GenericConfig.New("nephe-controller-apiserver", genericapiserver.NewEmptyDelegate())
 	if err != nil {
 		return nil, err
 	}

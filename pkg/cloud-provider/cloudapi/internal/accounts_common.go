@@ -23,9 +23,9 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 
-	cloudv1alpha1 "antrea.io/cloudcontroller/apis/crd/v1alpha1"
+	cloudv1alpha1 "antrea.io/nephe/apis/crd/v1alpha1"
 
-	"antrea.io/cloudcontroller/pkg/logging"
+	"antrea.io/nephe/pkg/logging"
 )
 
 type CloudAccountInterface interface {
