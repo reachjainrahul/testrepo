@@ -16,7 +16,7 @@ on:
 env:
   KIND_VERSION: v0.12.0
   KUBECTL_VERSION: v1.24.1
-  TERRAFORM_VERSION: 0.13.5
+  TERRAFORM_VERSION: 1.2.2
 
 jobs:
   check-changes:
@@ -75,8 +75,7 @@ jobs:
           TF_VAR_azure_client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
           TF_VAR_azure_client_subscription_id: ${{ secrets.AZURE_CLIENT_SUBSCRIPTION_ID }}
           TF_VAR_azure_client_tenant_id: ${{ secrets.AZURE_CLIENT_TENANT_ID }}
-          TF_VAR_region: ${{ secrets.region }}
-          TF_VAR_owner: "nephe"
+          TF_VAR_owner: "nephe-ci"
           AZURE_SSH_PRIV_KEY: ${{ secrets.AZURE_SSH_PRIV_KEY }}
           AZURE_SSH_PUB_KEY: ${{ secrets.AZURE_SSH_PUB_KEY }}
         run: |
@@ -109,7 +108,7 @@ jobs:
           TF_VAR_azure_client_subscription_id: ${{ secrets.AZURE_CLIENT_SUBSCRIPTION_ID }}
           TF_VAR_azure_client_tenant_id: ${{ secrets.AZURE_CLIENT_TENANT_ID }}
           TF_VAR_region: ${{ secrets.region }}
-          TF_VAR_owner: "nephe"
+          TF_VAR_owner: "nephe-ci"
         run: |
            ~/terraform/azure-tf destroy
 
@@ -154,8 +153,9 @@ jobs:
           TF_VAR_aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           TF_VAR_aws_access_key_secret: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
           TF_VAR_aws_key_pair_name: ${{ secrets.AWS_KEY_PAIR_NAME }}
+          TF_VAR_region: ${{ secrets.region }}
           AWS_SSH_KEY: ${{ secrets.AWS_SSH_KEY }}
-          TF_VAR_owner: "nephe"
+          TF_VAR_owner: "nephe-ci"
         run: |
           hack/install-cloud-tools.sh
           mkdir log
@@ -183,6 +183,7 @@ jobs:
           TF_VAR_aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           TF_VAR_aws_access_key_secret: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
           TF_VAR_aws_key_pair_name: ${{ secrets.AWS_KEY_PAIR_NAME }}
-          TF_VAR_owner: "nephe"
+          TF_VAR_region: ${{ secrets.region }}
+          TF_VAR_owner: "nephe-ci"
         run: |
            ~/terraform/aws-tf destroy
