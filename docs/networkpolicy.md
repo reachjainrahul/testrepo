@@ -1,16 +1,16 @@
-# Cloud Controller NetworkPolicy
+# Nephe NetworkPolicy
 
-Cloud Controller project does not consume the Antrea NetworkPolicy(ANP) resource
+The Nephe project does not consume the Antrea NetworkPolicy(ANP) resource
 directly. The ANP object is used by [Antrea](https://antrea.io/) project, where
 `antrea-controller` Pod watches for the Antrea NetworkPolicy(ANP) objects and
 converts each ANP object to an Antrea internal [NetworkPolicy](https://github.com/antrea-io/antrea/blob/main/pkg/apis/controlplane/v1beta2/types.go#L202)
 object for further processing. This Antrea internal `NetworkPolicy` object
-will be used by Cloud Controller to enforce the network policies on public cloud 
-virtual machines.
+will be used by the Nephe Controller to enforce the network policies on public
+cloud virtual machines.
 
-The `cloud controller` pod registers with the antrea `API server`, to receive
-all the events related to `AddressGroups`, `AppliedToGroups` and
-`NetworkPolicies` objects. The `cloud controller` translates these
+The `nephe-controller` registers with the antrea `API server`, to receive all
+the events related to `AddressGroups`, `AppliedToGroups` and
+`NetworkPolicies` objects. The `nephe-controller` translates these
 NetworkPolicy related objects to the corresponding cloud constructs. Each antrea
 internal `NetworkPolicy` object will result in a combination of one
 or more cloud network security groups(NSG). The `AddressGroups` field will be
@@ -23,9 +23,9 @@ is only supported on AWS and Azure clouds.
 
 This section gives a brief introduction about cloud network security groups and
 Antrea Network Policy object. These two concepts are the basics to
-understand how Cloud Controller realizes network polices on public cloud VMs. If
-you are already familiar with these two concepts, please skip this section and
-proceed to the [Implementation](#implementation) section.
+understand how `nephe-controller` realizes network polices on public cloud
+VMs. If you are already familiar with these two concepts, please skip this
+section and proceed to the [Implementation](#implementation) section.
 
 ### Antrea Network Policy
 
@@ -73,12 +73,12 @@ contains Ingress and Egress rules.
 
 ## Implementation 
 
-Cloud Controller creates two types of network security groups(NSGs) to enforce
-network polices on public cloud VMs, which are called as `AddressGroup NSG` and
-`AppliedTo NSG`. An Antrea internal `NetworkPolicy` is realized on the cloud VMs
-via a combination of `AddressGroup NSG` and `AppliedTo NSG`. For better
-performance/scalability, all cloud calls to manage antrea created NSGs are
-designed to be asynchronous.
+The Nephe Controller creates two types of network security groups(NSGs) to
+enforce network polices on public cloud VMs, which are called as
+`AddressGroup NSG` and `AppliedTo NSG`. An Antrea internal `NetworkPolicy` is
+realized on the cloud VMs via a combination of `AddressGroup NSG` and
+`AppliedTo NSG`. For better performance/scalability, all cloud calls to manage
+antrea created NSGs are designed to be asynchronous.
 
 ### AddressGroup NSG 
 
@@ -186,13 +186,13 @@ spec:
   appliedTo:
   - externalEntitySelector:
       matchLabels:
-        kind.crd.cloud.antrea.io: virtualmachine
+        kind.nephe: virtualmachine
     ingress:
     - action: Allow
       from:
       - externalEntitySelector:
           matchLabels:
-            name.crd.cloud.antrea.io: i-0a95353bdf01bb9a0
+            name.nephe: i-0a95353bdf01bb9a0
       ports:
       - protocol: TCP
         port: 22
@@ -200,7 +200,7 @@ spec:
 
 ### Mapping Antrea Network Policy To NSG
 
-The `cloud controller` converts the example ANP into a combination of
+The `nephe-controller` converts the example ANP into a combination of
 `AddressGroup NSG` and `AppliedTo NSG` and attaches the NSGs to the respective
 VMs, as shown in the below image.
 
@@ -210,7 +210,7 @@ VMs, as shown in the below image.
 
 The AddressGroup `0e106911-348f-57d1-9bf6-1615fb830aaf` corresponds to the 
 `from` field of ANP. This group contains only one ExternalEntity as the Group
-Members. The `cloud controller` will convert this AddressGroup into an 
+Members. The `nephe-controller` will convert this AddressGroup into an 
 `AddressGroup NSG` with NSG name as
 `nephe-ag-0e106911-348f-57d1-9bf6-1615fb830aaf`.
 
@@ -243,7 +243,7 @@ Events:                <none>
 
 The AppliedToGroup `8f0aae3c-5315-54d4-8a4d-6184398f6584` corresponds to the
 `appliedTo` field of the ANP. This group contains all the 3 ExternalEntity as
-the Group Members. The `cloud controller` will convert this AppliedToGroup into
+the Group Members. The `nephe-controller` will convert this AppliedToGroup into
 an `AppliedTo NSG` with NSG name as
 `nephe-at-8f0aae3c-5315-54d4-8a4d-6184398f6584` and it will attach this
 NSG to all the 3 VMs.

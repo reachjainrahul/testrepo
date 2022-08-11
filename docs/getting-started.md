@@ -1,4 +1,4 @@
-# Users Guide
+# Getting Started with Nephe 
 
 ## Prerequisites
 
@@ -8,11 +8,11 @@
 * [cert-manager](https://github.com/jetstack/cert-manager) deployed. Recommend
   v1.8.
 
-## Installation
+## Nephe Installation
 
 ### Deploying Nephe in a Kind cluster
 
-Create a Kind Cluster. Recommend Kind v0.12.
+Create a Kind cluster. Recommend Kind v0.12.
 
 ```bash
 $ ./ci/kind/kind-setup.sh create kind
@@ -26,7 +26,7 @@ $ kubectl apply -f config/nephe.yml
 
 ### Deploying Nephe in EKS cluster
 
-To deploy Nephe on an EKS cluster, please refer
+To deploy Nephe on an EKS cluster, please refer 
 to [the EKS installation guide](eks-installation.md).
 
 ### Deploying Nephe in AKS cluster
@@ -37,7 +37,7 @@ to [the AKS installation guide](aks-installation.md).
 ## Importing Cloud VMs
 
 To manage security policies of VMs, we need to first import target VMs onto the
-`nephe-controller`. Below sections sets up access to public cloud account,
+`Nephe Controller`. Below sections sets up access to public cloud account,
 select target VMs, and import VMs into the K8s cluster as `VirtualMachine` CRs.
 
 ### CloudProviderAccount
@@ -130,7 +130,7 @@ Currently, the following matching criteria are supported to import VMs.
 ### External Entity
 
 For each cloud VM, an `ExternalEntity` CR is created, which can be used to
-configure AntreaNetworkPolicy(ANP).
+configure Antrea `NetworkPolicy` (ANP).
 
 ```bash
 $ kubectl get externalentities -A
@@ -181,7 +181,7 @@ Metadata:
         .:
         f:endpoints:
         f:externalNode:
-    Manager:    cloud-controller
+    Manager:    nephe-controller
     Operation:  Update
     Time:       2022-07-20T20:57:42Z
   Owner References:
@@ -197,7 +197,7 @@ Spec:
   Endpoints:
     Ip:           10.0.1.28
     Ip:           54.193.85.45
-  External Node:  cloud-controller
+  External Node:  nephe-controller
 Events:           <none>
 ```
 
