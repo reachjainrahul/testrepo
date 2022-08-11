@@ -10,7 +10,6 @@ The following tools are required to build, test and run Nephe
 `cloud-controller`.
 
 - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
-- [docker](https://docs.docker.com/install/)
 - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/)
 
 ## Build

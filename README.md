@@ -12,6 +12,8 @@ Kubernetes cluster and provides Antrea NetworkPolicy (ANP) CRD.
 
 * [Golang](https://go.dev/dl/): Nephe is developed and tested with go
   version 1.17.
+* [Docker](https://docs.docker.com/install/): Nephe is developed and tested
+  with Docker 20.10.17.
 * [Antrea](https://github.com/antrea-io/antrea/): Provides Antrea
   NetworkPolicy (ANP) CRD, a controller that computes ANP spans, and an agent as
   K8s CNI.
