@@ -24,53 +24,10 @@
             - shell: |-
                     #!/bin/bash
                     set -ex
-
                     rm -rf testrepo
                     git clone https://github.com/liu4480/testrepo
-                    cd testrepo/ci/jenkins
-                    if [ ! -e id_rsa ]; then
-                      ssh-keygen -t rsa -P '' -f id_rsa
-                    fi
-                    if [ ! -e playbook/jenkins_id_rsa ];then
-                      ssh-keygen -t rsa -P '' -f playbook/jenkins_id_rsa
-                    fi
-                    chmod 0600 id_rsa
-                    chmod 0600 playbook/jenkins_id_rsa
-                    testbed_name="antrea-test-cloud-${{BUILD_NUMBER}}"
-
-                    sudo apt install -y unzip ansible
-
-                    cat terraform-${{VC_HOST}}.tfvars
-                    rm -rf terraform-${{VC_HOST}}.tfvars
-                    cat << EOF > terraform-${{VC_HOST}}.tfvars
-                    vsphere_user="${{VC_USER}}"
-                    vm_count=1
-                    vsphere_datacenter="${{DATACENTERNAME}}"
-                    vsphere_datastore="${{DATA_STORE}}"
-                    vsphere_compute_cluster="${{VC_CLUSTER}}"
-                    vsphere_resource_pool="${{RESOURCEPOOLPATH}}"
-                    vsphere_network="${{VMC_NETWORK_1}}"
-                    vsphere_virtual_machine="${{VIRTUAL_MACHINE}}"
-                    EOF
-                    cat terraform-${{VC_HOST}}.tfvars
-
-                    ./deploy.sh ${{testbed_name}} ${{VC_HOST}} ${{GOVC_PASSWORD}}
-
-                    ip_addr=`cat terraform.tfstate.d/${{testbed_name}}/terraform.tfstate | jq -r .outputs.vm_ips.value[0]`
-                    chmod 0600 id_rsa
-                    source lib.sh
-                    ssh -i id_rsa ubuntu@${{ip_addr}} "sudo apt-get update -y && sudo apt-get install -y ca-certificates curl unzip gnupg lsb-release"
-                    scp -i id_rsa test-aws.sh ubuntu@${{ip_addr}}:~
-                    function cleanup_testbed() {{
-                      echo "=== retrieve logs ==="
-                      scp -i id_rsa ubuntu@${{ip_addr}}:~/test.log ../../..
-
-                      echo "=== cleanup vm ==="
-                      ./destroy.sh "${{testbed_name}}" "${{GOVC_PASSWORD}}"  #### 加引号
-
-                      cd ../../..
-                      tar zvcf test.log.tar.gz test.log
-                    }}
-
-                    trap cleanup_testbed EXIT
-                    ssh -i id_rsa ubuntu@${{ip_addr}} "sh -x ./test-aws.sh ${{TEST_USERNAME}}"
+                    chmod +x testrepo/ci/jenkins/antrea-cloud.sh
+                    ./testrepo/ci/jenkins/antrea-cloud.sh --buildnumber "${{BUILD_NUMBER}}" --vchost "${{VC_HOST}}" \
+                            --vcuser "${{VC_USER}}" --datacenter "${{DATACENTERNAME}}" --datastore "${{DATA_STORE}}" \
+                            --vcCluster "${{VC_CLUSTER}}" --resourcePool "${{RESOURCEPOOLPATH}}" --vcNetwork "${{VMC_NETWORK_1}}" \
+                            --virtualMachine "${{VIRTUAL_MACHINE}}" --goVcPassword "${{GOVC_PASSWORD}}" --testUserName "${{TEST_USERNAME}}"
