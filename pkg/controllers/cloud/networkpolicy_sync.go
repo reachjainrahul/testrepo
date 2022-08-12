@@ -44,7 +44,7 @@ func (s *securityGroupImpl) syncImpl(csg cloudSecurityGroup, c *securitygroup.Sy
 			return true
 		}
 	} else if len(s.members) == 0 {
-		log.V(1).Info("Emmpty memberships", "Name", s.id)
+		log.V(1).Info("Empty memberships", "Name", s.id)
 		return true
 	}
 

@@ -189,7 +189,7 @@ func (c *cloudCommon) AddSelector(accountNamespacedName *types.NamespacedName, s
 func (c *cloudCommon) RemoveSelector(accNamespacedName *types.NamespacedName, selectorName string) {
 	accCfg, found := c.GetCloudAccountByName(accNamespacedName)
 	if !found {
-		c.logger().Info("account not found", "account", *accNamespacedName)
+		c.logger().Info("Not found", "account", *accNamespacedName, "name", selectorName)
 		return
 	}
 

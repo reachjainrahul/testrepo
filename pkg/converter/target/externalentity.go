@@ -29,7 +29,7 @@ import (
 )
 
 const (
-	// K8s label requirements, https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/.
+	// LabelSizeLimit K8s label requirements, https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/.
 	LabelSizeLimit  = 64
 	LabelExpression = "[^a-zA-Z0-9_-]+"
 )
@@ -69,7 +69,7 @@ func GetObjectKeyFromSource(source ExternalEntitySource) client.ObjectKey {
 		Name: GetExternalEntityName(source.EmbedType())}
 }
 
-// NewExternalEntityFrom generate an new ExternalEntity from source.
+// NewExternalEntityFrom generate a new ExternalEntity from source.
 func NewExternalEntityFrom(
 	source ExternalEntitySource, name, namespace string, cl client.Client, scheme *runtime.Scheme) *antreatypes.ExternalEntity {
 	externEntity := &antreatypes.ExternalEntity{}

@@ -62,7 +62,7 @@ func commonInitTest() {
 	// common setup valid for all tests.
 	mockCtrl = mock.NewController(GinkgoT())
 	mockClient = controllerruntimeclient.NewMockClient(mockCtrl)
-	externalEntitySources = testing2.SetupExternalEntitySources(networkInterfaceIPAddresses, namedports, testNamespace)
+	externalEntitySources = testing2.SetupExternalEntitySources(networkInterfaceIPAddresses, testNamespace)
 }
 
 // Testing converting source crd to target crd

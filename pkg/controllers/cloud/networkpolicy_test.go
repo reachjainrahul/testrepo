@@ -442,12 +442,12 @@ var _ = Describe("NetworkPolicy", func() {
 		return chans
 	}
 
-	checkAppliedGroupDel := func(ag *antreanetworking.AppliedToGroup, outorder bool) []chan error {
+	checkAppliedGroupDel := func(ag *antreanetworking.AppliedToGroup, outOrder bool) []chan error {
 		var chans []chan error
 		for vpc := range getGrpVPCs(ag.GroupMembers) {
 			grpID := &securitygroup.CloudResourceID{Name: appliedToGrpIDs[ag.Name].Name, Vpc: vpc}
 			var ch chan error
-			if outorder {
+			if outOrder {
 				ch = make(chan error)
 				memberCall := mockCloudSecurityAPI.EXPECT().UpdateSecurityGroupMembers(
 					grpID, nil, false).Return(ch)
@@ -621,10 +621,10 @@ var _ = Describe("NetworkPolicy", func() {
 		}
 	}
 
-	createNP := func(outorder bool) {
+	createNP := func(outOrder bool) {
 		var event watch.Event
 		var err error
-		if outorder {
+		if outOrder {
 			event = watch.Event{Type: watch.Added, Object: anp}
 			err = reconciler.processNetworkPolicy(event)
 			Expect(err).ToNot(HaveOccurred())
@@ -647,7 +647,7 @@ var _ = Describe("NetworkPolicy", func() {
 				Expect(err).ToNot(HaveOccurred())
 			}
 		}
-		if !outorder {
+		if !outOrder {
 			event = watch.Event{Type: watch.Added, Object: anp}
 			err = reconciler.processNetworkPolicy(event)
 			Expect(err).ToNot(HaveOccurred())
@@ -672,15 +672,15 @@ var _ = Describe("NetworkPolicy", func() {
 		}
 	}
 
-	createAndVerifyNP := func(outorder bool) {
+	createAndVerifyNP := func(outOrder bool) {
 		verifyCreateNP()
-		createNP(outorder)
+		createNP(outOrder)
 	}
 
-	deleteNP := func(outorder bool) {
+	deleteNP := func(outOrder bool) {
 		var event watch.Event
 		var err error
-		if outorder {
+		if outOrder {
 			event = watch.Event{Type: watch.Deleted, Object: anp}
 			err = reconciler.processNetworkPolicy(event)
 			Expect(err).ToNot(HaveOccurred())
@@ -695,7 +695,7 @@ var _ = Describe("NetworkPolicy", func() {
 			err = reconciler.processAppliedToGrp(event)
 			Expect(err).ToNot(HaveOccurred())
 		}
-		if !outorder {
+		if !outOrder {
 			event = watch.Event{Type: watch.Deleted, Object: anp}
 			err = reconciler.processNetworkPolicy(event)
 			Expect(err).ToNot(HaveOccurred())
@@ -710,7 +710,7 @@ var _ = Describe("NetworkPolicy", func() {
 		}
 	}
 
-	verifyDeleteNP := func(outorder bool) []chan error {
+	verifyDeleteNP := func(outOrder bool) []chan error {
 		var chans []chan error
 		for _, ref := range addrGrps {
 			ag := &antreanetworking.AddressGroup{}
@@ -720,14 +720,14 @@ var _ = Describe("NetworkPolicy", func() {
 		for _, ref := range appliedToGrps {
 			ag := &antreanetworking.AppliedToGroup{}
 			ref.DeepCopyInto(ag)
-			chans = append(chans, checkAppliedGroupDel(ag, outorder)...)
+			chans = append(chans, checkAppliedGroupDel(ag, outOrder)...)
 		}
 		return chans
 	}
 
-	deleteAndVerifyNP := func(outorder bool) []chan error {
-		chans := verifyDeleteNP(outorder)
-		deleteNP(outorder)
+	deleteAndVerifyNP := func(outOrder bool) []chan error {
+		chans := verifyDeleteNP(outOrder)
+		deleteNP(outOrder)
 		return chans
 	}
 

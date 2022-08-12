@@ -41,7 +41,7 @@ type CloudServiceInterface interface {
 	// UpdateServiceConfig updates existing service config with new values. Each service can decide to update one or
 	// more fields of the service.
 	UpdateServiceConfig(newServiceConfig CloudServiceInterface)
-	// Filters will be used by service to get resources from cloud for the service. Each will convert
+	// SetResourceFilters will be used by service to get resources from cloud for the service. Each will convert
 	// CloudEntitySelector to service understandable filters.
 	SetResourceFilters(selector *cloudv1alpha1.CloudEntitySelector)
 	// HasFiltersConfigured returns if service has filters configured and if the configured filters are nil or not.
@@ -55,7 +55,7 @@ type CloudServiceInterface interface {
 	GetResourceCRDs(namespace string) *CloudServiceResourceCRDs
 	// GetName returns cloud name of the service.
 	GetName() CloudServiceName
-	// GetType returns service type (compute, any other type etc)
+	// GetType returns service type (compute, any other type etc.)
 	GetType() CloudServiceType
 	// ResetCachedState clears any internal state build by the service as part of cloud resource discovery.
 	ResetCachedState()

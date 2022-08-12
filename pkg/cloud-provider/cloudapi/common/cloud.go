@@ -29,7 +29,6 @@ var (
 	APIVersion                      = "crd.cloud.antrea.io/v1alpha1"
 	NetworkInterfaceCRDKind         = reflect.TypeOf(v1alpha1.NetworkInterface{}).Name()
 	VirtualMachineCRDKind           = reflect.TypeOf(v1alpha1.VirtualMachine{}).Name()
-	VirtualPrivateCloud             = "vpc"
 	AnnotationCloudAssignedIDKey    = "cloud-assigned-id"
 	AnnotationCloudAssignedNameKey  = "cloud-assigned-name"
 	AnnotationCloudAssignedVPCIDKey = "cloud-assigned-vpc-id"

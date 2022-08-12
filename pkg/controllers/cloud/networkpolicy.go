@@ -317,7 +317,7 @@ type deduplicateKey struct {
 }
 
 // overlap decides whether two ip blocks overlap(one contains the other).
-// If so, return the one with smaller range. Otherwise return nil.
+// If so, return the one with smaller range. Otherwise, return nil.
 func overlap(ip1 *net.IPNet, ip2 *net.IPNet) *net.IPNet {
 	maskLen1, _ := ip1.Mask.Size()
 	maskLen2, _ := ip2.Mask.Size()
@@ -454,7 +454,7 @@ type securityGroupImpl struct {
 	status error
 	// current retried operation.
 	retryOp *securityGroupOperation
-	// true if retry operation is on-going.
+	// true if retry operation is ongoing.
 	retryInProgress bool
 }
 
@@ -584,7 +584,7 @@ func (s *securityGroupImpl) updateImpl(c cloudSecurityGroup, added, removed []*s
 		return nil
 	}
 	members := deepcopy.Copy(s.members).([]*securitygroup.CloudResource)
-	// Wait for on-going retry operation.
+	// Wait for ongoing retry operation.
 	if s.retryOp != nil {
 		return nil
 	}
@@ -841,7 +841,7 @@ func (a *appliedToSecurityGroup) updateRules(r *NetworkPolicyReconciler) error {
 	if !a.isReady() {
 		return nil
 	}
-	// Wait for on-going retry operation.
+	// Wait for ongoing retry operation.
 	if a.retryOp != nil {
 		return nil
 	}

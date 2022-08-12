@@ -42,7 +42,7 @@ var _ = Describe("Externalentity", func() {
 		// Test parameters
 		namespace = "test-externalentity-sources-namespace"
 
-		// Test Tunables
+		// Test tunable
 		networkInterfaceIPAddresses = []string{"1.1.1.1", "2.2.2.2"}
 		namedports                  = []antreatypes.NamedPort{
 			{Name: "http", Protocol: v1.ProtocolTCP, Port: 80},
@@ -55,7 +55,7 @@ var _ = Describe("Externalentity", func() {
 	BeforeEach(func() {
 		mockCtrl = mock.NewController(GinkgoT())
 		mockclient = controllerruntimeclient.NewMockClient(mockCtrl)
-		externalEntitySources = testing.SetupExternalEntitySources(networkInterfaceIPAddresses, namedports, namespace)
+		externalEntitySources = testing.SetupExternalEntitySources(networkInterfaceIPAddresses, namespace)
 	})
 
 	AfterEach(func() {
@@ -164,7 +164,7 @@ var _ = Describe("Externalentity", func() {
 		JustBeforeEach(func() {
 			networkInterfaceIPAddresses = nil
 			namedports = nil
-			externalEntitySources = testing.SetupExternalEntitySources([]string{}, namedports, namespace)
+			externalEntitySources = testing.SetupExternalEntitySources([]string{}, namespace)
 		})
 
 		table.DescribeTable("GetEndPointAddresses",

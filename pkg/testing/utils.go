@@ -20,7 +20,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
 
-	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
 	cloud "antrea.io/nephe/apis/crd/v1alpha1"
 	"antrea.io/nephe/pkg/converter/source"
 	"antrea.io/nephe/pkg/converter/target"
@@ -51,7 +50,7 @@ func SetupNetworkInterface(nic *cloud.NetworkInterface, name string, ips []strin
 }
 
 // SetupExternalEntitySources returns externalEntitySource resources for testing.
-func SetupExternalEntitySources(ips []string, ports []antreatypes.NamedPort, namespace string) map[string]target.ExternalEntitySource {
+func SetupExternalEntitySources(ips []string, namespace string) map[string]target.ExternalEntitySource {
 	sources := make(map[string]target.ExternalEntitySource)
 	virtualMachine := &source.VirtualMachineSource{}
 	sources["VirtualMachine"] = virtualMachine

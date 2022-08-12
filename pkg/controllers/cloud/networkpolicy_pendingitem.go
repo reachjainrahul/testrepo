@@ -29,8 +29,8 @@ type PendingItem interface {
 	RunPendingItem(id string, context interface{}) bool
 	// UpdatePendingItem updates ths pending item, returns
 	UpdatePendingItem(id string, context interface{}, updates ...interface{})
-	// Returns run true if this item can be run;
-	// returns delete true if this item shall be removed.
+	// RunOrDeletePendingItem returns run as true, if this item can be run;
+	// returns delete as true, if this item shall be removed.
 	RunOrDeletePendingItem(id string, context interface{}) (run bool, delete bool)
 }
 
@@ -45,7 +45,7 @@ type PendingItemQueue struct {
 	opCnt   *int
 }
 
-// Returns an new PendingItemQueue.
+// NewPendingItemQueue returns a new PendingItemQueue.
 // If opCnt is not provided, item is removed if item.RunOrDeletePendingItem returns true;
 // if opCnt is provided, item is also removed when item.RunPendingItem is called opCnt.
 func NewPendingItemQueue(context interface{}, opCnt *int) *PendingItemQueue {
@@ -56,7 +56,7 @@ func NewPendingItemQueue(context interface{}, opCnt *int) *PendingItemQueue {
 	}
 }
 
-// Adds an pending item to queue.
+// Add a pending item to queue.
 func (q *PendingItemQueue) Add(id string, p PendingItem) {
 	log := q.context.(*NetworkPolicyReconciler).Log.WithName("PendingItemQueue")
 	if _, ok := q.items[id]; ok {
@@ -66,7 +66,7 @@ func (q *PendingItemQueue) Add(id string, p PendingItem) {
 	q.items[id] = countingPendingItem{p, deepcopy.Copy(q.opCnt).(*int)}
 }
 
-// Removes an pending item from queue.
+// Remove a pending item from queue.
 func (q *PendingItemQueue) Remove(id string) {
 	delete(q.items, id)
 }
@@ -77,7 +77,7 @@ func (q *PendingItemQueue) Has(id string) bool {
 	return ok
 }
 
-// Updates item, and check to run item.
+// Update item and check to run item.
 func (q *PendingItemQueue) Update(id string, checkRun bool, updates ...interface{}) error {
 	log := q.context.(*NetworkPolicyReconciler).Log.WithName("PendingItemQueue")
 	i, ok := q.items[id]

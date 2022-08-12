@@ -47,7 +47,7 @@ var _ = Describe("VirtualmachineConverter", func() {
 		// Test parameters.
 		expectedExternalEntities = make(map[string]*antreatypes.ExternalEntity)
 
-		// Test tunables.
+		// Test tunable.
 		useInternalMethod      bool
 		isEmptyEvent           bool
 		generateEvent          bool

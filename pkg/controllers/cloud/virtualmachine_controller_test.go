@@ -52,7 +52,7 @@ var _ = Describe("VirtualmachineController", func() {
 	BeforeEach(func() {
 		mockCtrl = mock.NewController(GinkgoT())
 		mockClient = controllerruntimeclient.NewMockClient(mockCtrl)
-		externalEntitySources = testing2.SetupExternalEntitySources(networkInterfaceIPAddresses, namedports, testNamespace)
+		externalEntitySources = testing2.SetupExternalEntitySources(networkInterfaceIPAddresses, testNamespace)
 	})
 
 	AfterEach(func() {
