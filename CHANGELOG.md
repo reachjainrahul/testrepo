@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Initial framework to deploy the Nephe Controller in a single cluster.
+- Initial framework to deploy the `Nephe Controller` in a single cluster.
 - CRD definitions: VirtualMachine, CloudProviderAccount and CloudEntitySelector. 
 - Antrea NetworkPolicy on AWS/Azure VMs using cloud network security groups.
 
