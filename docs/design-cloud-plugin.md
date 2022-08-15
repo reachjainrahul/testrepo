@@ -3,10 +3,9 @@
 ## 1. Overview
 
 This document covers the design details of Cloud Plugin component in
-`cloud controller`. Cloud Plugin module uses a plugin-based mechanism to
+`Nephe Controller`. Cloud Plugin module uses a plugin-based mechanism to
 integrate with the public cloud, wherein it is easier to add new cloud support
-in `cloud controller`. Currently, the Cloud Controller project supports AWS and
-Azure public cloud.
+in `Nephe Controller`. Currently, Nephe supports AWS and Azure public cloud.
 
 ### 1.1 Expectations
 
@@ -32,10 +31,10 @@ The Cloud Provider Plugin component maintains the information about registered
 cloud plugins. Each cloud plugin on initialization gets registered with Cloud
 Provider Plugin. Once registered, cloud plugins are cached internally in a
 map of cloud type to [Cloud Interface plugin](design-cloud-plugin.md#22-cloud-interface-plugin).
-It exposes APIs to allow other components in `cloud controller` to get
+It exposes APIs to allow other components in `Nephe Controller` to get
 Cloud Interface plugin implementation for a specific cloud type.
 
-The sequence diagram shows cloud plugin registration as part of `cloud controller`
+The sequence diagram shows cloud plugin registration as part of `Nephe Controller`
 initialization.
 
 <img src="assets/cloud-plugin-register.png" width="442" alt="Cloud Plugin Register Sequence Diagram">
@@ -57,7 +56,7 @@ interfaces:
   CloudEntitySelector CRD.
 
 **SecurityGroupInterface**:
-- Provides APIs to realize Kubernetes network policy via the cloud native
+- Provides APIs to realize Kubernetes NetworkPolicy via the cloud native
   security groups.
 
 The sequence diagram shows following Cloud Interface API calls made from

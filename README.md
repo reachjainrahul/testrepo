@@ -3,10 +3,10 @@
 ## Overview
 
 Nephe supports security policy enforcement across different Public
-Clouds. It translates and enforces Antrea NetworkPolicies on Public Cloud
-Virtual Machines using Cloud Network Security Groups. The project deploys a
+Clouds. It translates and enforces Antrea `NetworkPolicies` on Public Cloud
+Virtual Machines using Cloud Network Security Groups. Nephe deploys  a 
 `nephe-controller` Pod in a Kubernetes cluster. Antrea must be the CNI of the
-Kubernetes cluster and provides Antrea NetworkPolicy (ANP) CRD.
+Kubernetes cluster and provides Antrea `NetworkPolicy`(ANP) CRD.
 
 ## Dependencies
 
@@ -16,7 +16,7 @@ Kubernetes cluster and provides Antrea NetworkPolicy (ANP) CRD.
   NetworkPolicy (ANP) CRD, a controller that computes ANP spans, and an agent as
   K8s CNI.
 * [cert-manager](https://github.com/jetstack/cert-manager): Provides in cluster
-  authentication for Nephe Controller CR webhook servers.
+  authentication for `nephe-controller` CR webhook servers.
 
 ## Getting Started
 

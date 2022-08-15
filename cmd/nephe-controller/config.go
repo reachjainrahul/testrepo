@@ -15,7 +15,7 @@
 package main
 
 const (
-	electionID                = "cloud-controller-election.cloud.antrea.io"
+	electionID                = "nephe-controller-election.cloud.antrea.io"
 	defaultLeaderElectionFlag = false
 	defaultMetricsAddress     = ":8080"
 	defaultDebugLogFlag       = false

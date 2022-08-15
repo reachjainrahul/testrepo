@@ -54,10 +54,10 @@ func main() {
 
 	flag.StringVar(&metricsAddr, "metrics-addr", defaultMetricsAddress, "The address the metric endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", defaultLeaderElectionFlag,
-		"Enable leader election for cloud-controller manager. "+
-			"Enabling this will ensure there is only one active cloud-controller manager.")
+		"Enable leader election for nephe-controller manager. "+
+			"Enabling this will ensure there is only one active nephe-controller manager.")
 	flag.BoolVar(&enableDebugLog, "enable-debug-log", defaultDebugLogFlag,
-		"Enable debug mode for cloud-controller manager. Enabling this will add debug logs")
+		"Enable debug mode for nephe-controller manager. Enabling this will add debug logs")
 	flag.Parse()
 
 	logging.SetDebugLog(enableDebugLog)

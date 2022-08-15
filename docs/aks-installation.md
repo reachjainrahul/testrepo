@@ -1,4 +1,4 @@
-# Deploying Cloud Controller in Azure AKS
+# Deploying Nephe in Azure AKS
 
 ## Prerequisites
 
@@ -46,10 +46,10 @@ This will deploy `cert-manager v1.8.2` and `antrea v1.8`.
 ~/terraform/aks create
 ```
 
-### Deploy Cloud Controller
+### Deploy Nephe Controller
 
 ```bash
-~/terraform/aks kubectl apply -f config/cloud-controller.yml
+~/terraform/aks kubectl apply -f config/nephe.yml
 ```
 
 ### Interact with AKS cluster
@@ -62,11 +62,12 @@ commands directly, export `KUBECONFIG` environment variable.
 export KUBECONFIG=~/tmp/terraform-aks/kubeconfig
 ```
 
-Loading locally built `cloud-controller` image to AKS cluster.
+Loading locally built `antrea/nephe` image to AKS cluster.
 
 ```bash
 ~/terraform/aks load ...
-~/terraform/aks load antrea/cloud-controller
+~/terraform/aks load antrea/nephe
+```
 ```
 
 Display AKS attributes.

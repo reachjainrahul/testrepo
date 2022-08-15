@@ -1,4 +1,4 @@
-# Deploying Cloud Controller in AWS EKS
+# Deploying Nephe in EKS
 
 ## Prerequisites
 
@@ -50,10 +50,10 @@ This will deploy `cert-manager v1.8.2` and `Antrea v1.8`.
 ~/terraform/eks create
 ```
 
-### Deploy Cloud Controller
+### Deploy Nephe Controller
 
 ```bash
-~/terraform/eks kubectl apply -f config/cloud-controller.yml
+~/terraform/eks kubectl apply -f config/nephe.yml
 ```
 
 ### Interact with EKS cluster
@@ -66,11 +66,11 @@ commands directly, export `KUBECONFIG` environment variable.
 export KUBECONFIG=~/tmp/terraform-eks/kubeconfig
 ```
 
-Loading locally built `cloud-controller` images to EKS cluster.
+Loading locally built `antrea/nephe` images to EKS cluster.
 
 ```bash
 ~/terraform/eks load ...
-~/terraform/eks load antrea/cloud-controller
+~/terraform/eks load antrea/nephe
 ```
 
 Display EKS attributes.
