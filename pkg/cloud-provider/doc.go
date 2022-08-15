@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package apis contains API definitions used to interface with the different Antrea+ components,
-// along with files auto-generated from these API definitions.
+// Package cloudprovider apis contains API definitions used to interface with
+// the different Antrea+ components, along with files auto-generated from these
+// API definitions.
 package cloudprovider

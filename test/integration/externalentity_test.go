@@ -62,7 +62,7 @@ var _ = Describe(fmt.Sprintf("%s,%s: ExternalEntity", focusAws, focusAzure), fun
 		err := k8sClient.Create(context.TODO(), namespace)
 		Expect(err).ToNot(HaveOccurred())
 		logf.Log.Info("Created namespace", "namespace", namespace.Name)
-		externalEntitySources = testing.SetupExternalEntitySources(ipAddresses, namedPorts, namespace.Name)
+		externalEntitySources = testing.SetupExternalEntitySources(ipAddresses, namespace.Name)
 		restartController = false
 
 		expectedEndpoints = nil

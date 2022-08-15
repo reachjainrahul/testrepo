@@ -24,7 +24,7 @@ import (
 )
 
 /*
-THis module maps Antrea internal NetworkPolicy in antrea.io/antrea/pkg/apis/controlplane/v1beta2
+This module maps Antrea internal NetworkPolicy in antrea.io/antrea/pkg/apis/controlplane/v1beta2
 to cloud security group.
 
 Network CRD
@@ -33,13 +33,13 @@ Each Antrea internal NetworkPolicy contains
    name and namespace corresponds to user facing Antrea NetworkPolicy.
 -- list of rules (presently all are while list rules), each rule contains
     -- direction
-    -- service (port) of this rule. ( TODO: how is it produced on Antrea Controller ?)
+    -- service (port) of this rule.
     -- To/From:  IPBlock and  reference to AddressGroup.
 -- list of references to appliedToGroup
 
 AddressGroup is used for To/From field of Rule in a Network policy, each AddressGroup contains
 -- auto-generated name (namespace-less) uniquely identifies a AddressGroup.
--- a list  GroupMemberPod(TODO: to be deprecated), each contains
+-- a list  GroupMemberPod
     -- reference to Pod
     -- Pod IP and ports
 -- a list of GroupMember, each contains
@@ -49,7 +49,7 @@ AddressGroup is used for To/From field of Rule in a Network policy, each Address
 
 AppliedToGroup is used to the To/From field of Rule in a Network policy, each appliedToGroup contains
 -- auto-generated name(namespace-less) uniquely identifies a AppliedToGroup.
--- a list  GroupMemberPod(TODO: to be deprecated), each contains
+-- a list  GroupMemberPod
     -- reference to Pod
     -- Pod IP and ports
 -- a list of GroupMember, each contains
@@ -177,9 +177,9 @@ type SynchronizationContent struct {
 	EgressRules                []EgressRule
 }
 
-// SecurityGroup declares interface to program cloud security groups.
+// CloudSecurityGroupAPI declares interface to program cloud security groups.
 type CloudSecurityGroupAPI interface {
-	// CreateSecurityGroup request to create SecurityGroup name..
+	// CreateSecurityGroup request to create SecurityGroup name.
 	// membershipOnly is true if the SecurityGroup is used for membership tracking, not
 	// applying ingress/egress rules.
 	// Caller expects to wait on returned channel for status
@@ -197,7 +197,7 @@ type CloudSecurityGroupAPI interface {
 
 	// UpdateSecurityGroupRules updates SecurityGroup name's ingress/egress rules in entirety.
 	// SecurityGroup name must already been created. SecurityGroups referred to in ingressRules and
-	// egressRules must already been create.
+	// egressRules must have been already created.
 	// For appliedSecurityGroup, call with ingressRules=nil and egressRules=nil (clear rules) can be invoked
 	// only if SG has no members.
 	UpdateSecurityGroupRules(name *CloudResourceID, ingressRules []*IngressRule, egressRules []*EgressRule) <-chan error

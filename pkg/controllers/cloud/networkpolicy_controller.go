@@ -212,7 +212,7 @@ func (r *NetworkPolicyReconciler) processMemberGrp(name string, eventType watch.
 		return nil
 	}
 
-	// sgChanges is changes in addrGroup requires associated nps to recompute their rules.
+	// sgChanges changes in addrGroup requires, associated nps to recompute their rules.
 	sgChanges := false
 	for vpc, members := range addedMembers {
 		key := &securitygroup.CloudResourceID{Name: name, Vpc: vpc}

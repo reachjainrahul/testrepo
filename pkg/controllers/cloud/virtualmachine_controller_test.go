@@ -16,7 +16,6 @@ package cloud
 
 import (
 	"context"
-	v1 "k8s.io/api/core/v1"
 	"time"
 
 	mock "github.com/golang/mock/gomock"
@@ -28,7 +27,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
-	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
 	cloud "antrea.io/nephe/apis/crd/v1alpha1"
 	"antrea.io/nephe/pkg/converter/source"
 	"antrea.io/nephe/pkg/converter/target"
@@ -37,10 +35,6 @@ import (
 )
 
 var (
-	namedports = []antreatypes.NamedPort{
-		{Name: "http", Protocol: v1.ProtocolTCP, Port: 80},
-		{Name: "https", Protocol: v1.ProtocolTCP, Port: 443},
-	}
 	networkInterfaceIPAddresses = []string{"1.1.1.1", "2.2.2.2"}
 	testNamespace               = "test-namespace"
 
@@ -52,7 +46,7 @@ var _ = Describe("VirtualmachineController", func() {
 	BeforeEach(func() {
 		mockCtrl = mock.NewController(GinkgoT())
 		mockClient = controllerruntimeclient.NewMockClient(mockCtrl)
-		externalEntitySources = testing2.SetupExternalEntitySources(networkInterfaceIPAddresses, namedports, testNamespace)
+		externalEntitySources = testing2.SetupExternalEntitySources(networkInterfaceIPAddresses, testNamespace)
 	})
 
 	AfterEach(func() {

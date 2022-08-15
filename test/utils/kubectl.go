@@ -53,7 +53,7 @@ func (c *KubeCtl) SetContext(clusterCtx string) {
 	c.context = clusterCtx
 }
 
-// IsPresent returns error if kubctl cannot connect to K8s.
+// IsPresent returns error if kubectl cannot connect to K8s.
 func (c *KubeCtl) IsPresent() error {
 	cmd := c.getCommand("version")
 	if output, err := cmd.CombinedOutput(); err != nil {

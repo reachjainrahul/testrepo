@@ -115,7 +115,7 @@ func newNetworkPolicyStatus(namespace, name string) *NetworkPolicyStatus {
 type cloudResourceNPTracker struct {
 	// cloudResource is a cloud resource
 	cloudResource securitygroup.CloudResource
-	// if dirty is true, cloud resource needs to recomputes NetworkPolicy status.
+	// if dirty is true, cloud resource needs to recompute NetworkPolicy status.
 	dirty atomic.Value
 	// appliedToSGs is list of appliedToSecurityGroup to which cloud resource is a member.
 	appliedToSGs map[string]*appliedToSecurityGroup

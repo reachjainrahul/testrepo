@@ -20,7 +20,6 @@ import (
 	mock "github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -35,13 +34,9 @@ import (
 )
 
 var (
-	mockCtrl   *mock.Controller
-	mockClient *controllerruntimeclient.MockClient
-	scheme     = runtime.NewScheme()
-	namedports = []antreatypes.NamedPort{
-		{Name: "http", Protocol: v1.ProtocolTCP, Port: 80},
-		{Name: "https", Protocol: v1.ProtocolTCP, Port: 443},
-	}
+	mockCtrl                    *mock.Controller
+	mockClient                  *controllerruntimeclient.MockClient
+	scheme                      = runtime.NewScheme()
 	networkInterfaceIPAddresses = []string{"1.1.1.1", "2.2.2.2"}
 	testNamespace               = "test-namespace"
 	emptyExternalEntitySources  = map[string]target.ExternalEntitySource{
@@ -62,7 +57,7 @@ func commonInitTest() {
 	// common setup valid for all tests.
 	mockCtrl = mock.NewController(GinkgoT())
 	mockClient = controllerruntimeclient.NewMockClient(mockCtrl)
-	externalEntitySources = testing2.SetupExternalEntitySources(networkInterfaceIPAddresses, namedports, testNamespace)
+	externalEntitySources = testing2.SetupExternalEntitySources(networkInterfaceIPAddresses, testNamespace)
 }
 
 // Testing converting source crd to target crd

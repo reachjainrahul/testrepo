@@ -62,11 +62,11 @@ func (p *accountPoller) doAccountPoller() {
 		p.log.Info("failed to get account", "account", p.namespacedName, "account", account, "error", e)
 	}
 
-	discoveredstatus, e := cloudInterface.GetAccountStatus(p.namespacedName)
+	discoveredStatus, e := cloudInterface.GetAccountStatus(p.namespacedName)
 	if e != nil {
 		p.log.Info("failed to get account status", "account", p.namespacedName, "error", e)
 	} else {
-		updateAccountStatus(&account.Status, discoveredstatus)
+		updateAccountStatus(&account.Status, discoveredStatus)
 	}
 
 	e = p.Client.Status().Update(context.TODO(), account)
@@ -355,8 +355,8 @@ func convertAddressToMap(addresses []cloudv1alpha1.IPAddress) map[string]struct{
 func convertNetworkInterfacesToMap(nwInterfaces []cloudv1alpha1.NetworkInterface) map[string]cloudv1alpha1.NetworkInterface {
 	nwInterfaceMap := make(map[string]cloudv1alpha1.NetworkInterface)
 
-	for _, nwIface := range nwInterfaces {
-		nwInterfaceMap[nwIface.Name] = nwIface
+	for _, nwIFace := range nwInterfaces {
+		nwInterfaceMap[nwIFace.Name] = nwIFace
 	}
 	return nwInterfaceMap
 }

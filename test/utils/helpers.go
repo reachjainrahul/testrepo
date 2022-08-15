@@ -39,7 +39,7 @@ import (
 	k8stemplates "antrea.io/nephe/test/templates"
 )
 
-// RestartDeployment restarts an existing deployment.
+// RestartOrWaitDeployment restarts an existing deployment.
 func RestartOrWaitDeployment(k8sClient client.Client, name, namespace string, timeout time.Duration, restart bool) error {
 	if !restart {
 		return StartOrWaitDeployment(k8sClient, name, namespace, 0, timeout)
@@ -122,7 +122,7 @@ func StopDeployment(k8sClient client.Client, name, namespace string, timeout tim
 	return replicas, nil
 }
 
-// Create or delete an configuration in yaml.
+// ConfigureK8s create or delete an configuration in yaml.
 func ConfigureK8s(kubeCtl *KubeCtl, params interface{}, yaml string, isDelete bool) error {
 	confParser, err := template.New("").Parse(yaml)
 	if err != nil {

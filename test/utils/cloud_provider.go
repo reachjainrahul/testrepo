@@ -54,7 +54,7 @@ func NewCloudVPC(provider v1alpha1.CloudProvider) (CloudVPC, error) {
 	}
 	if vpc.IsConfigured() {
 		// VPC can be cleanup using ~/terraform/aws-tf|azure-tf destroy.
-		return nil, fmt.Errorf("cannot reuse existing vpc.")
+		return nil, fmt.Errorf("cannot reuse existing vpc")
 	}
 	return vpc, nil
 }
