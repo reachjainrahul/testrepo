@@ -1,5 +1,5 @@
 - project:
-    name: antrea-cloud
+    name: nephe
     jobs:
       - '{name}-{test_name}-for-pull-request':
           test_name: e2e-test
@@ -8,17 +8,17 @@
           branches:
             - ${{sha1}}
           builders:
-            - deploy-vm-and-run-tests-for-antrea-cloud:
+            - deploy-vm-and-run-tests-for-nephe:
                 conformance_type: 'networkpolicy'
           trigger_phrase: .*/cloud-test-all.*
           white_list_target_branches: [ ]
           allow_whitelist_orgs_as_admins: true
-          admin_list: '{testrepo_admin_list}'
-          org_list: '{testrepo_org_list}'
-          white_list: '{testrepo_white_list}'
+          admin_list: '{nephe_admin_list}'
+          org_list: '{nephe_org_list}'
+          white_list: '{nephe_white_list}'
           only_trigger_phrase: true
           trigger_permit_all: true
-          status_context: antrea-cloud-e2e-test
+          status_context: nephe-e2e-test
           status_url: --none--
           success_status: Build finished.
           failure_status: Failed. Add comment /cloud-test-all to re-trigger.
