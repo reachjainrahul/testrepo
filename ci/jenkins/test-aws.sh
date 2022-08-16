@@ -19,6 +19,9 @@ KUBECTL_VERSION=v1.24.1
 TERRAFORM_VERSION=0.13.5
 
 echo ${PWD}
+ls ${PWD}
+cd testrepo
+
 echo "Building Nephe Docker image"
 make build
 
