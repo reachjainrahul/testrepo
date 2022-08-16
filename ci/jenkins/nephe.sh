@@ -142,18 +142,20 @@ ip_addr=`cat terraform.tfstate.d/${testbed_name}/terraform.tfstate | jq -r .outp
 chmod 0600 id_rsa
 
 ssh -i id_rsa ubuntu@${ip_addr} "sudo apt-get update -y && sudo apt-get install -y ca-certificates curl unzip gnupg lsb-release"
+#TODO: Scp'ing the code. Need to find better way
 scp -r -i id_rsa ../../* ubuntu@${ip_addr}:~/
 
 function cleanup_testbed() {
   echo "=== retrieve logs ==="
-  scp -i id_rsa ubuntu@${ip_addr}:~/test.log ../..
+  scp -r -i id_rsa ubuntu@${ip_addr}:~/logs ../..
 
-   echo "=== cleanup vm ==="
-   ./destroy.sh "${testbed_name}" "${goVcPassword}"
+  echo "=== cleanup vm ==="
+  ./destroy.sh "${testbed_name}" "${goVcPassword}"
 
-   cd ../../
+  cd ../../
   tar zvcf test.log.tar.gz test.log
 }
 
 trap cleanup_testbed EXIT
-ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-aws.sh; ~/ci/jenkins/test-aws.sh ${AWS_KEY_PAIR_NAME}"
+# TODO: Dont like passing credentials from one machine to another
+ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-aws.sh; ~/ci/jenkins/test-aws.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET} ${AWS_KEY_PAIR_NAME}"
