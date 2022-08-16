@@ -15,6 +15,12 @@
 package azure
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
 
 	"antrea.io/nephe/apis/crd/v1alpha1"
@@ -22,25 +28,21 @@ import (
 )
 
 type azureAccountCredentials struct {
-	subscriptionID   string
-	clientID         string
-	tenantID         string
-	clientKey        string
-	region           string
-	identityClientID string
+	SubscriptionID string `json:"subscriptionId,omitempty"`
+	ClientID       string `json:"clientId,omitempty"`
+	TenantID       string `json:"tenantId,omitempty"`
+	ClientKey      string `json:"clientKey,omitempty"`
+	region         string
 }
 
 // setAccountCredentials sets account credentials.
-func setAccountCredentials(credentials interface{}) (interface{}, error) {
+func setAccountCredentials(client client.Client, credentials interface{}) (interface{}, error) {
 	azureConfig := credentials.(*v1alpha1.CloudProviderAccountAzureConfig)
-	accCreds := &azureAccountCredentials{
-		subscriptionID:   strings.TrimSpace(azureConfig.SubscriptionID),
-		clientID:         strings.TrimSpace(azureConfig.ClientID),
-		tenantID:         strings.TrimSpace(azureConfig.TenantID),
-		clientKey:        strings.TrimSpace(azureConfig.ClientKey),
-		region:           strings.TrimSpace(azureConfig.Region),
-		identityClientID: strings.TrimSpace(azureConfig.IdentityClientID),
+	accCreds, err := extractSecret(client, azureConfig.SecretRef)
+	if err != nil {
+		return nil, err
 	}
+	accCreds.region = strings.TrimSpace(azureConfig.Region)
 
 	return accCreds, nil
 }
@@ -50,19 +52,19 @@ func compareAccountCredentials(accountName string, existing interface{}, new int
 	newCreds := new.(*azureAccountCredentials)
 
 	credsChanged := false
-	if strings.Compare(existingCreds.subscriptionID, newCreds.subscriptionID) != 0 {
+	if strings.Compare(existingCreds.SubscriptionID, newCreds.SubscriptionID) != 0 {
 		credsChanged = true
 		azurePluginLogger().Info("subscription ID updated", "account", accountName)
 	}
-	if strings.Compare(existingCreds.clientID, newCreds.clientID) != 0 {
+	if strings.Compare(existingCreds.ClientID, newCreds.ClientID) != 0 {
 		credsChanged = true
 		azurePluginLogger().Info("client ID updated", "account", accountName)
 	}
-	if strings.Compare(existingCreds.tenantID, newCreds.tenantID) != 0 {
+	if strings.Compare(existingCreds.TenantID, newCreds.TenantID) != 0 {
 		credsChanged = true
 		azurePluginLogger().Info("account tenant ID updated", "account", accountName)
 	}
-	if strings.Compare(existingCreds.clientKey, newCreds.clientKey) != 0 {
+	if strings.Compare(existingCreds.ClientKey, newCreds.ClientKey) != 0 {
 		credsChanged = true
 		azurePluginLogger().Info("account client key updated", "account", accountName)
 	}
@@ -71,6 +73,22 @@ func compareAccountCredentials(accountName string, existing interface{}, new int
 		azurePluginLogger().Info("account region updated", "account", accountName)
 	}
 	return credsChanged
+}
+
+// ExtractSecret extracts credentials from a Kubernetes secret.
+func extractSecret(client client.Client, s *v1alpha1.SecretReference) (*azureAccountCredentials, error) {
+	if s == nil {
+		return nil, fmt.Errorf("secret reference not found")
+	}
+	secret := &corev1.Secret{}
+	if err := client.Get(context.TODO(), types.NamespacedName{Namespace: s.Namespace, Name: s.Name}, secret); err != nil {
+		return nil, fmt.Errorf("unable to get secret: %s", err.Error())
+	}
+	cred := &azureAccountCredentials{}
+	if err := json.Unmarshal(secret.Data[s.Key], cred); err != nil {
+		return nil, fmt.Errorf("unable to parse secret data: %s", err.Error())
+	}
+	return cred, nil
 }
 
 // getVnetAccount returns first found account config to which this vnet id belongs.

@@ -41,8 +41,8 @@ var (
 
 func (computeCfg *computeServiceConfig) getNetworkInterfacesOfVnet(vnetIDSet map[string]struct{}) ([]*networkInterfaceTable, error) {
 	location := computeCfg.credentials.region
-	subscriptionID := computeCfg.credentials.subscriptionID
-	tenentID := computeCfg.credentials.tenantID
+	subscriptionID := computeCfg.credentials.SubscriptionID
+	tenentID := computeCfg.credentials.TenantID
 
 	var vnetIDs []string
 	for vnetID := range vnetIDSet {

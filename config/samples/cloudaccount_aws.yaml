@@ -1,23 +1,34 @@
 # Add AWS Account and Onboard VPC
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aws-account-creds
+  namespace: kube-system
+type: Opaque
+data:
+  credentials: "<REPLACE_ME>"
+---
 apiVersion: crd.cloud.antrea.io/v1alpha1
 kind: CloudProviderAccount
 metadata:
-  name: cloudprovideraccount-sample
+  name: cloudprovideraccount-aws-sample
   namespace: sample-ns
 spec:
   awsConfig:
     accountID: "<REPLACE_ME>"
-    accessKeyId: "<REPLACE_ME>"
-    accessKeySecret: "<REPLACE_ME>"
     region: "<REPLACE_ME>"
+    secretRef:
+      name: aws-account-creds
+      namespace: kube-system
+      key: credentials
 ---
 apiVersion: crd.cloud.antrea.io/v1alpha1
 kind: CloudEntitySelector
 metadata:
-  name: cloudentityselector-sample
+  name: cloudentityselector-aws-sample
   namespace: sample-ns
 spec:
-  accountName: cloudprovideraccount-sample
+  accountName: cloudprovideraccount-aws-sample
   vmSelector:
     - vpcMatch:
         matchID: "<VPC_ID>"

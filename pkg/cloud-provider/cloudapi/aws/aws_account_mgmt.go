@@ -15,10 +15,15 @@
 package aws
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/endpoints"
+	corev1 "k8s.io/api/core/v1"
 
 	"antrea.io/nephe/apis/crd/v1alpha1"
 	"antrea.io/nephe/pkg/cloud-provider/cloudapi/internal"
@@ -26,24 +31,22 @@ import (
 
 type awsAccountCredentials struct {
 	accountID       string
-	accessKeyID     string
-	accessKeySecret string
+	AccessKeyID     string `json:"accessKeyId,omitempty"`
+	AccessKeySecret string `json:"accessKeySecret,omitempty"`
+	RoleArn         string `json:"roleArn,omitempty"`
+	ExternalID      string `json:"externalId,omitempty"`
 	region          string
-	roleArn         string
-	externalID      string
 }
 
 // setAccountCredentials sets account credentials.
-func setAccountCredentials(credentials interface{}) (interface{}, error) {
+func setAccountCredentials(client client.Client, credentials interface{}) (interface{}, error) {
 	awsConfig := credentials.(*v1alpha1.CloudProviderAccountAWSConfig)
-	accCreds := &awsAccountCredentials{
-		accountID:       strings.TrimSpace(awsConfig.AccountID),
-		accessKeyID:     strings.TrimSpace(awsConfig.AccessKeyID),
-		accessKeySecret: strings.TrimSpace(awsConfig.AccessKeySecret),
-		region:          strings.TrimSpace(awsConfig.Region),
-		roleArn:         strings.TrimSpace(awsConfig.RoleArn),
-		externalID:      strings.TrimSpace(awsConfig.ExternalID),
+	accCreds, err := extractSecret(client, awsConfig.SecretRef)
+	if err != nil {
+		return nil, err
 	}
+	accCreds.accountID = strings.TrimSpace(awsConfig.AccountID)
+	accCreds.region = strings.TrimSpace(awsConfig.Region)
 
 	// NOTE: currently only AWS standard partition regions supported (aws-cn, aws-us-gov etc are not
 	// supported). As we add support for other partitions, validation needs to be updated
@@ -69,11 +72,11 @@ func compareAccountCredentials(accountName string, existing interface{}, new int
 		credsChanged = true
 		awsPluginLogger().Info("account ID updated", "account", accountName)
 	}
-	if strings.Compare(existingCreds.accessKeyID, newCreds.accessKeyID) != 0 {
+	if strings.Compare(existingCreds.AccessKeyID, newCreds.AccessKeyID) != 0 {
 		credsChanged = true
 		awsPluginLogger().Info("account access key ID updated", "account", accountName)
 	}
-	if strings.Compare(existingCreds.accessKeySecret, newCreds.accessKeySecret) != 0 {
+	if strings.Compare(existingCreds.AccessKeySecret, newCreds.AccessKeySecret) != 0 {
 		credsChanged = true
 		awsPluginLogger().Info("account access key secret updated", "account", accountName)
 	}
@@ -82,6 +85,22 @@ func compareAccountCredentials(accountName string, existing interface{}, new int
 		awsPluginLogger().Info("account region updated", "account", accountName)
 	}
 	return credsChanged
+}
+
+// ExtractSecret extracts credentials from a Kubernetes secret.
+func extractSecret(client client.Client, s *v1alpha1.SecretReference) (*awsAccountCredentials, error) {
+	if s == nil {
+		return nil, fmt.Errorf("secret reference not found")
+	}
+	secret := &corev1.Secret{}
+	if err := client.Get(context.TODO(), types.NamespacedName{Namespace: s.Namespace, Name: s.Name}, secret); err != nil {
+		return nil, fmt.Errorf("unable to get secret: %s", err.Error())
+	}
+	cred := &awsAccountCredentials{}
+	if err := json.Unmarshal(secret.Data[s.Key], cred); err != nil {
+		return nil, fmt.Errorf("unable to parse secret data: %s", err.Error())
+	}
+	return cred, nil
 }
 
 // getVpcAccount returns first found account config to which this vpc id belongs.

@@ -34,40 +34,39 @@ const (
 
 // CloudProviderAccountSpec defines the desired state of CloudProviderAccount.
 type CloudProviderAccountSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster.
+	// Important: Run "make" to regenerate code after modifying this file.
 
-	// PollIntervalInSeconds defines account poll interval (default value is 60, if not specified)
+	// PollIntervalInSeconds defines account poll interval (default value is 60, if not specified).
 	PollIntervalInSeconds *uint `json:"pollIntervalInSeconds,omitempty"`
-	// Cloud provider account config
+	// Cloud provider account config.
 	AWSConfig *CloudProviderAccountAWSConfig `json:"awsConfig,omitempty"`
-	// Cloud provider account config
+	// Cloud provider account config.
 	AzureConfig *CloudProviderAccountAzureConfig `json:"azureConfig,omitempty"`
 }
 
 type CloudProviderAccountAWSConfig struct {
-	// Cloud provider account identifier
+	// Cloud provider account identifier.
 	AccountID string `json:"accountID,omitempty"`
-	// Cloud provider account access key ID
-	AccessKeyID string `json:"accessKeyId,omitempty"`
-	// Cloud provider account access key secret
-	// (TODO Secret needs to be saved using k8 secrets)
-	AccessKeySecret string `json:"accessKeySecret,omitempty"`
-	// Cloud provider account region
+	// Reference to k8s secret which has cloud provider credentials.
+	SecretRef *SecretReference `json:"secretRef,omitempty"`
+	// Cloud provider account region.
 	Region string `json:"region,omitempty"`
-	// Cloud provider role arn to be assumed
-	RoleArn string `json:"roleArn,omitempty"`
-	// Cloud provider external id used in assume role
-	ExternalID string `json:"externalId,omitempty"`
 }
 
 type CloudProviderAccountAzureConfig struct {
-	SubscriptionID   string `json:"subscriptionId,omitempty"`
-	ClientID         string `json:"clientId,omitempty"`
-	TenantID         string `json:"tenantId,omitempty"`
-	ClientKey        string `json:"clientKey,omitempty"`
-	Region           string `json:"region,omitempty"`
-	IdentityClientID string `json:"identityClientId,omitempty"`
+	SecretRef *SecretReference `json:"secretRef,omitempty"`
+	Region    string           `json:"region,omitempty"`
+}
+
+// An SecretReference is a reference to a secret key in an arbitrary namespace.
+type SecretReference struct {
+	// Name of the secret.
+	Name string `json:"name"`
+	// Namespace of the secret.
+	Namespace string `json:"namespace"`
+	// Key to select.
+	Key string `json:"key"`
 }
 
 // CloudProviderAccountStatus defines the observed state of CloudProviderAccount.

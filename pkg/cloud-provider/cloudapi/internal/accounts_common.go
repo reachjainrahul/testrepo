@@ -16,6 +16,7 @@ package internal
 
 import (
 	"fmt"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sync"
 	"time"
 
@@ -49,18 +50,18 @@ type cloudAccountConfig struct {
 	Status                *cloudv1alpha1.CloudProviderAccountStatus
 }
 
-type CloudCredentialValidatorFunc func(credentials interface{}) (interface{}, error)
+type CloudCredentialValidatorFunc func(client client.Client, credentials interface{}) (interface{}, error)
 type CloudCredentialComparatorFunc func(accountName string, existing interface{}, new interface{}) bool
 type CloudServiceConfigCreatorFunc func(namespacedName *types.NamespacedName, cloudConvertedCredentials interface{},
 	helper interface{}) ([]CloudServiceInterface, error)
 
-func (c *cloudCommon) newCloudAccountConfig(namespacedName *types.NamespacedName, credentials interface{},
+func (c *cloudCommon) newCloudAccountConfig(client client.Client, namespacedName *types.NamespacedName, credentials interface{},
 	pollInterval time.Duration, loggerFunc func() logging.Logger) (CloudAccountInterface, error) {
 	credentialsValidatorFunc := c.commonHelper.SetAccountCredentialsFunc()
 	if credentialsValidatorFunc == nil {
 		return nil, fmt.Errorf("registered cloud-credentials validator function cannot be nil")
 	}
-	cloudConvertedCredential, err := credentialsValidatorFunc(credentials)
+	cloudConvertedCredential, err := credentialsValidatorFunc(client, credentials)
 	if err != nil {
 		return nil, err
 	}
@@ -95,13 +96,13 @@ func (c *cloudCommon) newCloudAccountConfig(namespacedName *types.NamespacedName
 	}, nil
 }
 
-func (c *cloudCommon) updateCloudAccountConfig(credentials interface{}, config CloudAccountInterface) error {
+func (c *cloudCommon) updateCloudAccountConfig(client client.Client, credentials interface{}, config CloudAccountInterface) error {
 	currentConfig := config.(*cloudAccountConfig)
 	credentialsValidatorFunc := c.commonHelper.SetAccountCredentialsFunc()
 	if credentialsValidatorFunc == nil {
 		return fmt.Errorf("registered cloud-credentials validator function cannot be nil")
 	}
-	cloudConvertedNewCredential, err := credentialsValidatorFunc(credentials)
+	cloudConvertedNewCredential, err := credentialsValidatorFunc(client, credentials)
 	if err != nil {
 		return err
 	}

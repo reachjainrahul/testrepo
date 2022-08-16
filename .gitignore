@@ -13,6 +13,10 @@ bin
 # Emacs
 *~
 
+# IDEs
+.idea
+.vscode
+
 # Kubernetes Generated files - skip generated files, except for vendored files
 !vendor/**/zz_generated.*
 

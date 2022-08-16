@@ -16,6 +16,7 @@ package internal
 
 import (
 	"fmt"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sync"
 	"time"
 
@@ -45,7 +46,7 @@ type CloudCommonInterface interface {
 		error)
 	GetAllCloudAccountsComputeResourceCRDs() ([]*cloudv1alpha1.VirtualMachine, error)
 
-	AddCloudAccount(account *cloudv1alpha1.CloudProviderAccount, credentials interface{}) error
+	AddCloudAccount(client client.Client, account *cloudv1alpha1.CloudProviderAccount, credentials interface{}) error
 	RemoveCloudAccount(namespacedName *types.NamespacedName)
 
 	AddSelector(namespacedName *types.NamespacedName, selector *cloudv1alpha1.CloudEntitySelector) error
@@ -73,7 +74,7 @@ func NewCloudCommon(logger func() logging.Logger, commonHelper CloudCommonHelper
 	}
 }
 
-func (c *cloudCommon) AddCloudAccount(account *cloudv1alpha1.CloudProviderAccount, credentials interface{}) error {
+func (c *cloudCommon) AddCloudAccount(client client.Client, account *cloudv1alpha1.CloudProviderAccount, credentials interface{}) error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
@@ -84,10 +85,10 @@ func (c *cloudCommon) AddCloudAccount(account *cloudv1alpha1.CloudProviderAccoun
 
 	existingConfig, found := c.accountConfigs[*namespacedName]
 	if found {
-		return c.updateCloudAccountConfig(credentials, existingConfig)
+		return c.updateCloudAccountConfig(client, credentials, existingConfig)
 	}
 
-	config, err := c.newCloudAccountConfig(namespacedName, credentials,
+	config, err := c.newCloudAccountConfig(client, namespacedName, credentials,
 		time.Duration(*account.Spec.PollIntervalInSeconds)*time.Second, c.logger)
 	if err != nil {
 		return err
