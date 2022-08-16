@@ -20,7 +20,16 @@ TERRAFORM_VERSION=0.13.5
 
 echo ${PWD}
 ls ${PWD}
-cd testrepo
+
+echo "Install kind"
+curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-$(uname)-amd64
+chmod +x ./kind
+mv ./kind /usr/local/bin/kind
+
+curl -LO https://golang.org/dl/go1.17.linux-amd64.tar.gz
+sudo rm -rf /usr/local/go && sudo tar -zxf go1.17.linux-amd64.tar.gz -C /usr/local/
+rm go1.17.linux-amd64.tar.gz
+export PATH=$PATH:/usr/local/go/bin
 
 echo "Building Nephe Docker image"
 make build
@@ -38,6 +47,5 @@ hack/install-cloud-tools.sh
 ci/kind/kind-setup.sh create kind
 
 echo "this is a test script, username $1"
-sleep 600
 
 echo "this is a test script, username $AWS_KEY_PAIR_NAME $1" > test.log
