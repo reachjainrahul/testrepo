@@ -26,12 +26,12 @@ resourcePoolPath=""
 vcNetwork=""
 virtualMachine=""
 goVcPassword=""
-testUserName=""
+testType=""
 
 _usage="Usage: $0 [--buildnumber <jenkins BUILD_NUMBER>] [--vchost <VC IPaddress/Domain Name>] [--vcuser <VC username>]
                   [--datacenter <datacenter to deploy vm>] [--datastore <dataStore name>] [--vcCluster <clusterName to deploy vm>]
                   [--resourcePool <resourcePool name>] [--vcNetwork <network used to delpoy vm>] [--virtualMachine <vm template>]
-                  [--goVcPassword <Password for VC>] [--testUserName <a sample variable for test-aws.sh>]
+                  [--goVcPassword <Password for VC>] [--testType <type of test to be run>]
 Setup a VM to run nephe e2e tests.
         --buildnumber           A number that is used to distinguish vm name from others.
         --vchost                VC ipAddress or domain name to deploy vm.
@@ -43,7 +43,7 @@ Setup a VM to run nephe e2e tests.
         --resourcePool          Resource pool that is used to deploy vm.
         --vcNetwork             Network that is used to deploy vm.
         --virtualMachine        VM template that is used to deploy vm.
-        --testUserName          A sample environment variable for test-aws.sh."
+        --testType              The type of tests that will be triggered."
 
 function echoerr {
     >&2 echo "$@"
@@ -102,8 +102,8 @@ case $key in
     goVcPassword="$2"
     shift 2
     ;;
-    --testUserName)
-    testUserName="$2"
+    --testType)
+    testType="$2"
     shift 2
     ;;
 esac
@@ -158,4 +158,26 @@ function cleanup_testbed() {
 
 trap cleanup_testbed EXIT
 # TODO: Dont like passing credentials from one machine to another
-ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-aws.sh; ~/ci/jenkins/test-aws.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET} ${AWS_KEY_PAIR_NAME}"
+if [ "$testtype" == "aws" ]; then
+  ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-aws.sh; ~/ci/jenkins/test-aws.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET} ${AWS_KEY_PAIR_NAME}"
+fi
+
+# TODO: Test these changes.
+case $testtype in
+    aws)
+    echo "Run tests on a Kind cluster with AWS VMs"
+    ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-aws.sh; ~/ci/jenkins/test-aws.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET} ${AWS_KEY_PAIR_NAME}"
+    ;;
+    azure)
+    echo "Run tests on a Kind cluster with Azure VMs"
+    ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-azure.sh; ~/ci/jenkins/test-azure.sh"
+    ;;
+    eks)
+    echo "Run tests on a EKS cluster with AWS VMs"
+    ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-eks.sh; ~/ci/jenkins/test-eks.sh"
+    ;;
+    aks)
+    echo "Run tests on a AKS cluster with AWS VMs"
+    ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-aks.sh; ~/ci/jenkins/test-aks.sh"
+    ;;
+esac

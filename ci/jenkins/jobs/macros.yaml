@@ -1,5 +1,5 @@
 - builder:
-    name: deploy-vm-and-run-tests-for-nephe
+    name: deploy-vm-and-run-aws-tests-for-nephe
     builders:
             - shell: |-
                     #!/bin/bash
@@ -8,4 +8,37 @@
                     ./ci/jenkins/nephe.sh --buildnumber "${{BUILD_NUMBER}}" --vchost "${{VC_HOST}}" \
                             --vcuser "${{VC_USER}}" --datacenter "${{DATACENTERNAME}}" --datastore "${{DATA_STORE}}" \
                             --vcCluster "${{VC_CLUSTER}}" --resourcePool "${{RESOURCEPOOLPATH}}" --vcNetwork "${{VMC_NETWORK_1}}" \
-                            --virtualMachine "${{VIRTUAL_MACHINE}}" --goVcPassword "${{GOVC_PASSWORD}}" --testUserName "${{TEST_USERNAME}}"
+                            --virtualMachine "${{VIRTUAL_MACHINE}}" --goVcPassword "${{GOVC_PASSWORD}}" --testType aws
+- builder:
+    name: deploy-vm-and-run-azure-tests-for-nephe
+    builders:
+      - shell: |-
+          #!/bin/bash
+          set -ex
+          chmod +x ci/jenkins/nephe.sh
+          ./ci/jenkins/nephe.sh --buildnumber "${{BUILD_NUMBER}}" --vchost "${{VC_HOST}}" \
+                  --vcuser "${{VC_USER}}" --datacenter "${{DATACENTERNAME}}" --datastore "${{DATA_STORE}}" \
+                  --vcCluster "${{VC_CLUSTER}}" --resourcePool "${{RESOURCEPOOLPATH}}" --vcNetwork "${{VMC_NETWORK_1}}" \
+                  --virtualMachine "${{VIRTUAL_MACHINE}}" --goVcPassword "${{GOVC_PASSWORD}}" --testType azure
+- builder:
+    name: deploy-vm-and-run-eks-tests-for-nephe
+    builders:
+      - shell: |-
+          #!/bin/bash
+          set -ex
+          chmod +x ci/jenkins/nephe.sh
+          ./ci/jenkins/nephe.sh --buildnumber "${{BUILD_NUMBER}}" --vchost "${{VC_HOST}}" \
+                  --vcuser "${{VC_USER}}" --datacenter "${{DATACENTERNAME}}" --datastore "${{DATA_STORE}}" \
+                  --vcCluster "${{VC_CLUSTER}}" --resourcePool "${{RESOURCEPOOLPATH}}" --vcNetwork "${{VMC_NETWORK_1}}" \
+                  --virtualMachine "${{VIRTUAL_MACHINE}}" --goVcPassword "${{GOVC_PASSWORD}}" --testType eks
+- builder:
+    name: deploy-vm-and-run-eks-tests-for-nephe
+    builders:
+      - shell: |-
+          #!/bin/bash
+          set -ex
+          chmod +x ci/jenkins/nephe.sh
+          ./ci/jenkins/nephe.sh --buildnumber "${{BUILD_NUMBER}}" --vchost "${{VC_HOST}}" \
+                  --vcuser "${{VC_USER}}" --datacenter "${{DATACENTERNAME}}" --datastore "${{DATA_STORE}}" \
+                  --vcCluster "${{VC_CLUSTER}}" --resourcePool "${{RESOURCEPOOLPATH}}" --vcNetwork "${{VMC_NETWORK_1}}" \
+                  --virtualMachine "${{VIRTUAL_MACHINE}}" --goVcPassword "${{GOVC_PASSWORD}}" --testType aks
