@@ -32,7 +32,7 @@ _usage="Usage: $0 [--buildnumber <jenkins BUILD_NUMBER>] [--vchost <VC IPaddress
                   [--datacenter <datacenter to deploy vm>] [--datastore <dataStore name>] [--vcCluster <clusterName to deploy vm>]
                   [--resourcePool <resourcePool name>] [--vcNetwork <network used to delpoy vm>] [--virtualMachine <vm template>]
                   [--goVcPassword <Password for VC>] [--testUserName <a sample variable for test-aws.sh>]
-Setup a VM to run antrea cloud e2e tests.
+Setup a VM to run nephe e2e tests.
         --buildnumber           A number that is used to distinguish vm name from others.
         --vchost                VC ipAddress or domain name to deploy vm.
         --vcuser                User name for VC.
@@ -118,7 +118,7 @@ if [ ! -e playbook/jenkins_id_rsa ];then
 fi
 chmod 0600 id_rsa
 chmod 0600 playbook/jenkins_id_rsa
-testbed_name="antrea-test-cloud-${buildNumber}"
+testbed_name="nephe-test-${buildNumber}"
 
 sudo apt install -y unzip ansible
 

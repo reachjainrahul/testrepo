@@ -75,8 +75,14 @@
                     credential-id: ANTREA_DOCKER_PWD
                     variable: ANTREA_DOCKER_PWD
                 - text:
-                    credential-id: TEST_USERNAME
-                    variable: TEST_USERNAME
+                    credential-id: AWS_ACCESS_KEY_ID
+                    variable: AWS_ACCESS_KEY_ID
+                - text:
+                    credential-id: AWS_ACCESS_KEY_SECRET
+                    variable: AWS_ACCESS_KEY_SECRET
+                - text:
+                    credential-id: AWS_KEY_PAIR_NAME
+                    variable: AWS_KEY_PAIR_NAME
           publishers:
           - archive:
               allow-empty: true

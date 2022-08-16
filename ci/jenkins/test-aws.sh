@@ -12,6 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-test_username=$TEST_USERNAME
 
-echo "this is a test script, username $test_username" > test.log
+echo "this is a test script, username $AWS_KEY_PAIR_NAME" > test.log
