@@ -57,11 +57,18 @@ ci/kind/kind-setup.sh create kind
 # TODO: Expose this as command line arguments?
 export TF_VAR_aws_access_key_id=$1
 export TF_VAR_aws_access_key_secret=$2
-export TF_VAR_aws_key_pair_name=$3
-export AWS_SSH_KEY=$4
 export TF_VAR_owner="nephe-ci"
+export TF_VAR_region="us-west-1"
 
+echo "Installing AWS CLI"
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+KEY_PAIR="nephe-$$"
+aws ec2 import-key-pair --key-name ${KEY_PAIR} --public-key-material fileb://~/.ssh/id_rsa.pub --region ${TF_VAR_region}
+
+export TF_VAR_aws_key_pair_name=${KEY_PAIR}
 mkdir ~/logs
-eval $(ssh-agent -s)
-echo "${AWS_SSH_KEY}" | tr -d '\r' | ssh-add -
 ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*Test-aws.*" -kubeconfig=$HOME/.kube/config -cloud-provider=AWS -support-bundle-dir=~/logs
+aws ec2 delete-key-pair  --key-name ${KEY_PAIR}  --region ${TF_VAR_region}

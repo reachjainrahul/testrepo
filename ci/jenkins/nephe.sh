@@ -158,4 +158,4 @@ function cleanup_testbed() {
 
 trap cleanup_testbed EXIT
 # TODO: Dont like passing credentials from one machine to another
-ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-aws.sh; ~/ci/jenkins/test-aws.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET} ${AWS_KEY_PAIR_NAME} ${AWS_SSH_KEY}"
+ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-aws.sh; ~/ci/jenkins/test-aws.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET} ${AWS_KEY_PAIR_NAME}"
