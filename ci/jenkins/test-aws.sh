@@ -66,6 +66,9 @@ unzip awscliv2.zip
 sudo ./aws/install
 
 KEY_PAIR="nephe-$$"
+export AWS_ACCESS_KEY_ID=${TF_VAR_aws_access_key_id}
+export AWS_SECRET_ACCESS_KEY=${TF_VAR_aws_access_key_secret}
+export AWS_DEFAULT_REGION=${TF_VAR_region}
 aws ec2 import-key-pair --key-name ${KEY_PAIR} --public-key-material fileb://~/.ssh/id_rsa.pub --region ${TF_VAR_region}
 
 export TF_VAR_aws_key_pair_name=${KEY_PAIR}

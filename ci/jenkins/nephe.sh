@@ -153,7 +153,7 @@ function cleanup_testbed() {
   ./destroy.sh "${testbed_name}" "${goVcPassword}"
 
   cd ../../
-  tar zvcf test.log.tar.gz test.log
+  tar zvcf logs.tar.gz logs
 }
 
 trap cleanup_testbed EXIT

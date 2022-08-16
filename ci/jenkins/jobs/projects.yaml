@@ -2,8 +2,8 @@
     name: nephe
     jobs:
       - '{name}-{test_name}-for-pull-request':
-          test_name: e2e-test-aws
-          node: 'antrea-private-cloud'
+          test_name: nephe-test-e2e-aws
+          node: 'nephe'
           description: 'This is the {test_name} test for {name}.'
           branches:
             - ${{sha1}}
@@ -18,8 +18,7 @@
           white_list: '{nephe_white_list}'
           only_trigger_phrase: true
           trigger_permit_all: true
-          status_context: nephe-e2e-test
-          status_url: --none--
+          status_context: nephe-test-e2e-aws
           success_status: Build finished.
           failure_status: Failed. Add comment /nephe-test-e2e-aws to re-trigger.
           error_status: Failed. Add comment /nephe-test-e2e-aws to re-trigger.
