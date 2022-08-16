@@ -58,6 +58,7 @@ ci/kind/kind-setup.sh create kind
 export TF_VAR_aws_access_key_id=$1
 export TF_VAR_aws_access_key_secret=$2
 export TF_VAR_aws_key_pair_name=$3
+export TF_VAR_owner="nephe-ci"
 
 mkdir ~/logs
 ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*Test-aws.*" -kubeconfig=$HOME/.kube/config -cloud-provider=AWS -support-bundle-dir=~/logs
