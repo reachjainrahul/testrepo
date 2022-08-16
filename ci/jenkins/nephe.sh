@@ -144,12 +144,12 @@ ssh -i id_rsa ubuntu@${ip_addr} "sudo apt-get update -y && sudo apt-get install 
 scp -i id_rsa test-aws.sh ubuntu@${ip_addr}:~
 function cleanup_testbed() {
   echo "=== retrieve logs ==="
-  scp -i id_rsa ubuntu@${ip_addr}:~/test.log ../../..
+  scp -i id_rsa ubuntu@${ip_addr}:~/test.log ../..
 
    echo "=== cleanup vm ==="
    ./destroy.sh "${testbed_name}" "${goVcPassword}"
 
-   cd ../../..
+   cd ../../
   tar zvcf test.log.tar.gz test.log
 }
 

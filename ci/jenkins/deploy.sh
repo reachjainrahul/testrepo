@@ -51,10 +51,10 @@ terraform apply -auto-approve -var vsphere_password=${vc_passwd} -var-file=terra
 cp -f id_rsa id_rsa.pub "terraform.tfstate.d/${tesbted_name}/"
 chmod 600 "terraform.tfstate.d/${tesbted_name}/id_rsa"
 echo ====== Pulling Images from Internal Registry ======
-ansible-playbook -vvv -i tfstate-inventory.py playbook/pre.yml -e 'ansible_python_interpreter=/usr/bin/python3'
+ansible-playbook -vvv -i tfstate-inventory.py playbook/pre.yml -e 'ansible_python_interpreter=/usr/bin/python3' > /dev/null
 cp -f playbook/jenkins_id_rsa playbook/jenkins_id_rsa.pub "terraform.tfstate.d/${tesbted_name}/"
 chmod 600 "terraform.tfstate.d/${tesbted_name}/jenkins_id_rsa"
-ansible-playbook -vvv -i tfstate-inventory.py playbook/post.yml -e 'ansible_python_interpreter=/usr/bin/python3'
+ansible-playbook -vvv -i tfstate-inventory.py playbook/post.yml -e 'ansible_python_interpreter=/usr/bin/python3' > /dev/null
 
 ./show.sh "${tesbted_name}"
 ./checkin.sh  "${tesbted_name}"
