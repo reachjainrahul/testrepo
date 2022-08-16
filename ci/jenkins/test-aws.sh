@@ -23,6 +23,16 @@ curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/${KIND
 chmod +x ./kind
 sudo mv ./kind /usr/local/bin/kind
 
+echo "Installing kubectl"
+curl -LO https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl
+chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
+
+echo "Installing Terraform"
+sudo apt-get install unzip
+curl -Lo ./terraform.zip https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+unzip ./terraform.zip
+chmod +x ./terraform && sudo mv ./terraform /usr/local/bin/terraform
+
 echo "Installing Go 1.17"
 curl -LO https://golang.org/dl/go1.17.linux-amd64.tar.gz
 sudo rm -rf /usr/local/go && sudo tar -zxf go1.17.linux-amd64.tar.gz -C /usr/local/
@@ -44,6 +54,7 @@ echo "Creating kind cluster"
 hack/install-cloud-tools.sh
 ci/kind/kind-setup.sh create kind
 
+# TODO: Expose this as command line arguments?
 export TF_VAR_aws_access_key_id=$1
 export TF_VAR_aws_access_key_secret=$2
 export TF_VAR_aws_key_pair_name=$3
