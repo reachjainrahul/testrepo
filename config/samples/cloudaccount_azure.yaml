@@ -1,24 +1,33 @@
 # Add Azure Account and Onboard VNET
+apiVersion: v1
+kind: Secret
+metadata:
+  name: azure-account-creds
+  namespace: kube-system
+type: Opaque
+data:
+  credentials: "<REPLACE_ME>"
+---
 apiVersion: crd.cloud.antrea.io/v1alpha1
 kind: CloudProviderAccount
 metadata:
-  name: cloudprovideraccount-sample
+  name: cloudprovideraccount-azure-sample
   namespace: sample-ns
 spec:
   azureConfig:
-    subscriptionId: "<REPLACE_ME>"
-    clientId: "<REPLACE_ME>"
-    tenantId: "<REPLACE_ME>"
-    clientKey: "<REPLACE_ME>"
     region: "<REPLACE_ME>"
+    secretRef:
+      name: azure-account-creds
+      namespace: kube-system
+      key: credentials
 ---
 apiVersion: crd.cloud.antrea.io/v1alpha1
 kind: CloudEntitySelector
 metadata:
-  name: cloudentityselector-sample
+  name: cloudentityselector-azure-sample
   namespace: sample-ns
 spec:
-  accountName: cloudprovideraccount-sample
+  accountName: cloudprovideraccount-azure-sample
   vmSelector:
     - vpcMatch:
         matchID: "<VNET_ID>"

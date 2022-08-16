@@ -52,14 +52,14 @@ type awsServicesHelper interface {
 type awsServicesHelperImpl struct{}
 
 // newServiceSdkConfigProvider returns config to create aws services clients.
-func (h *awsServicesHelperImpl) newServiceSdkConfigProvider(accCreds *awsAccountCredentials) (awsServiceClientCreateInterface, error) {
+func (h *awsServicesHelperImpl) newServiceSdkConfigProvider(accConfig *awsAccountCredentials) (awsServiceClientCreateInterface, error) {
 	var creds *credentials.Credentials
 
-	if len(accCreds.roleArn) != 0 {
+	if len(accConfig.RoleArn) != 0 {
 		// use role base access if role provided
 		// new session using worker node role, it should have AssumeRole permissions to the Customer's role ARN resource
 		sess, err := session.NewSession(&aws.Config{
-			Region:                        &accCreds.region,
+			Region:                        &accConfig.region,
 			CredentialsChainVerboseErrors: aws.Bool(true),
 		})
 		if err != nil {
@@ -67,24 +67,24 @@ func (h *awsServicesHelperImpl) newServiceSdkConfigProvider(accCreds *awsAccount
 		}
 
 		// configure to assume customer role and retrieve temporary credentials
-		externalID := &accCreds.externalID
-		if len(accCreds.externalID) == 0 {
+		externalID := &accConfig.ExternalID
+		if len(accConfig.ExternalID) == 0 {
 			externalID = nil
 		}
 		stsClient := sts.New(sess)
 		creds = credentials.NewCredentials(&stscreds.AssumeRoleProvider{
 			Client:          stsClient,
-			RoleARN:         accCreds.roleArn,
-			RoleSessionName: accCreds.accountID,
+			RoleARN:         accConfig.RoleArn,
+			RoleSessionName: accConfig.accountID,
 			ExternalID:      externalID,
 		})
 	} else {
 		// use static credentials passed in
-		creds = credentials.NewStaticCredentials(accCreds.accessKeyID, accCreds.accessKeySecret, "")
+		creds = credentials.NewStaticCredentials(accConfig.AccessKeyID, accConfig.AccessKeySecret, "")
 	}
 
 	awsConfig := &aws.Config{
-		Region:                        &accCreds.region,
+		Region:                        &accConfig.region,
 		Credentials:                   creds,
 		CredentialsChainVerboseErrors: aws.Bool(true),
 	}

@@ -41,41 +41,54 @@ spec:
               awsConfig:
                 description: Cloud provider account config
                 properties:
-                  accessKeyId:
-                    description: Cloud provider account access key ID
-                    type: string
-                  accessKeySecret:
-                    description: Cloud provider account access key secret (TODO Secret
-                      needs to be saved using k8 secrets)
-                    type: string
                   accountID:
                     description: Cloud provider account identifier
-                    type: string
-                  externalId:
-                    description: Cloud provider external id used in assume role
                     type: string
                   region:
                     description: Cloud provider account region
                     type: string
-                  roleArn:
-                    description: Cloud provider role arn to be assumed
-                    type: string
+                  secretRef:
+                    description: Reference to k8s secret which has cloud provider
+                      credentials
+                    properties:
+                      key:
+                        description: Key to select.
+                        type: string
+                      name:
+                        description: Name of the secret.
+                        type: string
+                      namespace:
+                        description: Namespace of the secret.
+                        type: string
+                    required:
+                    - key
+                    - name
+                    - namespace
+                    type: object
                 type: object
               azureConfig:
                 description: Cloud provider account config
                 properties:
-                  clientId:
-                    type: string
-                  clientKey:
-                    type: string
-                  identityClientId:
-                    type: string
                   region:
                     type: string
-                  subscriptionId:
-                    type: string
-                  tenantId:
-                    type: string
+                  secretRef:
+                    description: An SecretReference is a reference to a secret key
+                      in an arbitrary namespace.
+                    properties:
+                      key:
+                        description: Key to select.
+                        type: string
+                      name:
+                        description: Name of the secret.
+                        type: string
+                      namespace:
+                        description: Namespace of the secret.
+                        type: string
+                    required:
+                    - key
+                    - name
+                    - namespace
+                    type: object
                 type: object
               pollIntervalInSeconds:
                 description: PollIntervalInSeconds defines account poll interval (default

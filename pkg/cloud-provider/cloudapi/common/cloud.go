@@ -16,6 +16,7 @@ package common
 
 import (
 	"reflect"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"k8s.io/apimachinery/pkg/types"
 
@@ -53,7 +54,7 @@ type CloudInterface interface {
 // AccountMgmtInterface is an abstract providing set of methods to manage cloud account details to be implemented by cloud providers.
 type AccountMgmtInterface interface {
 	// AddProviderAccount adds and initializes given account of a cloud provider.
-	AddProviderAccount(account *v1alpha1.CloudProviderAccount) error
+	AddProviderAccount(client client.Client, account *v1alpha1.CloudProviderAccount) error
 	// RemoveProviderAccount removes and cleans up any resources of given account of a cloud provider.
 	RemoveProviderAccount(namespacedName *types.NamespacedName)
 	// AddAccountResourceSelector adds account specific resource selector.

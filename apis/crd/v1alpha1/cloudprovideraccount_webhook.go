@@ -74,40 +74,35 @@ func (r *CloudProviderAccount) ValidateCreate() error {
 		}
 
 		// warning for using role based auth
-		if len(strings.TrimSpace(awsConfig.RoleArn)) != 0 {
-			cloudprovideraccountlog.Info("Role ARN configured will be used for cloud-account access")
-			// empty credentials when role based access is configured
-			awsConfig.AccessKeyID = ""
-			awsConfig.AccessKeySecret = ""
-		} else if len(strings.TrimSpace(awsConfig.AccessKeyID)) == 0 || len(strings.TrimSpace(awsConfig.AccessKeySecret)) == 0 {
-			return fmt.Errorf("must specify either credentials or role arn, cannot both be empty")
-		}
+		//if len(strings.TrimSpace(awsConfig.RoleArn)) != 0 {
+		//	cloudprovideraccountlog.Info("Role ARN configured will be used for cloud-account access")
+		//	// empty credentials when role based access is configured
+		//	awsConfig.AccessKeyID = ""
+		//	awsConfig.AccessKeySecret = ""
+		//} else if len(strings.TrimSpace(awsConfig.AccessKeyID)) == 0 || len(strings.TrimSpace(awsConfig.AccessKeySecret)) == 0 {
+		//	return fmt.Errorf("must specify either credentials or role arn, cannot both be empty")
+		//}
 
 		if len(strings.TrimSpace(awsConfig.Region)) == 0 {
 			return fmt.Errorf("region cannot be blank or empty")
 		}
 	case AzureCloudProvider:
 		azureConfig := r.Spec.AzureConfig
-
-		// validate subscription ID
-		if len(strings.TrimSpace(azureConfig.SubscriptionID)) == 0 {
-			return fmt.Errorf("subscription id cannot be blank or empty")
-		}
-
-		// validate tenant ID
-		if len(strings.TrimSpace(azureConfig.TenantID)) == 0 {
-			return fmt.Errorf("tenant id cannot be blank or empty")
-		}
-
-		// validate credentials
-		if len(strings.TrimSpace(azureConfig.IdentityClientID)) != 0 {
-			cloudprovideraccountlog.Info("Managed Identity Client ID configured will be used for cloud-account access")
-			// empty credentials when role based access is configured
-			azureConfig.ClientID = ""
-			azureConfig.ClientKey = ""
-		} else if len(strings.TrimSpace(azureConfig.ClientID)) == 0 || len(strings.TrimSpace(azureConfig.ClientKey)) == 0 {
-			return fmt.Errorf("must specify either credentials or managed identity client id, cannot both be empty")
-		}
+		//
+		//// validate subscription ID
+		//if len(strings.TrimSpace(azureConfig.SubscriptionID)) == 0 {
+		//	return fmt.Errorf("subscription id cannot be blank or empty")
+		//}
+		//
+		//// validate tenant ID
+		//if len(strings.TrimSpace(azureConfig.TenantID)) == 0 {
+		//	return fmt.Errorf("tenant id cannot be blank or empty")
+		//}
+		//
+		//// validate credentials
+		//if len(strings.TrimSpace(azureConfig.ClientID)) == 0 || len(strings.TrimSpace(azureConfig.ClientKey)) == 0 {
+		//	return fmt.Errorf("must specify either credentials or managed identity client id, cannot both be empty")
+		//}
 
 		// validate region
 		if len(strings.TrimSpace(azureConfig.Region)) == 0 {

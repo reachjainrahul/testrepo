@@ -42,11 +42,11 @@ var _ = Describe("Cloudprovideraccount", func() {
 			Spec: v1alpha1.CloudProviderAccountSpec{
 				PollIntervalInSeconds: &pollIntv,
 				AWSConfig: &v1alpha1.CloudProviderAccountAWSConfig{
-					AccountID:       "TestAccount01",
-					AccessKeyID:     "keyId",
-					AccessKeySecret: "keySecret",
-					Region:          "us-east-1",
-					RoleArn:         "testArn",
+					AccountID: "TestAccount01",
+					//AccessKeyID:     "keyId",
+					//AccessKeySecret: "keySecret",
+					Region: "us-east-1",
+					//RoleArn: "testArn",
 				},
 			},
 		}
@@ -58,12 +58,11 @@ var _ = Describe("Cloudprovideraccount", func() {
 			Spec: v1alpha1.CloudProviderAccountSpec{
 				PollIntervalInSeconds: &pollIntv,
 				AzureConfig: &v1alpha1.CloudProviderAccountAzureConfig{
-					SubscriptionID:   "SubID",
-					ClientID:         "ClientID",
-					TenantID:         "TenantID",
-					ClientKey:        "ClientKey",
-					Region:           "eastus",
-					IdentityClientID: "IdentityClientID",
+					//SubscriptionID:   "SubID",
+					//ClientID:         "ClientID",
+					//TenantID:         "TenantID",
+					//ClientKey:        "ClientKey",
+					Region: "eastus",
 				},
 			},
 		}
@@ -84,18 +83,18 @@ var _ = Describe("Cloudprovideraccount", func() {
 		})
 
 		It("Should fail for with empty credential and roleArn", func() {
-			accountAWS.Spec.AWSConfig.AccessKeyID = ""
-			accountAWS.Spec.AWSConfig.AccessKeySecret = ""
-			accountAWS.Spec.AWSConfig.RoleArn = ""
+			//accountAWS.Spec.AWSConfig.AccessKeyID = ""
+			//accountAWS.Spec.AWSConfig.AccessKeySecret = ""
+			//accountAWS.Spec.AWSConfig.RoleArn = ""
 
 			err := accountAWS.ValidateCreate()
 			Expect(err).ShouldNot(BeNil())
 		})
 
 		It("Should fail for with blank credential and roleArn", func() {
-			accountAWS.Spec.AWSConfig.AccessKeyID = "			"
-			accountAWS.Spec.AWSConfig.AccessKeySecret = "			"
-			accountAWS.Spec.AWSConfig.RoleArn = "			"
+			//accountAWS.Spec.AWSConfig.AccessKeyID = "			"
+			//accountAWS.Spec.AWSConfig.AccessKeySecret = "			"
+			//accountAWS.Spec.AWSConfig.RoleArn = "			"
 
 			err := accountAWS.ValidateCreate()
 			Expect(err).ShouldNot(BeNil())
@@ -110,32 +109,30 @@ var _ = Describe("Cloudprovideraccount", func() {
 
 	Context("New Azure account add fail scenarios", func() {
 		It("Should fail with empty subscription ID", func() {
-			accountAzure.Spec.AzureConfig.SubscriptionID = ""
+			//accountAzure.Spec.AzureConfig.SubscriptionID = ""
 
 			err := accountAzure.ValidateCreate()
 			Expect(err).ShouldNot(BeNil())
 		})
 
 		It("Should fail with blank subscription ID", func() {
-			accountAzure.Spec.AzureConfig.SubscriptionID = "			"
+			//accountAzure.Spec.AzureConfig.SubscriptionID = "			"
 
 			err := accountAzure.ValidateCreate()
 			Expect(err).ShouldNot(BeNil())
 		})
 
 		It("Should fail for with empty credential and identity", func() {
-			accountAzure.Spec.AzureConfig.ClientID = ""
-			accountAzure.Spec.AzureConfig.ClientKey = ""
-			accountAzure.Spec.AzureConfig.IdentityClientID = ""
+			//accountAzure.Spec.AzureConfig.ClientID = ""
+			//accountAzure.Spec.AzureConfig.ClientKey = ""
 
 			err := accountAzure.ValidateCreate()
 			Expect(err).ShouldNot(BeNil())
 		})
 
 		It("Should fail for with blank credential and identity", func() {
-			accountAzure.Spec.AzureConfig.ClientID = "			"
-			accountAzure.Spec.AzureConfig.ClientKey = "			"
-			accountAzure.Spec.AzureConfig.IdentityClientID = "			"
+			//accountAzure.Spec.AzureConfig.ClientID = "			"
+			//accountAzure.Spec.AzureConfig.ClientKey = "			"
 
 			err := accountAzure.ValidateCreate()
 			Expect(err).ShouldNot(BeNil())

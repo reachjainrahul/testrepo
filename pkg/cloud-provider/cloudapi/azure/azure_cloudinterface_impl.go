@@ -16,6 +16,7 @@ package azure
 
 import (
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"antrea.io/nephe/apis/crd/v1alpha1"
 	cloudv1alpha1 "antrea.io/nephe/apis/crd/v1alpha1"
@@ -84,8 +85,8 @@ func (c *azureCloud) IsVirtualPrivateCloudPresent(vpcUniqueIdentifier string) bo
 // 	AccountMgmtInterface Implementation
 // ////////////////////////////////////////////////////////
 // AddProviderAccount adds and initializes given account of a cloud provider.
-func (c *azureCloud) AddProviderAccount(account *v1alpha1.CloudProviderAccount) error {
-	return c.cloudCommon.AddCloudAccount(account, account.Spec.AzureConfig)
+func (c *azureCloud) AddProviderAccount(client client.Client, account *v1alpha1.CloudProviderAccount) error {
+	return c.cloudCommon.AddCloudAccount(client, account, account.Spec.AzureConfig)
 }
 
 // RemoveProviderAccount removes and cleans up any resources of given account of a cloud provider.
