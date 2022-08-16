@@ -2,7 +2,7 @@
     name: nephe
     jobs:
       - '{name}-{test_name}-for-pull-request':
-          test_name: nephe-test-e2e-aws
+          test_name: test-e2e-aws
           node: 'nephe'
           description: 'This is the {test_name} test for {name}.'
           branches:
@@ -18,7 +18,8 @@
           white_list: '{nephe_white_list}'
           only_trigger_phrase: true
           trigger_permit_all: true
-          status_context: nephe-test-e2e-aws
+          status_context: test-e2e-aws
+          status_url: ""
           success_status: Build finished.
           failure_status: Failed. Add comment /nephe-test-e2e-aws to re-trigger.
           error_status: Failed. Add comment /nephe-test-e2e-aws to re-trigger.
