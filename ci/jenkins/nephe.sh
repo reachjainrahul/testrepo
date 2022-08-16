@@ -156,4 +156,4 @@ function cleanup_testbed() {
 }
 
 trap cleanup_testbed EXIT
-ssh -i id_rsa ubuntu@${ip_addr} "chmod +x $HOME/ci/jenkins/test-aws.sh; $HOME/ci/jenkins/test-aws.sh ${AWS_KEY_PAIR_NAME}"
+ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-aws.sh; ~/ci/jenkins/test-aws.sh ${AWS_KEY_PAIR_NAME}"
