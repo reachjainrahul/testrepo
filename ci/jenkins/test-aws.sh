@@ -18,8 +18,6 @@ KIND_VERSION=v0.12.0
 KUBECTL_VERSION=v1.24.1
 TERRAFORM_VERSION=0.13.5
 
-sleep 900s
-
 echo ${PWD}
 ls ${PWD}
 cd testrepo
@@ -39,4 +37,7 @@ echo "Create kind cluster"
 hack/install-cloud-tools.sh
 ci/kind/kind-setup.sh create kind
 
-echo "this is a test script, username $AWS_KEY_PAIR_NAME" > test.log
+echo "this is a test script, username $1"
+sleep 600
+
+echo "this is a test script, username $AWS_KEY_PAIR_NAME $1" > test.log

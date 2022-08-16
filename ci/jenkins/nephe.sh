@@ -140,11 +140,9 @@ cat terraform-${vcHost}.tfvars
 
 ip_addr=`cat terraform.tfstate.d/${testbed_name}/terraform.tfstate | jq -r .outputs.vm_ips.value[0]`
 chmod 0600 id_rsa
-sleep 900
 
 ssh -i id_rsa ubuntu@${ip_addr} "sudo apt-get update -y && sudo apt-get install -y ca-certificates curl unzip gnupg lsb-release"
-ssh -i id_rsa ubuntu@${ip_addr} "mkdir testrepo"
-scp -r -i id_rsa ../../../*testrepo/. ubuntu@${ip_addr}:~/testrepo
+scp -r -i id_rsa ../../* ubuntu@${ip_addr}:~/
 
 function cleanup_testbed() {
   echo "=== retrieve logs ==="
@@ -158,4 +156,4 @@ function cleanup_testbed() {
 }
 
 trap cleanup_testbed EXIT
-ssh -i id_rsa ubuntu@${ip_addr} "chmod +x $HOME/testrepo/ci/jenkins/test-aws.sh; $HOME/testrepo/ci/jenkins/test-aws.sh ${testUserName}"
+ssh -i id_rsa ubuntu@${ip_addr} "chmod +x $HOME/ci/jenkins/test-aws.sh; $HOME/ci/jenkins/test-aws.sh ${AWS_KEY_PAIR_NAME}"
