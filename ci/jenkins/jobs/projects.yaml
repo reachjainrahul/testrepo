@@ -86,7 +86,7 @@
           publishers:
           - archive:
               allow-empty: true
-              artifacts: "test.log.tar.gz"
+              artifacts: "logs.tar.gz"
               case-sensitive: true
               default-excludes: true
               fingerprint: false
