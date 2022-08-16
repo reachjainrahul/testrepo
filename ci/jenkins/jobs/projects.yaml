@@ -10,7 +10,7 @@
           builders:
             - deploy-vm-and-run-tests-for-nephe:
                 conformance_type: 'networkpolicy'
-          trigger_phrase: .*/cloud-test-all.*
+          trigger_phrase: .*/nephe-test-e2e-aws.*
           white_list_target_branches: [ ]
           allow_whitelist_orgs_as_admins: true
           admin_list: '{nephe_admin_list}'
@@ -21,8 +21,8 @@
           status_context: nephe-e2e-test
           status_url: --none--
           success_status: Build finished.
-          failure_status: Failed. Add comment /cloud-test-all to re-trigger.
-          error_status: Failed. Add comment /cloud-test-all to re-trigger.
+          failure_status: Failed. Add comment /nephe-test-e2e-aws to re-trigger.
+          error_status: Failed. Add comment /nephe-test-e2e-aws to re-trigger.
           triggered_status: null
           started_status: null
           wrappers:
