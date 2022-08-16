@@ -220,8 +220,8 @@ func (r *CloudEntitySelector) validateMatchSections() error {
 		for _, m := range r.Spec.VMSelector {
 			if m.VpcMatch != nil {
 				if len(strings.TrimSpace(m.VpcMatch.MatchName)) != 0 {
-					return fmt.Errorf("vpc name match is not supported in vpcMatch, " +
-						"use vpc id instead of vpc name")
+					return fmt.Errorf("matchName is not supported in vpcMatch, " +
+						"use matchID instead of matchName")
 				}
 			}
 		}
@@ -232,8 +232,9 @@ func (r *CloudEntitySelector) validateMatchSections() error {
 					for _, vmMatch := range m.VMMatch {
 						if len(strings.TrimSpace(vmMatch.MatchID)) != 0 ||
 							len(strings.TrimSpace(vmMatch.MatchName)) != 0 {
-							return fmt.Errorf("vpc name match with either vm id or vm name is not supported, " +
-								"use vpc id instead of vpc Name")
+							return fmt.Errorf("vpc matchName with either vm matchID" +
+								" or vm matchName is not supported, use vpc matchID instead" +
+								" of vpc matchName")
 						}
 					}
 				}

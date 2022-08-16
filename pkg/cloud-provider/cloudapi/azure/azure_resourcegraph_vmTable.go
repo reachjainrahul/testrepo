@@ -157,7 +157,7 @@ func getVMsByVnetIDsMatchQuery(vnetIDs []string, subscriptionIDs []string, tenan
 		VnetIDs:         &commaSeparatedVnetIDs,
 	}
 
-	queryString, err := buildVmsTableQueryWithParams("getVMsByVnetIDsAndSubscriptionIDsAndTenantIDsAndLocationsMatchQuery", queryParams)
+	queryString, err := buildVmsTableQueryWithParams("getVMsByVnetIDsMatchQuery", queryParams)
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +193,7 @@ func getVMsByVMNamesMatchQuery(vmNames []string, subscriptionIDs []string, tenan
 		VMNames:         &commaSeparatedVMNames,
 	}
 
-	queryString, err := buildVmsTableQueryWithParams("getVMsByVMNamesAndSubscriptionIDsAndTenantIDsAndLocationsMatchQuery", queryParams)
+	queryString, err := buildVmsTableQueryWithParams("getVMsByVMNamesMatchQuery", queryParams)
 	if err != nil {
 		return nil, err
 	}
@@ -229,7 +229,7 @@ func getVMsByVMIDsMatchQuery(vmIDs []string, subscriptionIDs []string, tenantIDs
 		VMIDs:           &commaSeparatedVMIDs,
 	}
 
-	queryString, err := buildVmsTableQueryWithParams("getVMsByVMIDsAndSubscriptionIDsAndTenantIDsAndLocationsMatchQuery", queryParams)
+	queryString, err := buildVmsTableQueryWithParams("getVMsByVMIDsMatchQuery", queryParams)
 	if err != nil {
 		return nil, err
 	}
@@ -314,7 +314,7 @@ func getVMsByVnetAndOtherMatchesQuery(vnetIDs []string, vmNames []string, vmIDs 
 		}
 	}
 
-	queryString, err := buildVmsTableQueryWithParams("getVMsByVMIDsAndSubscriptionIDsAndTenantIDsAndLocationsMatchQuery", queryParams)
+	queryString, err := buildVmsTableQueryWithParams("getVMsByVMIDsMatchQuery", queryParams)
 	if err != nil {
 		return nil, err
 	}
