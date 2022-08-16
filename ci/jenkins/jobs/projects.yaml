@@ -17,7 +17,7 @@
           org_list: '{nephe_org_list}'
           white_list: '{nephe_white_list}'
           only_trigger_phrase: true
-          trigger_permit_all: true
+          trigger_permit_all: false
           status_context: test-e2e-aws
           status_url: ""
           success_status: Build finished.
