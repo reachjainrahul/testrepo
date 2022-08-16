@@ -109,7 +109,7 @@ case $key in
 esac
 done
 
-cd testrepo/ci/jenkins
+cd ci/jenkins
 if [ ! -e id_rsa ]; then
   ssh-keygen -t rsa -P '' -f id_rsa
 fi
