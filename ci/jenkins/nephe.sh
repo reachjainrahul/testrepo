@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright 2022 Antrea Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,8 +15,6 @@
 # limitations under the License.
 
 # define the cleanup_testbed function
-#!/bin/bash
-set -ex
 
 buildNumber=""
 vcHost=""
