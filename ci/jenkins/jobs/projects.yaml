@@ -83,6 +83,9 @@
                 - text:
                     credential-id: AWS_KEY_PAIR_NAME
                     variable: AWS_KEY_PAIR_NAME
+                - text:
+                    credential-id: AWS_SSH_KEY
+                    variable: AWS_SSH_KEY
           publishers:
           - archive:
               allow-empty: true

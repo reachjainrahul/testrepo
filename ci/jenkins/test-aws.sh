@@ -58,7 +58,10 @@ ci/kind/kind-setup.sh create kind
 export TF_VAR_aws_access_key_id=$1
 export TF_VAR_aws_access_key_secret=$2
 export TF_VAR_aws_key_pair_name=$3
+export AWS_SSH_KEY=$4
 export TF_VAR_owner="nephe-ci"
 
 mkdir ~/logs
+eval $(ssh-agent -s)
+echo "${AWS_SSH_KEY}" | tr -d '\r' | ssh-add -
 ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*Test-aws.*" -kubeconfig=$HOME/.kube/config -cloud-provider=AWS -support-bundle-dir=~/logs
