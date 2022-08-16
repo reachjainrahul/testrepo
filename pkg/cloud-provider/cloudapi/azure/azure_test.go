@@ -138,7 +138,7 @@ var _ = Describe("Azure", func() {
 			It("Should match expected filter - single vpcID only match", func() {
 				vnetIDs = []string{testVnetID01}
 				var expectedQueryStrs []*string
-				expectedQueryStr, _ := getVMsByVnetIDsAndSubscriptionIDsAndTenantIDsAndLocationsMatchQuery(vnetIDs,
+				expectedQueryStr, _ := getVMsByVnetIDsMatchQuery(vnetIDs,
 					subIDs, tenantIDs, locations)
 				expectedQueryStrs = append(expectedQueryStrs, expectedQueryStr)
 				vmSelector := []v1alpha1.VirtualMachineSelector{
@@ -163,7 +163,7 @@ var _ = Describe("Azure", func() {
 		It("Should match expected filter with credential - multiple vpcID only match", func() {
 			vnetIDs = []string{testVnetID01, testVnetID02}
 			var expectedQueryStrs []*string
-			expectedQueryStr, _ := getVMsByVnetIDsAndSubscriptionIDsAndTenantIDsAndLocationsMatchQuery(vnetIDs,
+			expectedQueryStr, _ := getVMsByVnetIDsMatchQuery(vnetIDs,
 				subIDs, tenantIDs, locations)
 			expectedQueryStrs = append(expectedQueryStrs, expectedQueryStr)
 			vmSelector := []v1alpha1.VirtualMachineSelector{
@@ -192,7 +192,7 @@ var _ = Describe("Azure", func() {
 		It("Should match expected filter with identity client id - multiple vpcID only match", func() {
 			vnetIDs = []string{testVnetID01, testVnetID02}
 			var expectedQueryStrs []*string
-			expectedQueryStr, _ := getVMsByVnetIDsAndSubscriptionIDsAndTenantIDsAndLocationsMatchQuery(vnetIDs,
+			expectedQueryStr, _ := getVMsByVnetIDsMatchQuery(vnetIDs,
 				subIDs, tenantIDs, locations)
 			expectedQueryStrs = append(expectedQueryStrs, expectedQueryStr)
 			vmSelector := []v1alpha1.VirtualMachineSelector{

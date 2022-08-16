@@ -60,12 +60,11 @@ func buildEc2Filters(vmSelector []v1alpha1.VirtualMachineSelector) [][]*ec2.Filt
 	vpcIDsWithVpcIDOnlyMatches := make(map[string]struct{})
 	var vpcIDWithOtherMatches []v1alpha1.VirtualMachineSelector
 	var vmIDOnlyMatches []v1alpha1.EntityMatch
-	var vmIDAndVMNameMatches []v1alpha1.EntityMatch
 	var vmNameOnlyMatches []v1alpha1.EntityMatch
 	var vpcNameOnlyMatches []v1alpha1.VirtualMachineSelector
 
 	// vpcMatch contains VpcID and vmMatch contains nil:
-	// vpcIDsWithVpcIDOnlyMatches slice contains the corresponding vmSelector section.
+	// vpcIDsWithVpcIDOnlyMatches map contains the corresponding vmSelector section.
 	// ec2.Filter is created for fetching all virtual machines in the vpc.
 	// vpcMatch contains VpcID and vmMatch contains vmID/vmName:
 	// vpcIDWithOtherMatches slice contains the corresponding vmSelector section.
@@ -120,20 +119,18 @@ func buildEc2Filters(vmSelector []v1alpha1.VirtualMachineSelector) [][]*ec2.Filt
 			}
 
 			if isVpcIDPresent && (isVMIDPresent || isVMNamePresent) {
+				//vpcID only match supersedes vpcID with other matches
 				if _, found := vpcIDsWithVpcIDOnlyMatches[networkMatch.MatchID]; found {
-					continue
+					break
 				}
 				vpcIDWithOtherMatches = append(vpcIDWithOtherMatches, match)
+				// As vmSelector is already added to vpcIDWithOtherMatches, no need to process other vmMatch sections
+				break
 			}
 
 			// vm id only matches.
 			if isVMIDPresent && !isVMNamePresent && !isVpcIDPresent {
 				vmIDOnlyMatches = append(vmIDOnlyMatches, vmmatch)
-			}
-
-			// vm id and vm name matches.
-			if isVMIDPresent && isVMNamePresent && !isVpcIDPresent {
-				vmIDAndVMNameMatches = append(vmIDAndVMNameMatches, vmmatch)
 			}
 
 			// vm name only matches.
@@ -145,8 +142,7 @@ func buildEc2Filters(vmSelector []v1alpha1.VirtualMachineSelector) [][]*ec2.Filt
 
 	awsPluginLogger().Info("selector stats", "VpcIdOnlyMatch", len(vpcIDsWithVpcIDOnlyMatches),
 		"VpcIdWithOtherMatches", len(vpcIDWithOtherMatches), "VmIdOnlyMatches", len(vmIDOnlyMatches),
-		"VmIdAndVmNameMatches", len(vmIDAndVMNameMatches), "VmNameOnlyMatches", len(vmNameOnlyMatches),
-		"VpcNameOnlyMatches", len(vpcNameOnlyMatches))
+		"VmNameOnlyMatches", len(vmNameOnlyMatches), "VpcNameOnlyMatches", len(vpcNameOnlyMatches))
 
 	var allEc2Filters [][]*ec2.Filter
 
@@ -164,11 +160,6 @@ func buildEc2Filters(vmSelector []v1alpha1.VirtualMachineSelector) [][]*ec2.Filt
 	vmIDOnlyEc2Filter := buildAwsEc2FilterForVMIDOnlyMatches(vmIDOnlyMatches)
 	if vmIDOnlyEc2Filter != nil {
 		allEc2Filters = append(allEc2Filters, vmIDOnlyEc2Filter)
-	}
-
-	vmIDAndVMNameEc2Filer := buildAwsEc2FilterForVMIDAndVMNameMatches(vmIDAndVMNameMatches)
-	if vmIDAndVMNameEc2Filer != nil {
-		allEc2Filters = append(allEc2Filters, vmIDAndVMNameEc2Filer...)
 	}
 
 	vmNameOnlyEc2Filter := buildAwsEc2FilterForVMNameOnlyMatches(vmNameOnlyMatches)
@@ -275,35 +266,6 @@ func buildAwsEc2FilterForVMIDOnlyMatches(vmIDOnlyMatches []v1alpha1.EntityMatch)
 	filters = append(filters, buildEc2FilterForValidInstanceStates())
 
 	return filters
-}
-
-func buildAwsEc2FilterForVMIDAndVMNameMatches(vmIDAndVMNameMatches []v1alpha1.EntityMatch) [][]*ec2.Filter {
-	if len(vmIDAndVMNameMatches) == 0 {
-		return nil
-	}
-
-	var allFilters [][]*ec2.Filter
-	for _, vmMatch := range vmIDAndVMNameMatches {
-		var filters []*ec2.Filter
-
-		vmID := vmMatch.MatchID
-		vmIDsFilter := &ec2.Filter{
-			Name:   aws.String(awsFilterKeyVMID),
-			Values: []*string{aws.String(vmID)},
-		}
-		filters = append(filters, vmIDsFilter)
-
-		vmName := vmMatch.MatchName
-		vmNamesFilter := &ec2.Filter{
-			Name:   aws.String(awsFilterKeyVMName),
-			Values: []*string{aws.String(vmName)},
-		}
-		filters = append(filters, vmNamesFilter)
-		filters = append(filters, buildEc2FilterForValidInstanceStates())
-
-		allFilters = append(allFilters, filters)
-	}
-	return allFilters
 }
 
 func buildAwsEc2FilterForVMNameOnlyMatches(vmNameOnlyMatches []v1alpha1.EntityMatch) []*ec2.Filter {

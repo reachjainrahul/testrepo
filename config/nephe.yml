@@ -49,9 +49,9 @@ spec:
                 description: AccountName specifies cloud account in this CloudProvider.
                 type: string
               vmSelector:
-                description: VMSelector selects the VirtualMachines the user has modify privilege. If VMSelector is not specified, no VirtualMachines are selected. It is an array, VirtualMachines satisfying any item on VMSelector are selected(ORed). If any item under VMSelector is not specified, all VirtualMachines are selected.
+                description: VMSelector selects the VirtualMachines the user has modify privilege. VMSelector is mandatory, at least one selector under VMSelector is required. It is an array, VirtualMachines satisfying any item on VMSelector are selected(ORed).
                 items:
-                  description: VirtualMachineSelector specifies VirtualMachine match criteria. VirtualMachines must satisfy all fields(ANDed) in VirtualMachineSelector in order to satisfy match.
+                  description: VirtualMachineSelector specifies VirtualMachine match criteria. VirtualMachines must satisfy all fields(ANDed) in a VirtualMachineSelector in order to satisfy match.
                   properties:
                     vmMatch:
                       description: VMMatch specifies VirtualMachines to match. It is an array, match satisfying any item on VMMatch is selected(ORed). If it is not specified, all VirtualMachines matching VpcMatch are selected.
@@ -78,6 +78,8 @@ spec:
                       type: object
                   type: object
                 type: array
+            required:
+            - vmSelector
             type: object
         type: object
     served: true

@@ -28,7 +28,7 @@ type EntityMatch struct {
 }
 
 // VirtualMachineSelector specifies VirtualMachine match criteria.
-// VirtualMachines must satisfy all fields(ANDed) in VirtualMachineSelector in order to satisfy match.
+// VirtualMachines must satisfy all fields(ANDed) in a VirtualMachineSelector in order to satisfy match.
 type VirtualMachineSelector struct {
 	// VpcMatch specifies the virtual private cloud to which VirtualMachines belong.
 	// VpcMatch is ANDed with VMMatch.
@@ -45,10 +45,9 @@ type CloudEntitySelectorSpec struct {
 	// AccountName specifies cloud account in this CloudProvider.
 	AccountName string `json:"accountName,omitempty"`
 	// VMSelector selects the VirtualMachines the user has modify privilege.
-	// If VMSelector is not specified, no VirtualMachines are selected.
+	// VMSelector is mandatory, at least one selector under VMSelector is required.
 	// It is an array, VirtualMachines satisfying any item on VMSelector are selected(ORed).
-	// If any item under VMSelector is not specified, all VirtualMachines are selected.
-	VMSelector []VirtualMachineSelector `json:"vmSelector,omitempty"`
+	VMSelector []VirtualMachineSelector `json:"vmSelector"`
 }
 
 // +kubebuilder:object:root=true

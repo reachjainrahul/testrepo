@@ -49,8 +49,12 @@ func buildQueries(vmSelector []v1alpha1.VirtualMachineSelector, subscriptionIDs 
 	var vmNameOnlyMatches []v1alpha1.EntityMatch
 
 	// vpcMatch contains VpcID and vmMatch contains nil:
-	// vpcIDsWithVpcIDOnlyMatches slice contains the corresponding vmSelector section.
+	// vpcIDsWithVpcIDOnlyMatches map contains the corresponding vmSelector section.
 	// Azure query is created for fetching all virtual machines in the vnet matching VpcID.
+	// vpcMatch contains VpcID and vmMatch contains vmID/vmName:
+	// vpcIDWithOtherMatches slice contains the corresponding vmSelector section.
+	// For each index(EntityMatch) in vmMatch, a query created along with vpcID for fetching
+	// instances belonging to the vpcID configured.
 	// vpcMatch contains nil and vmMatch contains only vmId:
 	// vmIDOnlyMatches slice contains the specific vmMatch section(EntityMatch).
 	// Azure query is created to match only vms matching the matchID.
@@ -90,9 +94,12 @@ func buildQueries(vmSelector []v1alpha1.VirtualMachineSelector, subscriptionIDs 
 
 			if isVpcIDPresent && (isVMIDPresent || isVMNamePresent) {
 				if _, found := vpcIDsWithVpcIDOnlyMatches[networkMatch.MatchID]; found {
-					continue
+					//vpcID only match supersedes vpcID with other matches
+					break
 				}
 				vpcIDWithOtherMatches = append(vpcIDWithOtherMatches, match)
+				// As vmSelector is already added to vpcIDWithOtherMatches, no need to process other vmMatch sections
+				break
 			}
 
 			// vm id only matches
@@ -125,6 +132,13 @@ func buildQueries(vmSelector []v1alpha1.VirtualMachineSelector, subscriptionIDs 
 	if vpcIDOnlyQuery != nil {
 		allQueries = append(allQueries, vpcIDOnlyQuery)
 	}
+
+	vpcIDWithOtherQuery, err := buildFilterForVpcIDWithOtherMatches(vpcIDWithOtherMatches, vpcIDsWithVpcIDOnlyMatches,
+		subscriptionIDs, tenantIDs, locations)
+	if err != nil {
+		return nil, err
+	}
+	allQueries = append(allQueries, vpcIDWithOtherQuery...)
 
 	vmNameOnlyQuery, err := buildQueryForVMNameOnlyMatches(vmNameOnlyMatches, subscriptionIDs, tenantIDs, locations)
 	if err != nil {
@@ -161,7 +175,7 @@ func buildQueryForVpcIDOnlyMatches(vpcIDsWithVpcIDOnlyMatches map[string]struct{
 		return strings.Compare(vpcIDs[i], vpcIDs[j]) < 0
 	})
 
-	return getVMsByVnetIDsAndSubscriptionIDsAndTenantIDsAndLocationsMatchQuery(vpcIDs, subscriptionIDs, tenantIDs, locations)
+	return getVMsByVnetIDsMatchQuery(vpcIDs, subscriptionIDs, tenantIDs, locations)
 }
 
 func buildQueryForVMNameOnlyMatches(vmNameOnlyMatches []v1alpha1.EntityMatch, subscriptionIDs []string, tenantIDs []string,
@@ -180,7 +194,7 @@ func buildQueryForVMNameOnlyMatches(vmNameOnlyMatches []v1alpha1.EntityMatch, su
 		return strings.Compare(vmNames[i], vmNames[j]) < 0
 	})
 
-	return getVMsByVMNamesAndSubscriptionIDsAndTenantIDsAndLocationsMatchQuery(vmNames, subscriptionIDs, tenantIDs, locations)
+	return getVMsByVMNamesMatchQuery(vmNames, subscriptionIDs, tenantIDs, locations)
 }
 
 func buildQueryForVMIDOnlyMatches(vmIDOnlyMatches []v1alpha1.EntityMatch, subscriptionIDs []string, tenantIDs []string,
@@ -199,5 +213,53 @@ func buildQueryForVMIDOnlyMatches(vmIDOnlyMatches []v1alpha1.EntityMatch, subscr
 		return strings.Compare(vmIDs[i], vmIDs[j]) < 0
 	})
 
-	return getVMsByVMIDsAndSubscriptionIDsAndTenantIDsAndLocationsMatchQuery(vmIDs, subscriptionIDs, tenantIDs, locations)
+	return getVMsByVMIDsMatchQuery(vmIDs, subscriptionIDs, tenantIDs, locations)
+}
+
+func buildFilterForVpcIDWithOtherMatches(vpcIDWithOtherMatches []v1alpha1.VirtualMachineSelector,
+	vpcIDsWithVpcIDOnlyMatches map[string]struct{}, subscriptionIDs []string, tenantIDs []string,
+	locations []string) ([]*string, error) {
+	if len(vpcIDWithOtherMatches) == 0 {
+		return nil, nil
+	}
+
+	var allQueries []*string
+	for _, match := range vpcIDWithOtherMatches {
+		var vpcIDs []string
+		vpcID := match.VpcMatch.MatchID
+		vpcIDs = append(vpcIDs, vpcID)
+		if _, found := vpcIDsWithVpcIDOnlyMatches[vpcID]; found {
+			continue
+		}
+
+		for _, vmMatch := range match.VMMatch {
+			// Build query for each vpcMatch and a vmMatch combination.
+			// In an EntityMatch either vm name or vm id are configured.
+			// When both are configured, it is blocked at webhook level.
+			var vmIDs []string
+			var vmNames []string
+			vmID := vmMatch.MatchID
+			if len(strings.TrimSpace(vmID)) > 0 {
+				vmIDs = append(vmIDs, vmID)
+			}
+
+			vmName := vmMatch.MatchName
+			if len(strings.TrimSpace(vmName)) > 0 {
+				vmNames = append(vmNames, vmName)
+			}
+
+			sort.Slice(vmIDs, func(i, j int) bool {
+				return strings.Compare(vmIDs[i], vmIDs[j]) < 0
+			})
+			sort.Slice(vmNames, func(i, j int) bool {
+				return strings.Compare(vmNames[i], vmNames[j]) < 0
+			})
+			queryString, err := getVMsByVnetAndOtherMatchesQuery(vpcIDs, vmNames, vmIDs, subscriptionIDs, tenantIDs, locations)
+			if err != nil {
+				return nil, err
+			}
+			allQueries = append(allQueries, queryString)
+		}
+	}
+	return allQueries, nil
 }
