@@ -1,7 +1,0 @@
-- defaults:
-    name: global
-    ghpr_auth: 414be665-2f4a-4e73-82f0-e2169abc6720
-    nephe_admin_list: ["liu4480", "reachjainrahul"]
-    nephe_org_list: ["reachjainrahul"]
-    nephe_white_list: []
-    org_repo: "reachjainrahul/testrepo"

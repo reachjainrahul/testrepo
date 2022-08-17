@@ -1,10 +1,10 @@
 - job-template:
-    name: '{name}-{test_name}-for-pull-request'
+    name: '{test_name}-for-pull-request'
     node: '{node}'
     block-downstream: false
     block-upstream: false
     builders: '{builders}'
-    concurrent: false
+    concurrent: '{concurrent}'
     description: '{description}'
     project-type: freestyle
     properties:

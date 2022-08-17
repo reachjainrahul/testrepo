@@ -109,6 +109,10 @@ case $key in
 esac
 done
 
+commit_hash=`git rev-parse HEAD`
+
+OLDPWD=`pwd`
+
 cd ci/jenkins
 if [ ! -e id_rsa ]; then
   ssh-keygen -t rsa -P '' -f id_rsa
@@ -143,16 +147,18 @@ chmod 0600 id_rsa
 
 ssh -i id_rsa ubuntu@${ip_addr} "sudo apt-get update -y && sudo apt-get install -y ca-certificates curl unzip gnupg lsb-release"
 #TODO: Scp'ing the code. Need to find better way
-scp -r -i id_rsa ../../* ubuntu@${ip_addr}:~/
+#scp -r -i id_rsa ${OLDPWD}/* ubuntu@${ip_addr}:~/
+# clone code from github repo, and checkout commit hash same as on jenkins node
+ssh -i id_rsa "git clone https://github.com/reachjainrahul/testrepo;cd testrepo;git checkout ${commit_hash}"
 
 function cleanup_testbed() {
   echo "=== retrieve logs ==="
-  scp -r -i id_rsa ubuntu@${ip_addr}:~/logs ../..
+  scp -r -i id_rsa ubuntu@${ip_addr}:~/logs ${OLDPWD}
 
   echo "=== cleanup vm ==="
   ./destroy.sh "${testbed_name}" "${goVcPassword}"
 
-  cd ../../
+  cd ${OLDPWD}
   tar zvcf logs.tar.gz logs
 }
 
@@ -161,18 +167,18 @@ trap cleanup_testbed EXIT
 case $testType in
     aws)
     echo "Run tests on a Kind cluster with AWS VMs"
-    ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-aws.sh; ~/ci/jenkins/test-aws.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET}"
+    ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/testrepo/ci/jenkins/test-aws.sh; ~/testrepo/ci/jenkins/test-aws.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET}"
     ;;
     azure)
     echo "Run tests on a Kind cluster with Azure VMs"
-    ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-azure.sh; ~/ci/jenkins/test-azure.sh ${AZURE_CLIENT_SUBSCRIPTION_ID} ${AZURE_CLIENT_ID} ${AZURE_CLIENT_TENANT_ID} ${AZURE_CLIENT_SECRET}"
+    ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/testrepo/ci/jenkins/test-azure.sh; ~/testrepo/ci/jenkins/test-azure.sh ${AZURE_CLIENT_SUBSCRIPTION_ID} ${AZURE_CLIENT_ID} ${AZURE_CLIENT_TENANT_ID} ${AZURE_CLIENT_SECRET}"
     ;;
     eks)
     echo "Run tests on a EKS cluster with AWS VMs"
-    ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-eks.sh; ~/ci/jenkins/test-eks.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET}"
+    ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/testrepo/ci/jenkins/test-eks.sh; ~/testrepo/ci/jenkins/test-eks.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET}"
     ;;
     aks)
     echo "Run tests on a AKS cluster with AWS VMs"
-    ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-aks.sh; ~/ci/jenkins/test-aks.sh"
+    ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/testrepo/ci/jenkins/test-aks.sh; ~/testrepo/ci/jenkins/test-aks.sh"
     ;;
 esac
