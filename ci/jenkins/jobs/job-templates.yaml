@@ -7,7 +7,6 @@
     concurrent: '{concurrent}'
     description: '{description}'
     project-type: freestyle
-    cron: 'H/5 * * * *'
     properties:
     - build-discarder:
         artifact-days-to-keep: -1
