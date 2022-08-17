@@ -39,6 +39,8 @@ sudo apt-get install -y pv bzip2 jq
 curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
 chmod +x /tmp/eksctl && sudo mv /tmp/eksctl /usr/local/bin
 
+KEY_PAIR="nephe-$$"
+
 export TF_VAR_aws_access_key_id=$1
 export TF_VAR_aws_access_key_secret=$2
 export TF_VAR_owner="nephe-ci"
@@ -47,11 +49,17 @@ export TF_VAR_region="us-west-1"
 export AWS_ACCESS_KEY_ID=${TF_VAR_aws_access_key_id}
 export AWS_SECRET_ACCESS_KEY=${TF_VAR_aws_access_key_secret}
 export AWS_DEFAULT_REGION=${TF_VAR_region}
+export TF_VAR_eks_key_pair_name=${KEY_PAIR}
 export TF_VAR_eks_cluster_iam_role_name=k8s
 export TF_VAR_eks_iam_instance_profile_name="suwang-eks-worker-nodes-1-NodeInstanceProfile-8LL239W4W3GN"
 
+aws ec2 import-key-pair --key-name ${KEY_PAIR} --public-key-material fileb://~/.ssh/id_rsa.pub --region ${TF_VAR_region}
+
+
 hack/install-cloud-tools.sh
 $HOME/terraform/eks create
+
+aws ec2 delete-key-pair  --key-name ${KEY_PAIR}  --region ${TF_VAR_region}
 
 exit 0
 echo "Installing Go 1.17"
