@@ -16,10 +16,11 @@ package azure
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
 
@@ -27,67 +28,81 @@ import (
 	"antrea.io/nephe/pkg/cloud-provider/cloudapi/internal"
 )
 
-type azureAccountCredentials struct {
-	SubscriptionID string `json:"subscriptionId,omitempty"`
-	ClientID       string `json:"clientId,omitempty"`
-	TenantID       string `json:"tenantId,omitempty"`
-	ClientKey      string `json:"clientKey,omitempty"`
+type azureAccountConfig struct {
+	v1alpha1.AzureAccountCredential
 	region         string
 }
 
 // setAccountCredentials sets account credentials.
 func setAccountCredentials(client client.Client, credentials interface{}) (interface{}, error) {
-	azureConfig := credentials.(*v1alpha1.CloudProviderAccountAzureConfig)
-	accCreds, err := extractSecret(client, azureConfig.SecretRef)
+	azureProviderConfig := credentials.(*v1alpha1.CloudProviderAccountAzureConfig)
+	accCred, err := extractSecret(client, azureProviderConfig.SecretRef)
 	if err != nil {
 		return nil, err
 	}
-	accCreds.region = strings.TrimSpace(azureConfig.Region)
 
-	return accCreds, nil
+	azureConfig := &azureAccountConfig{
+		AzureAccountCredential: *accCred,
+		region:                 strings.TrimSpace(azureProviderConfig.Region),
+	}
+
+	return azureConfig, nil
 }
 
 func compareAccountCredentials(accountName string, existing interface{}, new interface{}) bool {
-	existingCreds := existing.(*azureAccountCredentials)
-	newCreds := new.(*azureAccountCredentials)
+	existingConfig := existing.(*azureAccountConfig)
+	newConfig := new.(*azureAccountConfig)
 
 	credsChanged := false
-	if strings.Compare(existingCreds.SubscriptionID, newCreds.SubscriptionID) != 0 {
+	if strings.Compare(existingConfig.SubscriptionID, newConfig.SubscriptionID) != 0 {
 		credsChanged = true
 		azurePluginLogger().Info("subscription ID updated", "account", accountName)
 	}
-	if strings.Compare(existingCreds.ClientID, newCreds.ClientID) != 0 {
+	if strings.Compare(existingConfig.ClientID, newConfig.ClientID) != 0 {
 		credsChanged = true
 		azurePluginLogger().Info("client ID updated", "account", accountName)
 	}
-	if strings.Compare(existingCreds.TenantID, newCreds.TenantID) != 0 {
+	if strings.Compare(existingConfig.TenantID, newConfig.TenantID) != 0 {
 		credsChanged = true
 		azurePluginLogger().Info("account tenant ID updated", "account", accountName)
 	}
-	if strings.Compare(existingCreds.ClientKey, newCreds.ClientKey) != 0 {
+	if strings.Compare(existingConfig.ClientKey, newConfig.ClientKey) != 0 {
 		credsChanged = true
 		azurePluginLogger().Info("account client key updated", "account", accountName)
 	}
-	if strings.Compare(existingCreds.region, newCreds.region) != 0 {
+	if strings.Compare(existingConfig.region, newConfig.region) != 0 {
 		credsChanged = true
 		azurePluginLogger().Info("account region updated", "account", accountName)
 	}
 	return credsChanged
 }
 
-// ExtractSecret extracts credentials from a Kubernetes secret.
-func extractSecret(client client.Client, s *v1alpha1.SecretReference) (*azureAccountCredentials, error) {
+// extractSecret extracts credentials from a Kubernetes secret.
+func extractSecret(c client.Client, s *v1alpha1.SecretReference) (*v1alpha1.AzureAccountCredential, error) {
 	if s == nil {
 		return nil, fmt.Errorf("secret reference not found")
 	}
-	secret := &corev1.Secret{}
-	if err := client.Get(context.TODO(), types.NamespacedName{Namespace: s.Namespace, Name: s.Name}, secret); err != nil {
-		return nil, fmt.Errorf("unable to get secret: %s", err.Error())
+	u := &unstructured.Unstructured{}
+	u.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "",
+		Kind:    "Secret",
+		Version: "v1",
+	})
+	if err := c.Get(context.Background(), client.ObjectKey{Namespace: s.Namespace, Name: s.Name}, u); err != nil {
+		return nil, err
 	}
-	cred := &azureAccountCredentials{}
-	if err := json.Unmarshal(secret.Data[s.Key], cred); err != nil {
-		return nil, fmt.Errorf("unable to parse secret data: %s", err.Error())
+
+	data := u.Object["data"].(map[string]interface{})
+	decode, err := base64.StdEncoding.DecodeString(data[s.Key].(string))
+	if err != nil {
+		return nil, err
 	}
+
+	cred := &v1alpha1.AzureAccountCredential{}
+	if err = json.Unmarshal(decode, cred); err != nil {
+		return nil, err
+	}
+
 	return cred, nil
 }
 

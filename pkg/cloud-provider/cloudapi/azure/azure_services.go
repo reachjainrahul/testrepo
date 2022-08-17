@@ -46,13 +46,13 @@ type azureServiceSdkConfigProvider struct {
 
 // azureServicesHelper.
 type azureServicesHelper interface {
-	newServiceSdkConfigProvider(accCfg *azureAccountCredentials) (azureServiceClientCreateInterface, error)
+	newServiceSdkConfigProvider(accCfg *azureAccountConfig) (azureServiceClientCreateInterface, error)
 }
 
 type azureServicesHelperImpl struct{}
 
 // newServiceSdkConfigProvider returns config to create azure services clients.
-func (h *azureServicesHelperImpl) newServiceSdkConfigProvider(accCreds *azureAccountCredentials) (
+func (h *azureServicesHelperImpl) newServiceSdkConfigProvider(accCreds *azureAccountConfig) (
 	azureServiceClientCreateInterface, error) {
 	var authorizer autorest.Authorizer
 	var err error
@@ -70,7 +70,7 @@ func (h *azureServicesHelperImpl) newServiceSdkConfigProvider(accCreds *azureAcc
 func newAzureServiceConfigs(accountNamespacedName *types.NamespacedName, accCredentials interface{}, azureSpecificHelper interface{}) (
 	[]internal.CloudServiceInterface, error) {
 	azureServicesHelper := azureSpecificHelper.(azureServicesHelper)
-	azureAccountCredentials := accCredentials.(*azureAccountCredentials)
+	azureAccountCredentials := accCredentials.(*azureAccountConfig)
 
 	var serviceConfigs []internal.CloudServiceInterface
 

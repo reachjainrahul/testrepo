@@ -15,6 +15,7 @@
 package utils
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -191,17 +192,27 @@ func (p *awsVPC) GetCloudAccountParameters(name, namespace string, cloudCluster 
 	out := k8stemplates.CloudAccountParameters{
 		Name:      name,
 		Namespace: namespace,
-		Provider:  string(v1alpha1.AWSCloudProvider)}
+		Provider:  string(v1alpha1.AWSCloudProvider),
+		SecretRef: k8stemplates.AccountSecretParameters{
+			Name:             name + "-aws-cred",
+			Namespace:        "nephe",
+			Key:              "credential",
+		},
+	}
+	out.Aws.Region = p.output["region"].(map[string]interface{})["value"].(string)
+
+	cred := v1alpha1.AwsAccountCredential{}
 	// use role access if cloud cluster and the role is set in env variable
 	roleArn := os.Getenv("TF_VAR_cloud_controller_role_arn")
 	if cloudCluster && len(roleArn) != 0 {
-		out.Aws.RoleArn = roleArn
+		cred.RoleArn = roleArn
 		logf.Log.Info("Using AWS role based access")
 	} else {
-		out.Aws.Key = os.Getenv("TF_VAR_aws_access_key_id")
-		out.Aws.Secret = os.Getenv("TF_VAR_aws_access_key_secret")
+		cred.AccessKeyID = os.Getenv("TF_VAR_aws_access_key_id")
+		cred.AccessKeySecret = os.Getenv("TF_VAR_aws_access_key_secret")
 	}
-	out.Aws.Region = p.output["region"].(map[string]interface{})["value"].(string)
+	secretString, _ := json.Marshal(cred)
+	out.SecretRef.Base64Credential = base64.StdEncoding.EncodeToString(secretString)
 	return out
 }
 

@@ -69,6 +69,22 @@ type SecretReference struct {
 	Key string `json:"key"`
 }
 
+// AwsAccountCredential is the format of k8s secret for aws provider account.
+type AwsAccountCredential struct {
+	AccessKeyID     string `json:"accessKeyId,omitempty"`
+	AccessKeySecret string `json:"accessKeySecret,omitempty"`
+	RoleArn         string `json:"roleArn,omitempty"`
+	ExternalID      string `json:"externalId,omitempty"`
+}
+
+// AzureAccountCredential is the format of k8s secret for azure provider account.
+type AzureAccountCredential struct {
+	SubscriptionID string `json:"subscriptionId,omitempty"`
+	ClientID       string `json:"clientId,omitempty"`
+	TenantID       string `json:"tenantId,omitempty"`
+	ClientKey      string `json:"clientKey,omitempty"`
+}
+
 // CloudProviderAccountStatus defines the observed state of CloudProviderAccount.
 type CloudProviderAccountStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster

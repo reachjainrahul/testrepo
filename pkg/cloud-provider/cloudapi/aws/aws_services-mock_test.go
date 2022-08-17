@@ -87,7 +87,7 @@ func (m *MockawsServicesHelper) EXPECT() *MockawsServicesHelperMockRecorder {
 }
 
 // newServiceSdkConfigProvider mocks base method.
-func (m *MockawsServicesHelper) newServiceSdkConfigProvider(accCfg *awsAccountCredentials) (awsServiceClientCreateInterface, error) {
+func (m *MockawsServicesHelper) newServiceSdkConfigProvider(accCfg *awsAccountConfig) (awsServiceClientCreateInterface, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "newServiceSdkConfigProvider", accCfg)
 	ret0, _ := ret[0].(awsServiceClientCreateInterface)

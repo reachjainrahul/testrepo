@@ -46,13 +46,13 @@ type awsServiceSdkConfigProvider struct {
 
 // awsServicesHelper.
 type awsServicesHelper interface {
-	newServiceSdkConfigProvider(accCfg *awsAccountCredentials) (awsServiceClientCreateInterface, error)
+	newServiceSdkConfigProvider(accCfg *awsAccountConfig) (awsServiceClientCreateInterface, error)
 }
 
 type awsServicesHelperImpl struct{}
 
 // newServiceSdkConfigProvider returns config to create aws services clients.
-func (h *awsServicesHelperImpl) newServiceSdkConfigProvider(accConfig *awsAccountCredentials) (awsServiceClientCreateInterface, error) {
+func (h *awsServicesHelperImpl) newServiceSdkConfigProvider(accConfig *awsAccountConfig) (awsServiceClientCreateInterface, error) {
 	var creds *credentials.Credentials
 
 	if len(accConfig.RoleArn) != 0 {
@@ -102,7 +102,7 @@ func (h *awsServicesHelperImpl) newServiceSdkConfigProvider(accConfig *awsAccoun
 func newAwsServiceConfigs(accountNamespacedName *types.NamespacedName, accCredentials interface{}, awsSpecificHelper interface{}) (
 	[]internal.CloudServiceInterface, error) {
 	awsServicesHelper := awsSpecificHelper.(awsServicesHelper)
-	awsAccountCredentials := accCredentials.(*awsAccountCredentials)
+	awsAccountCredentials := accCredentials.(*awsAccountConfig)
 
 	var serviceConfigs []internal.CloudServiceInterface
 

@@ -38,7 +38,7 @@ type computeServiceConfig struct {
 	resourceGraphAPIClient azureResourceGraphWrapper
 	resourcesCache         *internal.CloudServiceResourcesCache
 	inventoryStats         *internal.CloudServiceStats
-	credentials            *azureAccountCredentials
+	credentials            *azureAccountConfig
 	computeFilters         map[string][]*string
 }
 
@@ -49,7 +49,7 @@ type computeResourcesCacheSnapshot struct {
 }
 
 func newComputeServiceConfig(name string, service azureServiceClientCreateInterface,
-	credentials *azureAccountCredentials) (internal.CloudServiceInterface, error) {
+	credentials *azureAccountConfig) (internal.CloudServiceInterface, error) {
 	// create compute sdk api client
 	nwIntfAPIClient, err := service.networkInterfaces(credentials.SubscriptionID)
 	if err != nil {
