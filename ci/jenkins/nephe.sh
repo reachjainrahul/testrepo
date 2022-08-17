@@ -109,8 +109,6 @@ case $key in
 esac
 done
 
-commit_hash=`git rev-parse HEAD`
-
 OLDPWD=`pwd`
 
 cd ci/jenkins
@@ -149,8 +147,10 @@ ssh -i id_rsa ubuntu@${ip_addr} "sudo apt-get update -y && sudo apt-get install 
 #TODO: Scp'ing the code. Need to find better way
 #scp -r -i id_rsa ${OLDPWD}/* ubuntu@${ip_addr}:~/
 # clone code from github repo, and checkout commit hash same as on jenkins node
-ssh -i id_rsa "git clone https://github.com/reachjainrahul/testrepo;cd testrepo;git checkout ${commit_hash}"
-
+pr_number=`echo ${sha1}|cut -d '/' -f3`
+ssh -i id_rsa ubuntu@${ip_addr} "git clone https://github.com/reachjainrahul/testrepo && cd testrepo && \
+        git fetch --tags --progress -- https://github.com/reachjainrahul/testrepo +refs/heads/*:refs/remotes/origin/* +refs/pull/${pr_number}/*:refs/remotes/origin/pr/${pr_number}/* && \
+        git checkout origin/pr/${pr_number}/head"
 function cleanup_testbed() {
   echo "=== retrieve logs ==="
   scp -r -i id_rsa ubuntu@${ip_addr}:~/logs ${OLDPWD}
