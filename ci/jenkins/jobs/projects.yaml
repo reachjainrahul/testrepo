@@ -1,16 +1,15 @@
 - project:
-    name: nephe
+    name: ""
     jobs:
-      - '{name}-{test_name}-for-pull-request':
-          test_name: test-e2e-aws
+      - '{test_name}-for-pull-request':
+          test_name: nephe-test-e2e-aws
           node: 'nephe'
-          description: 'This is the {test_name} test for {name}.'
+          description: 'This is the {test_name}.'
           branches:
             - ${{sha1}}
           builders:
             - deploy-vm-and-run-aws-tests-for-nephe:
                 conformance_type: 'networkpolicy'
-          #trigger_phrase: .*/nephe-test-e2e-aws.*
           trigger_phrase: .*/nephe-test-e2e-(aws|kind|all).*
           white_list_target_branches: [ ]
           allow_whitelist_orgs_as_admins: true
@@ -19,13 +18,14 @@
           white_list: '{nephe_white_list}'
           only_trigger_phrase: true
           trigger_permit_all: false
-          status_context: test-e2e-aws
+          status_context: nephe-test-e2e-aws
           status_url: ""
           success_status: Build finished.
           failure_status: Failed. Add comment /nephe-test-e2e-aws to re-trigger.
           error_status: Failed. Add comment /nephe-test-e2e-aws to re-trigger.
           triggered_status: null
           started_status: null
+          concurrent: true
           wrappers:
             - credentials-binding:
                 - text:
@@ -92,16 +92,15 @@
               default-excludes: true
               fingerprint: false
               only-if-success: false
-      - '{name}-{test_name}-for-pull-request':
-            test_name: test-e2e-azure
+      - '{test_name}-for-pull-request':
+            test_name: nephe-test-e2e-azure
             node: 'nephe'
-            description: 'This is the {test_name} test for {name}.'
+            description: 'This is the {test_name}.'
             branches:
                 - ${{sha1}}
             builders:
                 - deploy-vm-and-run-azure-tests-for-nephe:
                       conformance_type: 'networkpolicy'
-            #trigger_phrase: .*/nephe-test-e2e-azure.*
             trigger_phrase: .*/nephe-test-e2e-(azure|kind|all).*
             white_list_target_branches: [ ]
             allow_whitelist_orgs_as_admins: true
@@ -110,13 +109,14 @@
             white_list: '{nephe_white_list}'
             only_trigger_phrase: true
             trigger_permit_all: false
-            status_context: test-e2e-azure
+            status_context: nephe-test-e2e-azure
             status_url: ""
             success_status: Build finished.
             failure_status: Failed. Add comment /nephe-test-e2e-azure to re-trigger.
             error_status: Failed. Add comment /nephe-test-e2e-azure to re-trigger.
             triggered_status: null
             started_status: null
+            concurrent: true
             wrappers:
                 - credentials-binding:
                       - text:
@@ -186,16 +186,15 @@
                       default-excludes: true
                       fingerprint: false
                       only-if-success: false
-      - '{name}-{test_name}-for-pull-request':
-            test_name: test-e2e-eks
+      - '{test_name}-for-pull-request':
+            test_name: nephe-test-e2e-eks
             node: 'nephe'
-            description: 'This is the {test_name} test for {name}.'
+            description: 'This is the {test_name}.'
             branches:
                 - ${{sha1}}
             builders:
                 - deploy-vm-and-run-eks-tests-for-nephe:
                       conformance_type: 'networkpolicy'
-            #trigger_phrase: .*/nephe-test-e2e-eks.*
             trigger_phrase: .*/nephe-test-e2e-(eks|all).*
             white_list_target_branches: [ ]
             allow_whitelist_orgs_as_admins: true
@@ -204,13 +203,14 @@
             white_list: '{nephe_white_list}'
             only_trigger_phrase: true
             trigger_permit_all: false
-            status_context: test-e2e-eks
+            status_context: nephe-test-e2e-eks
             status_url: ""
             success_status: Build finished.
             failure_status: Failed. Add comment /nephe-test-e2e-eks to re-trigger.
             error_status: Failed. Add comment /nephe-test-e2e-eks to re-trigger.
             triggered_status: null
             started_status: null
+            concurrent: true
             wrappers:
                 - credentials-binding:
                       - text:
@@ -277,16 +277,15 @@
                       default-excludes: true
                       fingerprint: false
                       only-if-success: false
-      - '{name}-{test_name}-for-pull-request':
-            test_name: test-e2e-aks
+      - '{test_name}-for-pull-request':
+            test_name: nephe-test-e2e-aks
             node: 'nephe'
-            description: 'This is the {test_name} test for {name}.'
+            description: 'This is the {test_name}.'
             branches:
                 - ${{sha1}}
             builders:
                 - deploy-vm-and-run-aks-tests-for-nephe:
                       conformance_type: 'networkpolicy'
-            #trigger_phrase: .*/nephe-test-e2e-aks.*
             trigger_phrase: .*/nephe-test-e2e-(aks|all).*
             white_list_target_branches: [ ]
             allow_whitelist_orgs_as_admins: true
@@ -295,13 +294,14 @@
             white_list: '{nephe_white_list}'
             only_trigger_phrase: true
             trigger_permit_all: false
-            status_context: test-e2e-aks
+            status_context: nephe-test-e2e-aks
             status_url: ""
             success_status: Build finished.
             failure_status: Failed. Add comment /nephe-test-e2e-aks to re-trigger.
             error_status: Failed. Add comment /nephe-test-e2e-aks to re-trigger.
             triggered_status: null
             started_status: null
+            concurrent: true
             wrappers:
                 - credentials-binding:
                       - text:
