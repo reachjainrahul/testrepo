@@ -118,7 +118,7 @@ if [ ! -e playbook/jenkins_id_rsa ];then
 fi
 chmod 0600 id_rsa
 chmod 0600 playbook/jenkins_id_rsa
-testbed_name="nephe-test-${buildNumber}"
+testbed_name="nephe-test-${testType}-${buildNumber}"
 
 sudo apt install -y unzip ansible
 
