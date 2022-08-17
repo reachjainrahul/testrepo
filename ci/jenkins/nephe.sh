@@ -109,8 +109,12 @@ case $key in
 esac
 done
 
+echo "Install necessary packages on jenkins slave"
+sudo apt install -y unzip ansible
+
 OLDPWD=`pwd`
 
+echo "Generate ssh keys for jenkins and dynamic vm"
 cd ci/jenkins
 if [ ! -e id_rsa ]; then
   ssh-keygen -t rsa -P '' -f id_rsa
@@ -118,13 +122,12 @@ fi
 if [ ! -e playbook/jenkins_id_rsa ];then
   ssh-keygen -t rsa -P '' -f playbook/jenkins_id_rsa
 fi
+
+# TODO: path is hardcoded in ansible. Take this as input later
 chmod 0600 id_rsa
 chmod 0600 playbook/jenkins_id_rsa
-testbed_name="nephe-test-${testType}-${buildNumber}"
 
-sudo apt install -y unzip ansible
-
-cat terraform-${vcHost}.tfvars
+echo "Deploy dynamic vm for test"
 rm -rf terraform-${vcHost}.tfvars
 cat << EOF > terraform-${vcHost}.tfvars
 vsphere_user="${vcUser}"
@@ -137,20 +140,15 @@ vsphere_network="${vcNetwork}"
 vsphere_virtual_machine="${virtualMachine}"
 EOF
 cat terraform-${vcHost}.tfvars
-
+testbed_name="nephe-test-${testType}-${buildNumber}"
 ./deploy.sh ${testbed_name} ${vcHost} ${goVcPassword}
 
+# Fetch dynamic vm ip addr
 ip_addr=`cat terraform.tfstate.d/${testbed_name}/terraform.tfstate | jq -r .outputs.vm_ips.value[0]`
-chmod 0600 id_rsa
 
-ssh -i id_rsa ubuntu@${ip_addr} "sudo apt-get update -y && sudo apt-get install -y ca-certificates curl unzip gnupg lsb-release"
 #TODO: Scp'ing the code. Need to find better way
-#scp -r -i id_rsa ${OLDPWD}/* ubuntu@${ip_addr}:~/
-# clone code from github repo, and checkout commit hash same as on jenkins node
-pr_number=`echo ${sha1}|cut -d '/' -f3`
-ssh -i id_rsa ubuntu@${ip_addr} "git clone https://github.com/reachjainrahul/testrepo && cd testrepo && \
-        git fetch --tags --progress -- https://github.com/reachjainrahul/testrepo +refs/heads/*:refs/remotes/origin/* +refs/pull/${pr_number}/*:refs/remotes/origin/pr/${pr_number}/* && \
-        git checkout origin/pr/${pr_number}/head"
+scp -r -i id_rsa ${OLDPWD}/* ubuntu@${ip_addr}:~/
+
 function cleanup_testbed() {
   echo "=== retrieve logs ==="
   scp -r -i id_rsa ubuntu@${ip_addr}:~/logs ${OLDPWD}
@@ -167,18 +165,18 @@ trap cleanup_testbed EXIT
 case $testType in
     aws)
     echo "Run tests on a Kind cluster with AWS VMs"
-    ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/testrepo/ci/jenkins/test-aws.sh; cd ~/testrepo; ./ci/jenkins/test-aws.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET}"
+    ssh -i id_rsa ubuntu@${ip_addr} "~/ci/jenkins/test-aws.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET}"
     ;;
     azure)
     echo "Run tests on a Kind cluster with Azure VMs"
-    ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/testrepo/ci/jenkins/test-azure.sh; cd ~/testrepo; ./ci/jenkins/test-azure.sh ${AZURE_CLIENT_SUBSCRIPTION_ID} ${AZURE_CLIENT_ID} ${AZURE_CLIENT_TENANT_ID} ${AZURE_CLIENT_SECRET}"
+    ssh -i id_rsa ubuntu@${ip_addr} "~/ci/jenkins/test-azure.sh ${AZURE_CLIENT_SUBSCRIPTION_ID} ${AZURE_CLIENT_ID} ${AZURE_CLIENT_TENANT_ID} ${AZURE_CLIENT_SECRET}"
     ;;
     eks)
     echo "Run tests on a EKS cluster with AWS VMs"
-    ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/testrepo/ci/jenkins/test-eks.sh; cd ~/testrepo; ./ci/jenkins/test-eks.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET}"
+    ssh -i id_rsa ubuntu@${ip_addr} "~/ci/jenkins/test-eks.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET}"
     ;;
     aks)
     echo "Run tests on a AKS cluster with AWS VMs"
-    ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/testrepo/ci/jenkins/test-aks.sh; cd ~/testrepo; ./ci/jenkins/test-aks.sh"
+    ssh -i id_rsa ubuntu@${ip_addr} "~/ci/jenkins/test-aks.sh"
     ;;
 esac
