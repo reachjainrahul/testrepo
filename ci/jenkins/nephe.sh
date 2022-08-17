@@ -161,7 +161,7 @@ trap cleanup_testbed EXIT
 case $testType in
     aws)
     echo "Run tests on a Kind cluster with AWS VMs"
-    ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-aws.sh; ~/ci/jenkins/test-aws.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET} ${AWS_KEY_PAIR_NAME}"
+    ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-aws.sh; ~/ci/jenkins/test-aws.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET}"
     ;;
     azure)
     echo "Run tests on a Kind cluster with Azure VMs"
@@ -169,7 +169,7 @@ case $testType in
     ;;
     eks)
     echo "Run tests on a EKS cluster with AWS VMs"
-    ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-eks.sh; ~/ci/jenkins/test-eks.sh"
+    ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-eks.sh; ~/ci/jenkins/test-eks.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET}"
     ;;
     aks)
     echo "Run tests on a AKS cluster with AWS VMs"
