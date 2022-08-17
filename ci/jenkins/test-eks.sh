@@ -34,10 +34,10 @@ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip
 unzip awscliv2.zip
 sudo ./aws/install
 
-sudo apt-get install pv bzip2 jq
+sudo apt-get install -y pv bzip2 jq
 
 curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
-chmod +x /tmp/eksctl && mv /tmp/eksctl /usr/local/bin
+chmod +x /tmp/eksctl && sudo mv /tmp/eksctl /usr/local/bin
 
 export TF_VAR_aws_access_key_id=$1
 export TF_VAR_aws_access_key_secret=$2
