@@ -40,7 +40,7 @@ var (
 		denyAll bool) *k8stemplates.ToFromParameters
 )
 
-var _ = Describe(fmt.Sprintf("%s: NetworkPolicy On Cloud Resources", focusAzure), func() {
+var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusAws, focusCloud), func() {
 	const (
 		apachePort = "8080"
 	)
@@ -512,7 +512,7 @@ var _ = Describe(fmt.Sprintf("%s: NetworkPolicy On Cloud Resources", focusAzure)
 		time.Sleep(time.Second * 30)
 		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, true)
 
-		By(fmt.Sprintf("Ingress NetworkPolicy on %v by name label selector while restarting Antrea+ controller", kind))
+		By(fmt.Sprintf("Ingress NetworkPolicy on %v by name label selector while restarting Nephe controller", kind))
 		anpParams.AppliedTo = configANPApplyTo(kind, ids[appliedIdx], "", "", "")
 		oks = make([]bool, len(ids)-1)
 		oks[0] = true
@@ -594,7 +594,7 @@ var _ = Describe(fmt.Sprintf("%s: NetworkPolicy On Cloud Resources", focusAzure)
 		func(kind string, diffNS bool) {
 			testAppliedTo(kind, diffNS)
 		},
-		table.Entry(fmt.Sprintf("%s: VM In Same Namespace", focusAws),
+		table.Entry(fmt.Sprintf("%s: VM In Same Namespace", focusAzure),
 			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
 		table.Entry("VM In Different Namespaces",
 			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
@@ -614,7 +614,7 @@ var _ = Describe(fmt.Sprintf("%s: NetworkPolicy On Cloud Resources", focusAzure)
 		func(kind string, diffNS bool) {
 			testIngress(kind, diffNS)
 		},
-		table.Entry(fmt.Sprintf("%s: VM In Same Namespaces", focusAws),
+		table.Entry(fmt.Sprintf("%s: VM In Same Namespaces", focusAzure),
 			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
 		table.Entry("VM In Different Namespaces",
 			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
@@ -629,7 +629,7 @@ var _ = Describe(fmt.Sprintf("%s: NetworkPolicy On Cloud Resources", focusAzure)
 			func(kind string, diffNS bool) {
 				testAppliedTo(kind, diffNS)
 			},
-			table.Entry(fmt.Sprintf("%s: VM In Same Namespace", focusAws),
+			table.Entry(fmt.Sprintf("%s: VM In Same Namespace", focusAzure),
 				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
 			table.Entry("VM In Different Namespaces",
 				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
@@ -649,7 +649,7 @@ var _ = Describe(fmt.Sprintf("%s: NetworkPolicy On Cloud Resources", focusAzure)
 			func(kind string, diffNS bool) {
 				testIngress(kind, diffNS)
 			},
-			table.Entry(fmt.Sprintf("%s: VM In Same Namespaces", focusAws),
+			table.Entry(fmt.Sprintf("%s: VM In Same Namespaces", focusAzure),
 				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
 			table.Entry("VM In Different Namespaces",
 				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),

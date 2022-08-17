@@ -40,8 +40,9 @@ import (
 )
 
 const (
-	focusAws   = "Test-aws"
-	focusAzure = "Test-azure"
+	focusAws   = "test-aws"
+	focusAzure = "test-azure"
+	focusCloud = "test-cloud-cluster"
 )
 
 var (

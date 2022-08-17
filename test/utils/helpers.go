@@ -473,7 +473,7 @@ func CollectControllerLogs(kubctl *KubeCtl, dir string) error {
 	return nil
 }
 
-// CollectSupportBundle of Antrea+ controllers in dir.
+// CollectSupportBundle collect antrea and nephe logs
 func CollectSupportBundle(kubctl *KubeCtl, dir string) {
 	logf.Log.Info("Collecting support bundles")
 	if err := CollectAgentInfo(kubctl, dir); err != nil {

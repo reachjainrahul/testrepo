@@ -73,6 +73,6 @@ aws ec2 import-key-pair --key-name ${KEY_PAIR} --public-key-material fileb://~/.
 
 export TF_VAR_aws_key_pair_name=${KEY_PAIR}
 mkdir ~/logs
-ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*Test-aws.*" -kubeconfig=$HOME/.kube/config -cloud-provider=AWS -support-bundle-dir=~/logs
+ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*test-aws.*" -kubeconfig=$HOME/.kube/config -cloud-provider=AWS -support-bundle-dir=~/logs
 
 aws ec2 delete-key-pair  --key-name ${KEY_PAIR}  --region ${TF_VAR_region}

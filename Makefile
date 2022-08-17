@@ -113,9 +113,9 @@ $(CONTROLLER_GEN):
 
 # Run integration-tests
 integration-test-aws:
-	ginkgo -v --failFast --focus=".*Test-aws.*" test/integration/ -- \
+	ginkgo -v --failFast --focus=".*test-aws.*" test/integration/ -- \
 	    -manifest-path=../../config/nephe.yml -preserve-setup-on-fail=true -cloud-provider=AWS
 
 integration-test-azure:
-	ginkgo -v --failFast --focus=".*Test-azure.*" test/integration/ -- \
+	ginkgo -v --failFast --focus=".*test-azure.*" test/integration/ -- \
         -manifest-path=../../config/nephe.yml -preserve-setup-on-fail=true -cloud-provider=Azure
