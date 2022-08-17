@@ -137,7 +137,7 @@ var _ = Describe(fmt.Sprintf("%s,%s: ExternalEntity", focusAws, focusAzure), fun
 		checkEndpoints(eeFetchKey, spec)
 
 		if restartController {
-			err = utils.RestartOrWaitDeployment(k8sClient, "nephe-controller", "kube-system", time.Second*120, true)
+			err = utils.RestartOrWaitDeployment(k8sClient, "nephe-controller", "nephe", time.Second*120, true)
 			Expect(err).ToNot(HaveOccurred())
 			// After restart controller, test need to permit time to allow ExternalEntitySources to be re-learnt.
 			time.Sleep(time.Second * 10)

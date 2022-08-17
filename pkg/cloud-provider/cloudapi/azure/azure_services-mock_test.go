@@ -147,7 +147,7 @@ func (m *MockazureServicesHelper) EXPECT() *MockazureServicesHelperMockRecorder 
 }
 
 // newServiceSdkConfigProvider mocks base method.
-func (m *MockazureServicesHelper) newServiceSdkConfigProvider(accCfg *azureAccountCredentials) (azureServiceClientCreateInterface, error) {
+func (m *MockazureServicesHelper) newServiceSdkConfigProvider(accCfg *azureAccountConfig) (azureServiceClientCreateInterface, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "newServiceSdkConfigProvider", accCfg)
 	ret0, _ := ret[0].(azureServiceClientCreateInterface)

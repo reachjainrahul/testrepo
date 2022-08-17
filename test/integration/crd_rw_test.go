@@ -88,10 +88,13 @@ var _ = Describe(fmt.Sprintf("%s,%s: Basic CRD Read-Write", focusAws, focusAzure
 				},
 				Spec: v1alpha1.CloudProviderAccountSpec{
 					AWSConfig: &v1alpha1.CloudProviderAccountAWSConfig{
-						AccountID:       "id",
-						AccessKeyID:     accountParameters.Aws.Key,
-						AccessKeySecret: accountParameters.Aws.Secret,
-						Region:          accountParameters.Aws.Region,
+						AccountID: "id",
+						Region: accountParameters.Aws.Region,
+						SecretRef: &v1alpha1.SecretReference{
+							Name:      accountParameters.SecretRef.Name,
+							Namespace: accountParameters.SecretRef.Namespace,
+							Key:       accountParameters.SecretRef.Key,
+						},
 					},
 				},
 			}
@@ -103,11 +106,12 @@ var _ = Describe(fmt.Sprintf("%s,%s: Basic CRD Read-Write", focusAws, focusAzure
 				},
 				Spec: v1alpha1.CloudProviderAccountSpec{
 					AzureConfig: &v1alpha1.CloudProviderAccountAzureConfig{
-						SubscriptionID: accountParameters.Azure.SubscriptionID,
-						ClientID:       accountParameters.Azure.ClientID,
-						TenantID:       accountParameters.Azure.TenantID,
-						ClientKey:      accountParameters.Azure.ClientKey,
-						Region:         accountParameters.Azure.Location,
+						Region: accountParameters.Azure.Location,
+						SecretRef: &v1alpha1.SecretReference{
+							Name:      accountParameters.SecretRef.Name,
+							Namespace: accountParameters.SecretRef.Namespace,
+							Key:       accountParameters.SecretRef.Key,
+						},
 					},
 				},
 			}

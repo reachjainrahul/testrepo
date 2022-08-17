@@ -16,90 +16,106 @@ package aws
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/endpoints"
-	corev1 "k8s.io/api/core/v1"
 
 	"antrea.io/nephe/apis/crd/v1alpha1"
 	"antrea.io/nephe/pkg/cloud-provider/cloudapi/internal"
 )
 
-type awsAccountCredentials struct {
+type awsAccountConfig struct {
+	v1alpha1.AwsAccountCredential
 	accountID       string
-	AccessKeyID     string `json:"accessKeyId,omitempty"`
-	AccessKeySecret string `json:"accessKeySecret,omitempty"`
-	RoleArn         string `json:"roleArn,omitempty"`
-	ExternalID      string `json:"externalId,omitempty"`
 	region          string
 }
 
 // setAccountCredentials sets account credentials.
 func setAccountCredentials(client client.Client, credentials interface{}) (interface{}, error) {
-	awsConfig := credentials.(*v1alpha1.CloudProviderAccountAWSConfig)
-	accCreds, err := extractSecret(client, awsConfig.SecretRef)
+	awsProviderConfig := credentials.(*v1alpha1.CloudProviderAccountAWSConfig)
+	accCred, err := extractSecret(client, awsProviderConfig.SecretRef)
 	if err != nil {
 		return nil, err
 	}
-	accCreds.accountID = strings.TrimSpace(awsConfig.AccountID)
-	accCreds.region = strings.TrimSpace(awsConfig.Region)
+
+	awsConfig := &awsAccountConfig{
+		AwsAccountCredential: *accCred,
+		accountID:            strings.TrimSpace(awsProviderConfig.AccountID),
+		region:               strings.TrimSpace(awsProviderConfig.Region),
+	}
 
 	// NOTE: currently only AWS standard partition regions supported (aws-cn, aws-us-gov etc are not
 	// supported). As we add support for other partitions, validation needs to be updated
 	regions := endpoints.AwsPartition().Regions()
-	_, found := regions[accCreds.region]
+	_, found := regions[awsConfig.region]
 	if !found {
 		var supportedRegions []string
 		for key := range regions {
 			supportedRegions = append(supportedRegions, key)
 		}
-		return nil, fmt.Errorf("%v not in supported regions [%v]", accCreds.region, supportedRegions)
+		return nil, fmt.Errorf("%v not in supported regions [%v]", awsConfig.region, supportedRegions)
 	}
 
-	return accCreds, nil
+	return awsConfig, nil
 }
 
 func compareAccountCredentials(accountName string, existing interface{}, new interface{}) bool {
-	existingCreds := existing.(*awsAccountCredentials)
-	newCreds := new.(*awsAccountCredentials)
+	existingConfig := existing.(*awsAccountConfig)
+	newConfig := new.(*awsAccountConfig)
 
 	credsChanged := false
-	if strings.Compare(existingCreds.accountID, newCreds.accountID) != 0 {
+	if strings.Compare(existingConfig.accountID, newConfig.accountID) != 0 {
 		credsChanged = true
 		awsPluginLogger().Info("account ID updated", "account", accountName)
 	}
-	if strings.Compare(existingCreds.AccessKeyID, newCreds.AccessKeyID) != 0 {
+	if strings.Compare(existingConfig.AccessKeyID, newConfig.AccessKeyID) != 0 {
 		credsChanged = true
 		awsPluginLogger().Info("account access key ID updated", "account", accountName)
 	}
-	if strings.Compare(existingCreds.AccessKeySecret, newCreds.AccessKeySecret) != 0 {
+	if strings.Compare(existingConfig.AccessKeySecret, newConfig.AccessKeySecret) != 0 {
 		credsChanged = true
 		awsPluginLogger().Info("account access key secret updated", "account", accountName)
 	}
-	if strings.Compare(existingCreds.region, newCreds.region) != 0 {
+	if strings.Compare(existingConfig.region, newConfig.region) != 0 {
 		credsChanged = true
 		awsPluginLogger().Info("account region updated", "account", accountName)
 	}
 	return credsChanged
 }
 
-// ExtractSecret extracts credentials from a Kubernetes secret.
-func extractSecret(client client.Client, s *v1alpha1.SecretReference) (*awsAccountCredentials, error) {
+// extractSecret extracts credentials from a Kubernetes secret.
+func extractSecret(c client.Client, s *v1alpha1.SecretReference) (*v1alpha1.AwsAccountCredential, error) {
 	if s == nil {
 		return nil, fmt.Errorf("secret reference not found")
 	}
-	secret := &corev1.Secret{}
-	if err := client.Get(context.TODO(), types.NamespacedName{Namespace: s.Namespace, Name: s.Name}, secret); err != nil {
-		return nil, fmt.Errorf("unable to get secret: %s", err.Error())
+
+	u := &unstructured.Unstructured{}
+	u.SetGroupVersionKind(schema.GroupVersionKind{
+	   Group:   "",
+	   Kind:    "Secret",
+	   Version: "v1",
+	})
+	if err := c.Get(context.Background(), client.ObjectKey{Namespace: s.Namespace, Name: s.Name}, u); err != nil {
+		return nil, err
 	}
-	cred := &awsAccountCredentials{}
-	if err := json.Unmarshal(secret.Data[s.Key], cred); err != nil {
-		return nil, fmt.Errorf("unable to parse secret data: %s", err.Error())
+
+	data := u.Object["data"].(map[string]interface{})
+	decode, err := base64.StdEncoding.DecodeString(data[s.Key].(string))
+	if err != nil {
+		return nil, err
 	}
+
+	cred := &v1alpha1.AwsAccountCredential{}
+	if err = json.Unmarshal(decode, cred); err != nil {
+		return nil, err
+	}
+
 	return cred, nil
 }
 
