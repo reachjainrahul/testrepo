@@ -160,9 +160,7 @@ resource "vsphere_virtual_machine" "vms" {
       private_key = "${local.private_key_content}"
     }
   }
-
 }
-
 
 output "vm_name_ips" {
   value = zipmap(vsphere_virtual_machine.vms.*.name, vsphere_virtual_machine.vms.*.default_ip_address)
