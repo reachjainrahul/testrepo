@@ -158,19 +158,14 @@ function cleanup_testbed() {
 
 trap cleanup_testbed EXIT
 # TODO: Dont like passing credentials from one machine to another
-if [ "$testtype" == "aws" ]; then
-  ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-aws.sh; ~/ci/jenkins/test-aws.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET} ${AWS_KEY_PAIR_NAME}"
-fi
-
-# TODO: Test these changes.
-case $testtype in
+case $testType in
     aws)
     echo "Run tests on a Kind cluster with AWS VMs"
     ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-aws.sh; ~/ci/jenkins/test-aws.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET} ${AWS_KEY_PAIR_NAME}"
     ;;
     azure)
     echo "Run tests on a Kind cluster with Azure VMs"
-    ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-azure.sh; ~/ci/jenkins/test-azure.sh"
+    ssh -i id_rsa ubuntu@${ip_addr} "chmod +x ~/ci/jenkins/test-azure.sh; ~/ci/jenkins/test-azure.sh ${AZURE_CLIENT_SUBSCRIPTION_ID} ${AZURE_CLIENT_ID} ${AZURE_CLIENT_TENANT_ID} ${AZURE_CLIENT_SECRET}"
     ;;
     eks)
     echo "Run tests on a EKS cluster with AWS VMs"

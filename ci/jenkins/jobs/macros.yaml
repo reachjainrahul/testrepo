@@ -32,7 +32,7 @@
                   --vcCluster "${{VC_CLUSTER}}" --resourcePool "${{RESOURCEPOOLPATH}}" --vcNetwork "${{VMC_NETWORK_1}}" \
                   --virtualMachine "${{VIRTUAL_MACHINE}}" --goVcPassword "${{GOVC_PASSWORD}}" --testType eks
 - builder:
-    name: deploy-vm-and-run-eks-tests-for-nephe
+    name: deploy-vm-and-run-aks-tests-for-nephe
     builders:
       - shell: |-
           #!/bin/bash

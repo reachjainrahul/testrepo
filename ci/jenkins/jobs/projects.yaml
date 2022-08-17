@@ -166,6 +166,18 @@
                       - text:
                             credential-id: ANTREA_DOCKER_PWD
                             variable: ANTREA_DOCKER_PWD
+                      - text:
+                            credential-id: AZURE_CLIENT_ID
+                            variable: AZURE_CLIENT_ID
+                      - text:
+                            credential-id: AZURE_CLIENT_SECRET
+                            variable: AZURE_CLIENT_SECRET
+                      - text:
+                            credential-id: AZURE_CLIENT_SUBSCRIPTION_ID
+                            variable: AZURE_CLIENT_SUBSCRIPTION_ID
+                      - text:
+                            credential-id: AZURE_CLIENT_TENANT_ID
+                            variable: AZURE_CLIENT_TENANT_ID
             publishers:
                 - archive:
                       allow-empty: true
