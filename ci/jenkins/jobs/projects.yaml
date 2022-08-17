@@ -26,6 +26,8 @@
           triggered_status: null
           started_status: null
           concurrent: true
+          # Runs at 22:05 on Sunday.
+          cron: '5 22 * * 7'
           wrappers:
             - credentials-binding:
                 - text:
@@ -117,6 +119,8 @@
             triggered_status: null
             started_status: null
             concurrent: true
+            # Runs at 22:35 on Sunday.
+            cron: '35 22 * * 7'
             wrappers:
                 - credentials-binding:
                       - text:
@@ -211,6 +215,8 @@
             triggered_status: null
             started_status: null
             concurrent: true
+            # Runs at 23:05 on Sunday.
+            cron: '5 23 * * 7'
             wrappers:
                 - credentials-binding:
                       - text:
@@ -302,6 +308,8 @@
             triggered_status: null
             started_status: null
             concurrent: true
+            # Runs at 23:35 on Sunday.
+            cron: '35 23 * * 7'
             wrappers:
                 - credentials-binding:
                       - text:
