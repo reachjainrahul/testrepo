@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# TODO: Add code here to run tests on a EKS cluster with AWS VMs
-
 KUBECTL_VERSION=v1.24.1
 TERRAFORM_VERSION=0.13.5
 
@@ -57,9 +55,13 @@ aws ec2 import-key-pair --key-name ${KEY_PAIR} --public-key-material fileb://~/.
 
 
 hack/install-cloud-tools.sh
+echo "Creating EKS Cluster"
 $HOME/terraform/eks create
 
 aws ec2 delete-key-pair  --key-name ${KEY_PAIR}  --region ${TF_VAR_region}
+
+echo "Destroying EKS Cluster"
+$HOME/terraform/eks destroy
 
 exit 0
 echo "Installing Go 1.17"
