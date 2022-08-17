@@ -90,7 +90,7 @@ function apply {
     exit 1
   fi
   echo eks cluster created.
-  $TERRAFORM output -json kubectl_config | jq -r > $RUN_PATH/kubeconfig
+  $TERRAFORM output -json kubectl_config | jq -r . > $RUN_PATH/kubeconfig
 
   if [ -z $CREATE_ONLY ]; then
      KUBECONFIG=$RUN_PATH/kubeconfig kubectl apply -f antrea-eks-node-init.yml
