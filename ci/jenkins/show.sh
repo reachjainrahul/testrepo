@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This script shows vms deployed by terraform for specified testbed_name.
+# The first arg is testbed_name (terraform workspace).
 set -e
 tesbted_name="$1"
 

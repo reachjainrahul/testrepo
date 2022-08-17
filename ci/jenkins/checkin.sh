@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This script stores terrform configuration files into another place ../terraform.tfstate.d/current/,
+# there are two args for this script, arg1 is testbedname while arg2 is the flag whether terraform 
+# overwrites the existing workspace
 set -e
 
 tesbted_name="$1"

@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This script destroys vms when test are finished. There two args for this
+# script. The first arg is testbed_name (terraform workspace name). The 
+# second is password for vc.
 set -e
 
 tesbted_name="$1"

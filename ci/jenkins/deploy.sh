@@ -13,13 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This script uses terraform to deploy vm, there are 3 args. The first arg is
+# testbed_name(terraform workspace name), the second is ip address or domain name
+# for vc, the third arg is password for vc.
+
 set -e
 
 tesbted_name="$1"
 vc_ip="$2"
 vc_passwd="$3"
-docker_username="$4"
-docker_passwd="$5"
 var_file="terraform.tfstate.d/${tesbted_name}/vars.tfvars"
 
 if [ -z "${tesbted_name}" -o -z "${vc_ip}" -o -z "${vc_passwd}" ]; then
