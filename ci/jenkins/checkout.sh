@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This script copies a spcified terraform configuration into terraform.tfstate.d/,
-# the first arg if testbed name(workspace name for terraform), and second arg is flag
-# whether to overwite the exsiting workspace.
+# This script copies a specified terraform configuration into terraform.tfstate.d/,
+# the first arg is testbed name (workspace name for terraform),
+# the second arg is flag whether to overwite the existing workspace.
 
 set -e
 
