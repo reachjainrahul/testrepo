@@ -80,7 +80,7 @@ jobs:
           mkdir -p $HOME/.ssh
           chmod 700 $HOME/.ssh
           echo "$AZURE_SSH_PUB_KEY" > $HOME/.ssh/id_rsa.pub
-          ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*Test-azure.*" -kubeconfig=$HOME/.kube/config -cloud-provider=Azure -support-bundle-dir=$(pwd)/log
+          ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*test-azure.*" -kubeconfig=$HOME/.kube/config -cloud-provider=Azure -support-bundle-dir=$(pwd)/log
       - name: Tar log files
         if: ${{ failure() }}
         run: tar -czf log.tar.gz log
