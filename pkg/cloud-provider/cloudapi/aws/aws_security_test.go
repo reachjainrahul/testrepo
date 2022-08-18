@@ -27,7 +27,6 @@ import (
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
@@ -106,9 +105,6 @@ var _ = Describe("AWS Cloud Security", func() {
 
 		mockCtrl = gomock.NewController(GinkgoT())
 		mockawsCloudHelper = NewMockawsServicesHelper(mockCtrl)
-
-		scheme := runtime.NewScheme()
-		v1alpha1.AddToScheme(scheme)
 
 		mockawsService = NewMockawsServiceClientCreateInterface(mockCtrl)
 		mockawsEC2 = NewMockawsEC2Wrapper(mockCtrl)
