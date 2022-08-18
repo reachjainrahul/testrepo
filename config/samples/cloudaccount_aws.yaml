@@ -17,7 +17,6 @@ metadata:
   namespace: sample-ns
 spec:
   awsConfig:
-    accountID: "<REPLACE_ME>"
     region: "<REPLACE_ME>"
     secretRef:
       name: aws-account-creds

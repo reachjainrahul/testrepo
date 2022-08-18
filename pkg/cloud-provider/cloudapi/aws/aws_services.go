@@ -75,7 +75,6 @@ func (h *awsServicesHelperImpl) newServiceSdkConfigProvider(accConfig *awsAccoun
 		creds = credentials.NewCredentials(&stscreds.AssumeRoleProvider{
 			Client:          stsClient,
 			RoleARN:         accConfig.RoleArn,
-			RoleSessionName: accConfig.accountID,
 			ExternalID:      externalID,
 		})
 	} else {

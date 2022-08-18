@@ -36,7 +36,6 @@ var (
 )
 
 type ProviderType v1alpha1.CloudProvider
-type ProviderAccountID string
 type InstanceID string
 
 // CloudInterface is an abstract providing set of methods to be implemented by cloud providers.

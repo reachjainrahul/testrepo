@@ -41,9 +41,6 @@ spec:
               awsConfig:
                 description: Cloud provider account config.
                 properties:
-                  accountID:
-                    description: Cloud provider account identifier.
-                    type: string
                   region:
                     description: Cloud provider account region.
                     type: string
