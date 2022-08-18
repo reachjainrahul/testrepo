@@ -15,19 +15,28 @@
 package v1alpha1
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
+	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
 // log is for logging in this package.
-var cloudprovideraccountlog = logf.Log.WithName("cloudprovideraccount-resource")
+var (
+	cloudprovideraccountlog = logf.Log.WithName("cloudprovideraccount-resource")
+	C                         k8sclient.Client
+)
 
 func (r *CloudProviderAccount) SetupWebhookWithManager(mgr ctrl.Manager) error {
+	C = mgr.GetClient()
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
 		Complete()
@@ -73,6 +82,22 @@ func (r *CloudProviderAccount) ValidateCreate() error {
 			return fmt.Errorf("account id cannot be blank or empty")
 		}
 
+		secret := &corev1.Secret{}
+		if err := C.Get(context.TODO(), types.NamespacedName{Namespace: awsConfig.SecretRef.Namespace, Name: awsConfig.SecretRef.Name}, secret); err != nil {
+			return fmt.Errorf("unable to get secret: %s", err.Error())
+		}
+
+		var jsonMap map[string]string
+		if err := json.Unmarshal(secret.Data[awsConfig.SecretRef.Key], &jsonMap); err != nil {
+			return fmt.Errorf("unable to parse secret data: %s", err.Error())
+		}
+
+		if len(strings.TrimSpace(jsonMap["roleArn"])) != 0 {
+			cloudprovideraccountlog.Info("Role ARN configured will be used for cloud-account access")
+		} else if len(strings.TrimSpace(jsonMap["accessKeyID"])) == 0 || len(strings.TrimSpace(jsonMap["accessKeySecret"])) == 0 {
+			return fmt.Errorf("must specify either credentials or role arn, cannot both be empty")
+		}
+
 		// warning for using role based auth
 		//if len(strings.TrimSpace(awsConfig.RoleArn)) != 0 {
 		//	cloudprovideraccountlog.Info("Role ARN configured will be used for cloud-account access")
@@ -88,6 +113,35 @@ func (r *CloudProviderAccount) ValidateCreate() error {
 		}
 	case AzureCloudProvider:
 		azureConfig := r.Spec.AzureConfig
+
+		secret := &corev1.Secret{}
+		if err := C.Get(context.TODO(), types.NamespacedName{Namespace: azureConfig.SecretRef.Namespace, Name: azureConfig.SecretRef.Name}, secret); err != nil {
+			return fmt.Errorf("unable to get secret: %s", err.Error())
+		}
+
+		var jsonMap map[string]string
+		if err := json.Unmarshal(secret.Data[azureConfig.SecretRef.Key], &jsonMap); err != nil {
+			return fmt.Errorf("unable to parse secret data: %s", err.Error())
+		}
+
+		// validate subscription ID
+		if len(strings.TrimSpace(jsonMap["subscriptionID"])) == 0 {
+			return fmt.Errorf("subscription id cannot be blank or empty")
+		}
+
+		// validate tenant ID
+		if len(strings.TrimSpace(jsonMap["tenantID"])) == 0 {
+			return fmt.Errorf("tenant id cannot be blank or empty")
+		}
+
+		// validate credentials
+		if len(strings.TrimSpace(jsonMap["identityClientID"])) != 0 {
+			cloudprovideraccountlog.Info("Managed Identity Client ID configured will be used for cloud-account access")
+			// empty credentials when role based access is configured
+		} else if len(strings.TrimSpace(jsonMap["clientID"])) == 0 || len(strings.TrimSpace(jsonMap["ClientKey"])) == 0 {
+			return fmt.Errorf("must specify either credentials or managed identity client id, cannot both be empty")
+		}
+
 		//
 		//// validate subscription ID
 		//if len(strings.TrimSpace(azureConfig.SubscriptionID)) == 0 {

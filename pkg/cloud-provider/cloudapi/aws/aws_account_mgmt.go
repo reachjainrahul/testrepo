@@ -19,10 +19,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 
@@ -32,8 +33,8 @@ import (
 
 type awsAccountConfig struct {
 	v1alpha1.AwsAccountCredential
-	accountID       string
-	region          string
+	accountID string
+	region    string
 }
 
 // setAccountCredentials sets account credentials.
@@ -96,10 +97,10 @@ func extractSecret(c client.Client, s *v1alpha1.SecretReference) (*v1alpha1.AwsA
 	}
 
 	u := &unstructured.Unstructured{}
-	u.SetGroupVersionKind(schema.GroupVersionKind{
-	   Group:   "",
-	   Kind:    "Secret",
-	   Version: "v1",
+	u.SetGroupVersionKind(schema.GroupVersionKind {
+		Group:   "",
+		Kind:    "Secret",
+		Version: "v1",
 	})
 	if err := c.Get(context.Background(), client.ObjectKey{Namespace: s.Namespace, Name: s.Name}, u); err != nil {
 		return nil, err
