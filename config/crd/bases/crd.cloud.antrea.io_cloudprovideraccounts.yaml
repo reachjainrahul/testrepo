@@ -52,7 +52,7 @@ spec:
                       credentials.
                     properties:
                       key:
-                        description: Key to select.
+                        description: Key to select in the secret.
                         type: string
                       name:
                         description: Name of the secret.
@@ -72,11 +72,11 @@ spec:
                   region:
                     type: string
                   secretRef:
-                    description: An SecretReference is a reference to a secret key
+                    description: SecretReference is a reference to a k8s secret resource
                       in an arbitrary namespace.
                     properties:
                       key:
-                        description: Key to select.
+                        description: Key to select in the secret.
                         type: string
                       name:
                         description: Name of the secret.

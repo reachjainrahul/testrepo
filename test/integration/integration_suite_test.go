@@ -167,7 +167,7 @@ var _ = BeforeSuite(func(done Done) {
 		Expect(err).ToNot(HaveOccurred())
 
 		By(cluster + ": Check nephe controller is ready")
-		err = utils.RestartOrWaitDeployment(cl, "nephe-controller", "nephe", time.Second*120, false)
+		err = utils.RestartOrWaitDeployment(cl, "nephe-controller", "nephe-system", time.Second*120, false)
 		Expect(err).ToNot(HaveOccurred())
 	}
 	// Check create VPC status.

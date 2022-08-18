@@ -194,7 +194,7 @@ func (p *awsVPC) GetCloudAccountParameters(name, namespace string, cloudCluster 
 		Provider:  string(v1alpha1.AWSCloudProvider),
 		SecretRef: k8stemplates.AccountSecretParameters{
 			Name:             name + "-aws-cred",
-			Namespace:        "nephe",
+			Namespace:        "nephe-system",
 			Key:              "credential",
 		},
 	}

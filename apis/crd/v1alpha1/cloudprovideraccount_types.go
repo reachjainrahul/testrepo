@@ -59,13 +59,13 @@ type CloudProviderAccountAzureConfig struct {
 	Region    string           `json:"region,omitempty"`
 }
 
-// An SecretReference is a reference to a secret key in an arbitrary namespace.
+// SecretReference is a reference to a k8s secret resource in an arbitrary namespace.
 type SecretReference struct {
 	// Name of the secret.
 	Name string `json:"name"`
 	// Namespace of the secret.
 	Namespace string `json:"namespace"`
-	// Key to select.
+	// Key to select in the secret.
 	Key string `json:"key"`
 }
 

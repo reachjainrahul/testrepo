@@ -19,10 +19,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strings"
 
 	"antrea.io/nephe/apis/crd/v1alpha1"
 	"antrea.io/nephe/pkg/cloud-provider/cloudapi/internal"

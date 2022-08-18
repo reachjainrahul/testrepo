@@ -39,7 +39,7 @@ var (
 	// Match Nephe Controller Service Name
 	nepheControllerSvcName = "nephe-controller-service"
 	// Match Nephe Controller Service Domain Name
-	nepheControllerDomainName = "nephe-controller-service.nephe.svc"
+	nepheControllerDomainName = "nephe-controller-service.nephe-system.svc"
 )
 
 // ExtraConfig holds custom apiserver config.

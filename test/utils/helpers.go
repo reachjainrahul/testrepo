@@ -354,7 +354,7 @@ func CheckRestart(kubctl *KubeCtl) error {
 	controllers := []string{"nephe-controller"}
 	for _, c := range controllers {
 		cmd := fmt.Sprintf(
-			"get  pods -l control-plane=%s -n nephe -o=jsonpath={.items[0].status.containerStatuses[0].restartCount}", c)
+			"get pods -l control-plane=%s -n nephe-system -o=jsonpath={.items[0].status.containerStatuses[0].restartCount}", c)
 		out, err := kubctl.Cmd(cmd)
 		if err != nil {
 			return err

@@ -22,10 +22,11 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/apimachinery/pkg/util/wait"
+
 	"antrea.io/nephe/apis/crd/v1alpha1"
 	"antrea.io/nephe/pkg/cloud-provider/utils"
 	k8stemplates "antrea.io/nephe/test/templates"
-	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 type azureVPC struct {
@@ -215,7 +216,7 @@ func (p *azureVPC) GetCloudAccountParameters(name, namespace string, _ bool) k8s
 		Provider:  string(v1alpha1.AzureCloudProvider),
 		SecretRef: k8stemplates.AccountSecretParameters{
 			Name:             name + "-azure-cred",
-			Namespace:        "nephe",
+			Namespace:        "nephe-system",
 			Key:              "credential",
 		},
 	}
