@@ -71,5 +71,5 @@ func ec2InstanceToVirtualMachineCRD(instance *ec2.Instance, namespace string) *v
 	cloudNetwork := *instance.VpcId
 
 	return utils.GenerateVirtualMachineCRD(cloudID, cloudName, cloudID, namespace, cloudNetwork, cloudNetwork,
-		v1alpha1.VMState(*instance.State.Name), tags, networkInterfaces, providerType)
+		*instance.State.Name, tags, networkInterfaces, providerType)
 }

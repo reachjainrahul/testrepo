@@ -29,7 +29,7 @@ type virtualMachineTable struct {
 	Properties        *compute.VirtualMachineProperties
 	NetworkInterfaces []*networkInterface
 	Tags              map[string]*string
-	State             *string
+	Status            *string
 	VnetID            *string
 }
 type networkInterface struct {
