@@ -23,7 +23,7 @@ curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/${KIND
 chmod +x ./kind
 sudo mv ./kind /usr/local/bin/kind
 
-echo "Installing kubectl"
+echo "Installing Kubectl"
 curl -LO https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl
 chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
 
@@ -39,40 +39,45 @@ sudo rm -rf /usr/local/go && sudo tar -zxf go1.17.linux-amd64.tar.gz -C /usr/loc
 rm go1.17.linux-amd64.tar.gz
 export PATH=$PATH:/usr/local/go/bin
 
-echo "Building Nephe Docker image"
-make build
-
-echo "Pulling Docker images"
-docker pull kennethreitz/httpbin
-docker pull byrnedo/alpine-curl
-docker pull quay.io/jetstack/cert-manager-controller:v1.8.2
-docker pull quay.io/jetstack/cert-manager-webhook:v1.8.2
-docker pull quay.io/jetstack/cert-manager-cainjector:v1.8.2
-docker pull projects.registry.vmware.com/antrea/antrea-ubuntu:v1.7.0
-
-echo "Creating kind cluster"
-hack/install-cloud-tools.sh
-ci/kind/kind-setup.sh create kind
-
-# TODO: Expose this as command line arguments?
-export TF_VAR_aws_access_key_id=$1
-export TF_VAR_aws_access_key_secret=$2
-export TF_VAR_owner="nephe-ci"
-export TF_VAR_region="us-west-1"
-
 echo "Installing AWS CLI"
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install
 
-KEY_PAIR="nephe-$$"
+echo "Building Nephe Docker image"
+make build
+
+echo "Pulling Docker images to be used in tests"
+docker pull kennethreitz/httpbin
+docker pull byrnedo/alpine-curl
+docker pull quay.io/jetstack/cert-manager-controller:v1.8.2
+docker pull quay.io/jetstack/cert-manager-webhook:v1.8.2
+docker pull quay.io/jetstack/cert-manager-cainjector:v1.8.2
+docker pull projects.registry.vmware.com/antrea/antrea-ubuntu:v1.8.0
+
+echo "Creating kind cluster"
+hack/install-cloud-tools.sh
+ci/kind/kind-setup.sh create kind
+
+# TODO: Expose these as command line arguments?
+export TF_VAR_aws_access_key_id=$1
+export TF_VAR_aws_access_key_secret=$2
+export TF_VAR_region="us-west-1"
+
+# Export AWS Credentials for AWS CLI
 export AWS_ACCESS_KEY_ID=${TF_VAR_aws_access_key_id}
 export AWS_SECRET_ACCESS_KEY=${TF_VAR_aws_access_key_secret}
 export AWS_DEFAULT_REGION=${TF_VAR_region}
+
+# Create a key pair
+KEY_PAIR="nephe-$$"
 aws ec2 import-key-pair --key-name ${KEY_PAIR} --public-key-material fileb://~/.ssh/id_rsa.pub --region ${TF_VAR_region}
 
 export TF_VAR_aws_key_pair_name=${KEY_PAIR}
+export TF_VAR_owner="nephe-ci"
+
 mkdir ~/logs
 ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*test-aws.*" -kubeconfig=$HOME/.kube/config -cloud-provider=AWS -support-bundle-dir=~/logs
 
+# Delete key pair
 aws ec2 delete-key-pair  --key-name ${KEY_PAIR}  --region ${TF_VAR_region}

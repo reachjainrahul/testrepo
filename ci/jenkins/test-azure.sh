@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# TODO: Add code here to run tests on a Kind cluster with Azure VMs
-
 KIND_VERSION=v0.12.0
 KUBECTL_VERSION=v1.24.1
 TERRAFORM_VERSION=0.13.5
@@ -25,7 +23,7 @@ curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/${KIND
 chmod +x ./kind
 sudo mv ./kind /usr/local/bin/kind
 
-echo "Installing kubectl"
+echo "Installing Kubectl"
 curl -LO https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl
 chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
 
@@ -44,13 +42,13 @@ export PATH=$PATH:/usr/local/go/bin
 echo "Building Nephe Docker image"
 make build
 
-echo "Pulling Docker images"
+echo "Pulling Docker images to be used in tests"
 docker pull kennethreitz/httpbin
 docker pull byrnedo/alpine-curl
 docker pull quay.io/jetstack/cert-manager-controller:v1.8.2
 docker pull quay.io/jetstack/cert-manager-webhook:v1.8.2
 docker pull quay.io/jetstack/cert-manager-cainjector:v1.8.2
-docker pull projects.registry.vmware.com/antrea/antrea-ubuntu:v1.7.0
+docker pull projects.registry.vmware.com/antrea/antrea-ubuntu:v1.8.0
 
 echo "Creating kind cluster"
 hack/install-cloud-tools.sh

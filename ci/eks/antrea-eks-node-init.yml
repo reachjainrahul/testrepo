@@ -26,7 +26,7 @@ spec:
         name: host-aws-node-run-dir
       containers:
         - name: node-init
-          image: gcr.io/google-containers/startup-script:v1
+          image: gcr.io/google-containers/startup-script:v2
           imagePullPolicy: IfNotPresent
           securityContext:
             privileged: true
@@ -42,46 +42,45 @@ spec:
               set -o pipefail
               set -o nounset
 
-              if [ -f /opt/cni/antrea-node-init-status ]; then
-                  echo "Antrea node init already done. Exiting"
-                  exit
-              fi
+              echo "Initializing Node for Antrea"
 
-              echo "Initializing node for Antrea"
-
+              cni_conf="/etc/cni/net.d/05-antrea.conflist"
               while true; do
-                  cni_conf=$(ls /etc/cni/net.d | head -n1)
-                  if [[ ! -z $cni_conf ]]; then break; fi
-                  echo "Waiting for cni conf file"
-                  sleep 2s
-              done
-              cni_conf="/etc/cni/net.d/$cni_conf"
-
-              while true; do
-                  if grep -sq "antrea" $cni_conf; then break; fi
-                  echo "Waiting for antrea config to be updated"
+                  if [[ -f $cni_conf ]]; then break; fi
+                  echo "Waiting for Antrea CNI conf file"
                   sleep 2s
               done
 
-              # Wait for kubelet to register the file update. Default sync time is 5sec
+              echo "Detecting container runtime (docker / containerd) based on whether /var/run/docker.sock exists"
+              container_runtime="docker"
+              test -e /var/run/docker.sock || container_runtime="containerd"
+              echo "Container runtime: $container_runtime"
+
+              # Wait for kubelet to register the file update.
+              # Default sync time is 5s so we sleep for 10s.
               # https://github.com/kubernetes/kubernetes/blob/master/pkg/kubelet/dockershim/network/cni/cni.go#L50
-              sleep 5s
+              sleep 10s
 
               while true; do
-                  curl localhost:61679 && retry=false || retry=true
+                  curl -sS -o /dev/null localhost:61679 && retry=false || retry=true
                   if [ $retry == false ]; then break ; fi
                   sleep 2s
                   echo "Waiting for aws-k8s-agent"
               done
 
               # Fetch running containers from aws-k8s-agent and kill them
-              echo "\n"
+              echo
               for container_id in $(cat /var/run/aws-node/ipam.json | jq -r '.allocations | .[] | .containerID'); do
                   echo "Restarting container with ID: ${container_id}"
-                  docker kill "${container_id}" || true
+                  if [[ "$container_runtime" == "docker" ]]; then
+                      docker kill "${container_id}" || true
+                  else
+                      ctr -n=k8s.io tasks kill "${container_id}" || true
+                  fi
               done
 
-              # Save the node init status, to avoid container restart in case of node-init pod restart or worker node reboot
-              touch /opt/cni/antrea-node-init-status
-
+              # The script will run again if the contents of the script change.
+              # It may also run again in case of worker Node reboot, assuming
+              # that the contents of /tmp are deleted.
+              # See https://github.com/kubernetes-retired/contrib/blob/master/startup-script/manage-startup-script.sh.
               echo "Node initialization completed"
