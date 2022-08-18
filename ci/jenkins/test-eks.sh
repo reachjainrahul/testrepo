@@ -79,4 +79,4 @@ docker pull byrnedo/alpine-curl
 docker pull quay.io/jetstack/cert-manager-controller:v1.8.2
 docker pull quay.io/jetstack/cert-manager-webhook:v1.8.2
 docker pull quay.io/jetstack/cert-manager-cainjector:v1.8.2
-docker pull projects.registry.vmware.com/antrea/antrea-ubuntu:v1.7.0
+docker pull projects.registry.vmware.com/antrea/antrea-ubuntu:v1.8.0
