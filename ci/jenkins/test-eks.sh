@@ -60,9 +60,10 @@ export AWS_DEFAULT_REGION=${TF_VAR_region}
 # Create SSH Key Pair
 KEY_PAIR="nephe-$$"
 aws ec2 import-key-pair --key-name ${KEY_PAIR} --public-key-material fileb://~/.ssh/id_rsa.pub --region ${TF_VAR_region}
+export TF_VAR_aws_key_pair_name=${KEY_PAIR}
+export TF_VAR_eks_key_pair_name=${KEY_PAIR}
 
 # TODO: Change the profile via secrets
-export TF_VAR_eks_key_pair_name=${KEY_PAIR}
 export TF_VAR_eks_cluster_iam_role_name=k8s
 export TF_VAR_eks_iam_instance_profile_name="suwang-eks-worker-nodes-1-NodeInstanceProfile-8LL239W4W3GN"
 
