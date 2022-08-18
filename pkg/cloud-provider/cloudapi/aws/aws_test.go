@@ -26,7 +26,6 @@ import (
 	"github.com/golang/mock/gomock"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -54,7 +53,6 @@ var _ = Describe("AWS cloud", func() {
 			mockCtrl           *gomock.Controller
 			mockawsCloudHelper *MockawsServicesHelper
 			secret             *corev1.Secret
-			scheme             *runtime.Scheme
 			fakeRemoteClient   client.WithWatch
 		)
 
@@ -88,8 +86,6 @@ var _ = Describe("AWS cloud", func() {
 					"credentials": []byte(credential),
 				},
 			}
-			scheme = runtime.NewScheme()
-			v1alpha1.AddToScheme(scheme)
 			fakeRemoteClient = fake.NewClientBuilder().Build()
 			mockCtrl = gomock.NewController(GinkgoT())
 			mockawsCloudHelper = NewMockawsServicesHelper(mockCtrl)

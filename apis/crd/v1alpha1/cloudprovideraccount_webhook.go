@@ -32,11 +32,11 @@ import (
 // log is for logging in this package.
 var (
 	cloudprovideraccountlog = logf.Log.WithName("cloudprovideraccount-resource")
-	C                         k8sclient.Client
+	clientK8s               k8sclient.Client
 )
 
 func (r *CloudProviderAccount) SetupWebhookWithManager(mgr ctrl.Manager) error {
-	C = mgr.GetClient()
+	clientK8s = mgr.GetClient()
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
 		Complete()
@@ -83,7 +83,7 @@ func (r *CloudProviderAccount) ValidateCreate() error {
 		}
 
 		secret := &corev1.Secret{}
-		if err := C.Get(context.TODO(), types.NamespacedName{Namespace: awsConfig.SecretRef.Namespace, Name: awsConfig.SecretRef.Name}, secret); err != nil {
+		if err := clientK8s.Get(context.TODO(), types.NamespacedName{Namespace: awsConfig.SecretRef.Namespace, Name: awsConfig.SecretRef.Name}, secret); err != nil {
 			return fmt.Errorf("unable to get secret: %s", err.Error())
 		}
 
@@ -115,7 +115,7 @@ func (r *CloudProviderAccount) ValidateCreate() error {
 		azureConfig := r.Spec.AzureConfig
 
 		secret := &corev1.Secret{}
-		if err := C.Get(context.TODO(), types.NamespacedName{Namespace: azureConfig.SecretRef.Namespace, Name: azureConfig.SecretRef.Name}, secret); err != nil {
+		if err := clientK8s.Get(context.TODO(), types.NamespacedName{Namespace: azureConfig.SecretRef.Namespace, Name: azureConfig.SecretRef.Name}, secret); err != nil {
 			return fmt.Errorf("unable to get secret: %s", err.Error())
 		}
 
