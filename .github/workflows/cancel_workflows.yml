@@ -1,7 +1,7 @@
 name: Cancel Workflows
 on:
   workflow_run:
-    workflows: ["Go", "kind", "Build and push latest image if needed"]
+    workflows: ["Go", "Kind", "Build and push latest image if needed"]
     types:
       - requested
 jobs:
