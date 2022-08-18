@@ -19,15 +19,14 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"strings"
-
-	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strings"
 
 	"antrea.io/nephe/apis/crd/v1alpha1"
 	"antrea.io/nephe/pkg/cloud-provider/cloudapi/internal"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
 )
 
 type awsAccountConfig struct {
