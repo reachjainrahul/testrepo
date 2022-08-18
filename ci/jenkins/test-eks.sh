@@ -72,6 +72,10 @@ $HOME/terraform/eks create
 
 # TODO: Add Validation to check if EKS is created fine
 
+sleep 60
+timeout 10 $HOME/terraform/eks kubectl get node -o wide
+
+echo "Loading nephe image"
 $HOME/terraform/eks load antrea/nephe
 mkdir -p $HOME/logs
 ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*test-cloud-cluster.*" -kubeconfig=$HOME/tmp/terraform-eks/kubeconfig -cloud-provider=AWS -support-bundle-dir=$HOME/logs
