@@ -169,7 +169,7 @@ case $testType in
     ;;
     azure)
     echo "Run tests on a Kind cluster with Azure VMs"
-    ssh -i id_rsa ubuntu@${ip_addr} "~/ci/jenkins/test-azure.sh ${AZURE_CLIENT_SUBSCRIPTION_ID} ${AZURE_CLIENT_ID} ${AZURE_CLIENT_TENANT_ID} ${AZURE_CLIENT_SECRET}"
+    ssh -i id_rsa ubuntu@${ip_addr} "~/ci/jenkins/test-azure.sh ${AZURE_SUBSCRIPTION_ID} ${AZURE_APP_ID} ${AZURE_TENANT_ID} ${AZURE_PASSWORD}"
     ;;
     eks)
     echo "Run tests on a EKS cluster with AWS VMs"
