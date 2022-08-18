@@ -22,13 +22,13 @@ import (
 	"antrea.io/nephe/pkg/cloud-provider/utils"
 )
 
-var azureStateMap = map[string]v1alpha1.VMState{
-	"PowerState/running":      v1alpha1.Running,
-	"PowerState/deallocated":  v1alpha1.Stopped,
-	"PowerState/deallocating": v1alpha1.ShuttingDown,
-	"PowerState/stopping":     v1alpha1.Stopping,
-	"PowerState/stopped":      v1alpha1.Stopped,
-	"PowerState/starting":     v1alpha1.Starting,
+var azureStatusMap = map[string]string{
+	"PowerState/running":      "running",
+	"PowerState/deallocated":  "stopped",
+	"PowerState/deallocating": "shutting down",
+	"PowerState/stopping":     "stopping",
+	"PowerState/stopped":      "stopped",
+	"PowerState/starting":     "starting",
 }
 
 func computeInstanceToVirtualMachineCRD(instance *virtualMachineTable, namespace string) *v1alpha1.VirtualMachine {
@@ -92,9 +92,9 @@ func computeInstanceToVirtualMachineCRD(instance *virtualMachineTable, namespace
 	}
 	cloudNetworkShortID := utils.GenerateShortResourceIdentifier(cloudNetworkID, nwResName)
 
-	state := azureStateMap[*instance.State]
+	status := azureStatusMap[*instance.Status]
 
 	return utils.GenerateVirtualMachineCRD(crdName, strings.ToLower(cloudName), strings.ToLower(cloudID), namespace,
 		strings.ToLower(cloudNetworkID), cloudNetworkShortID,
-		state, tags, networkInterfaces, providerType)
+		status, tags, networkInterfaces, providerType)
 }
