@@ -5,7 +5,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: aws-account-creds
-  namespace: nephe
+  namespace: nephe-system
 type: Opaque
 data:
   credentials: "<BASE64_ENCODED_JSON_STRING>"
@@ -21,7 +21,7 @@ spec:
     region: "<REPLACE_ME>"
     secretRef:
       name: aws-account-creds
-      namespace: nephe
+      namespace: nephe-system
       key: credentials
 ---
 apiVersion: crd.cloud.antrea.io/v1alpha1

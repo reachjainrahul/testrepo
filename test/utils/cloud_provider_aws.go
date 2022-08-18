@@ -193,9 +193,9 @@ func (p *awsVPC) GetCloudAccountParameters(name, namespace string, cloudCluster 
 		Namespace: namespace,
 		Provider:  string(v1alpha1.AWSCloudProvider),
 		SecretRef: k8stemplates.AccountSecretParameters{
-			Name:             name + "-aws-cred",
-			Namespace:        "nephe-system",
-			Key:              "credential",
+			Name:      name + "-aws-cred",
+			Namespace: "nephe-system",
+			Key:       "credential",
 		},
 	}
 	out.Aws.Region = p.output["region"].(map[string]interface{})["value"].(string)

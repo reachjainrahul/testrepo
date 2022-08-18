@@ -43,9 +43,34 @@ select target VMs, and import VMs into the K8s cluster as `VirtualMachine` CRs.
 ### CloudProviderAccount
 
 To import cloud VMs, user needs to configure a `CloudProviderAccount` CR, with
-the cloud account credentials.
+a K8s secret containing base64 encoded cloud account credentials. The secret
+should be created in `nephe-system` namespace so nephe controller can access it.
 
-* Sample `CloudProviderAccount` for AWS:
+#### Sample `Secret` for AWS:
+
+To get the base64 encoded json string for credential, run:
+
+```bash
+echo '{"accessKeyId": "YOUR_AWS_ACCESS_KEY_ID", "accessKeySecret": "YOUR_AWS_ACCESS_KEY_SECRET", "roleArn": "YOUR_AWS_IAM_ROLE_ARN", "externalId": "IAM_ROLE_EXTERNAL_ID"}' | openssl base64
+```
+
+`roleArn` and `externalId` are for role based access on AWS. They can be
+removed if the credentials are provided.
+
+```bash
+kubectl create namespace sample-ns
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aws-account-creds
+  namespace: nephe-system
+type: Opaque
+data:
+  credentials: "<BASE64_ENCODED_JSON_STRING>"
+``` 
+
+#### Sample `CloudProviderAccount` for AWS:
 
 ```bash
 kubectl create namespace sample-ns
@@ -53,18 +78,42 @@ cat <<EOF | kubectl apply -f -
 apiVersion: crd.cloud.antrea.io/v1alpha1
 kind: CloudProviderAccount
 metadata:
-  name: cloudprovideraccount-sample
+  name: cloudprovideraccount-aws-sample
   namespace: sample-ns
 spec:
   awsConfig:
     accountID: "<REPLACE_ME>"
-    accessKeyId: "<REPLACE_ME>"
-    accessKeySecret: "<REPLACE_ME>"
     region: "<REPLACE_ME>"
+    secretRef:
+      name: aws-account-creds
+      namespace: nephe-system
+      key: credentials
 EOF
 ``` 
 
-* Sample `CloudProviderAccount` for Azure:
+#### Sample `Secret` for Azure:
+
+To get the base64 encoded json string for credential, run:
+
+```bash
+echo '{"subscriptionId": "AZURE_SUBSCRIPTION_ID", "clientId": "YOUR_AZURE_CLIENT_ID", "tenantId": "AZURE_TENANT_ID", "clientKey": "YOUR_AZURE_CLIENT_KEY"}' | openssl base64
+```
+
+```bash
+kubectl create namespace sample-ns
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Secret
+metadata:
+  name: azure-account-creds
+  namespace: nephe-system
+type: Opaque
+data:
+  credentials: "<BASE64_ENCODED_JSON_STRING>"
+EOF
+``` 
+
+#### Sample `CloudProviderAccount` for Azure:
 
 ```bash
 kubectl create namespace sample-ns
@@ -72,15 +121,15 @@ cat <<EOF | kubectl apply -f -
 apiVersion: crd.cloud.antrea.io/v1alpha1
 kind: CloudProviderAccount
 metadata:
-  name: cloudprovideraccount-sample
+  name: cloudprovideraccount-azure-sample
   namespace: sample-ns
 spec:
   azureConfig:
-    subscriptionId: "<REPLACE_ME>"
-    clientId: "<REPLACE_ME>"
-    tenantId: "<REPLACE_ME>"
-    clientKey: "<REPLACE_ME>"
     region: "<REPLACE_ME>"
+    secretRef:
+      name: azure-account-creds
+      namespace: nephe-system
+      key: credentials
 EOF
 ``` 
 

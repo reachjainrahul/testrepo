@@ -215,9 +215,9 @@ func (p *azureVPC) GetCloudAccountParameters(name, namespace string, _ bool) k8s
 		Namespace: namespace,
 		Provider:  string(v1alpha1.AzureCloudProvider),
 		SecretRef: k8stemplates.AccountSecretParameters{
-			Name:             name + "-azure-cred",
-			Namespace:        "nephe-system",
-			Key:              "credential",
+			Name:      name + "-azure-cred",
+			Namespace: "nephe-system",
+			Key:       "credential",
 		},
 	}
 	out.Azure.Location = strings.ReplaceAll(p.output["location"].(map[string]interface{})["value"].(string), " ", "")

@@ -20,16 +20,16 @@ type CloudAccountParameters struct {
 	Provider  string
 	SecretRef AccountSecretParameters
 	Aws       struct {
-		Region    string
+		Region string
 	}
 	Azure struct {
-		Location  string
+		Location string
 	}
 }
 
 type AccountSecretParameters struct {
-	Name string
-	Namespace string
+	Name       string
+	Namespace  string
 	Key        string
 	Credential string
 }

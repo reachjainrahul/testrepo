@@ -507,7 +507,7 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusAws
 		anpParams.From = configANPToFrom(kind, "", "", "", "", "", namespace.Name,
 			[]string{apachePort}, false)
 		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, false)
-		err = utils.RestartOrWaitDeployment(k8sClient, "antrea-controller", "kube-sysetm", time.Second*200, true)
+		err = utils.RestartOrWaitDeployment(k8sClient, "antrea-controller", "kube-system", time.Second*200, true)
 		Expect(err).ToNot(HaveOccurred())
 		time.Sleep(time.Second * 30)
 		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, true)

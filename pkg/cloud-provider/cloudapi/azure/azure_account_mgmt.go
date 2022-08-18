@@ -31,7 +31,7 @@ import (
 
 type azureAccountConfig struct {
 	v1alpha1.AzureAccountCredential
-	region         string
+	region string
 }
 
 // setAccountCredentials sets account credentials.
