@@ -82,6 +82,7 @@ func extractSecret(c client.Client, s *v1alpha1.SecretReference) (*v1alpha1.Azur
 	if s == nil {
 		return nil, fmt.Errorf("secret reference not found")
 	}
+
 	u := &unstructured.Unstructured{}
 	u.SetGroupVersionKind(schema.GroupVersionKind{
 		Group:   "",

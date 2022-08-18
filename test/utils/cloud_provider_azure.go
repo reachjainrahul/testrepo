@@ -15,7 +15,6 @@
 package utils
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -229,7 +228,7 @@ func (p *azureVPC) GetCloudAccountParameters(name, namespace string, _ bool) k8s
 		ClientKey:      os.Getenv("TF_VAR_azure_client_secret"),
 	}
 	secretString, _ := json.Marshal(cred)
-	out.SecretRef.Base64Credential = base64.StdEncoding.EncodeToString(secretString)
+	out.SecretRef.Credential = string(secretString)
 	return out
 }
 

@@ -15,7 +15,6 @@
 package utils
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -212,7 +211,7 @@ func (p *awsVPC) GetCloudAccountParameters(name, namespace string, cloudCluster 
 		cred.AccessKeySecret = os.Getenv("TF_VAR_aws_access_key_secret")
 	}
 	secretString, _ := json.Marshal(cred)
-	out.SecretRef.Base64Credential = base64.StdEncoding.EncodeToString(secretString)
+	out.SecretRef.Credential = string(secretString)
 	return out
 }
 

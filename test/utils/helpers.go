@@ -17,6 +17,7 @@ package utils
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -202,10 +203,10 @@ func AddCloudAccount(kubeCtl *KubeCtl, params k8stemplates.CloudAccountParameter
 
 	// apply secret
 	s := k8stemplates.AccountSecretParameters{
-		Name:             params.SecretRef.Name,
-		Namespace:        params.SecretRef.Namespace,
-		Key:              params.SecretRef.Key,
-		Base64Credential: params.SecretRef.Base64Credential,
+		Name:       params.SecretRef.Name,
+		Namespace:  params.SecretRef.Namespace,
+		Key:        params.SecretRef.Key,
+		Credential: base64.StdEncoding.EncodeToString([]byte(params.SecretRef.Credential)),
 	}
 	if err := ConfigureK8s(kubeCtl, s, k8stemplates.AccountSecret, false); err != nil {
 		return err

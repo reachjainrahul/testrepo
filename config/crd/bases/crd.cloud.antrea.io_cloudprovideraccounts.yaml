@@ -39,17 +39,17 @@ spec:
             description: CloudProviderAccountSpec defines the desired state of CloudProviderAccount.
             properties:
               awsConfig:
-                description: Cloud provider account config
+                description: Cloud provider account config.
                 properties:
                   accountID:
-                    description: Cloud provider account identifier
+                    description: Cloud provider account identifier.
                     type: string
                   region:
-                    description: Cloud provider account region
+                    description: Cloud provider account region.
                     type: string
                   secretRef:
                     description: Reference to k8s secret which has cloud provider
-                      credentials
+                      credentials.
                     properties:
                       key:
                         description: Key to select.
@@ -67,7 +67,7 @@ spec:
                     type: object
                 type: object
               azureConfig:
-                description: Cloud provider account config
+                description: Cloud provider account config.
                 properties:
                   region:
                     type: string
@@ -92,7 +92,7 @@ spec:
                 type: object
               pollIntervalInSeconds:
                 description: PollIntervalInSeconds defines account poll interval (default
-                  value is 60, if not specified)
+                  value is 60, if not specified).
                 type: integer
             type: object
           status:

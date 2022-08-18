@@ -30,8 +30,8 @@ type CloudAccountParameters struct {
 type AccountSecretParameters struct {
 	Name string
 	Namespace string
-	Key string
-	Base64Credential string
+	Key        string
+	Credential string
 }
 
 const AWSCloudAccount = `
@@ -44,7 +44,7 @@ spec:
   awsConfig:
     accountID: "id"
     region: {{.Aws.Region}}
-	secretRef:
+    secretRef:
       name: {{.SecretRef.Name}}
       namespace: {{.SecretRef.Namespace}}
       key: {{.SecretRef.Key}}
@@ -59,7 +59,7 @@ metadata:
 spec:
   azureConfig:
     region:    {{.Azure.Location}}
-	secretRef:
+    secretRef:
       name: {{.SecretRef.Name}}
       namespace: {{.SecretRef.Namespace}}
       key: {{.SecretRef.Key}}
@@ -73,5 +73,5 @@ metadata:
   namespace: {{.Namespace}}
 type: Opaque
 data:
-  {{.Key}}: {{.Base64Credential}}
+  {{.Key}}: {{.Credential}}
 `
