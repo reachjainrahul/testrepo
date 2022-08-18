@@ -43,6 +43,7 @@ var _ = Describe("AWS Cloud Security", func() {
 
 		testAccountNamespacedName = &types.NamespacedName{Namespace: "namespace01", Name: "account01"}
 		testEntitySelectorName    = "testEntitySelector01"
+		credentials               = "credentials"
 
 		cloudInterface *awsCloud
 		account        *v1alpha1.CloudProviderAccount
@@ -66,22 +67,16 @@ var _ = Describe("AWS Cloud Security", func() {
 				PollIntervalInSeconds: &pollIntv,
 				AWSConfig: &v1alpha1.CloudProviderAccountAWSConfig{
 					AccountID: "TestAccount01",
-					//AccessKeyID:     "id",
-					//AccessKeySecret: "secret",
+					Region:    "us-west-2",
 					SecretRef: &v1alpha1.SecretReference{
 						Name:      testAccountNamespacedName.Name,
 						Namespace: testAccountNamespacedName.Namespace,
-						Key:       "credentials",
+						Key:       credentials,
 					},
 				},
 			},
 		}
-		credential := `{
-			"accessKeyId": "keyId",
-			"accessKeySecret": "keySecret",
-			"roleArn" : "",
-			"externalID" : ""
-		}`
+		credential := `{"accessKeyId": "keyId","accessKeySecret": "keySecret","roleArn" : "roleArn","externalID" : "" }`
 
 		secret = &corev1.Secret{
 			ObjectMeta: v1.ObjectMeta{
@@ -127,9 +122,7 @@ var _ = Describe("AWS Cloud Security", func() {
 		mockawsEC2.EXPECT().describeVpcsWrapper(gomock.Any()).Return(&ec2.DescribeVpcsOutput{}, nil).AnyTimes()
 		mockawsEC2.EXPECT().describeVpcPeeringConnectionsWrapper(gomock.Any()).Return(&ec2.DescribeVpcPeeringConnectionsOutput{}, nil).AnyTimes()
 
-		fakeRemoteClient := fake.NewClientBuilder().WithScheme(scheme).
-			WithObjects().
-			Build()
+		fakeRemoteClient := fake.NewClientBuilder().Build()
 		fakeRemoteClient.Create(context.Background(), secret)
 		cloudInterface = newAWSCloud(mockawsCloudHelper)
 		err := cloudInterface.AddProviderAccount(fakeRemoteClient, account)
