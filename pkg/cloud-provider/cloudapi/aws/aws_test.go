@@ -97,7 +97,7 @@ var _ = Describe("AWS cloud", func() {
 		Context("New account add fail scenarios", func() {
 			It("Should fail for unsupported/unknown region", func() {
 				account.Spec.AWSConfig.Region = "invalid"
-				mockClient.Create(context.Background(), secret)
+				_ = mockClient.Create(context.Background(), secret)
 				c := newAWSCloud(mockawsCloudHelper)
 				err := c.AddProviderAccount(mockClient, account)
 
@@ -188,7 +188,7 @@ var _ = Describe("AWS cloud", func() {
 				mockawsEC2.EXPECT().describeVpcPeeringConnectionsWrapper(gomock.Any()).Return(&ec2.DescribeVpcPeeringConnectionsOutput{},
 					nil).AnyTimes()
 
-				mockClient.Create(context.Background(), secret)
+				_ = mockClient.Create(context.Background(), secret)
 				c := newAWSCloud(mockawsCloudHelper)
 				err := c.AddProviderAccount(mockClient, account)
 
@@ -210,7 +210,7 @@ var _ = Describe("AWS cloud", func() {
 				mockawsEC2.EXPECT().describeVpcsWrapper(gomock.Any()).Return(&ec2.DescribeVpcsOutput{}, nil).AnyTimes()
 				mockawsEC2.EXPECT().describeVpcPeeringConnectionsWrapper(gomock.Any()).Return(&ec2.DescribeVpcPeeringConnectionsOutput{},
 					nil).AnyTimes()
-				mockClient.Create(context.Background(), secret)
+				_ = mockClient.Create(context.Background(), secret)
 				c := newAWSCloud(mockawsCloudHelper)
 				err := c.AddProviderAccount(mockClient, account)
 				Expect(err).Should(BeNil())
@@ -230,7 +230,7 @@ var _ = Describe("AWS cloud", func() {
 				mockawsEC2.EXPECT().pagedDescribeNetworkInterfaces(gomock.Any()).Return([]*ec2.NetworkInterface{}, nil).Times(0)
 				mockawsEC2.EXPECT().describeVpcsWrapper(gomock.Any()).Return(&ec2.DescribeVpcsOutput{}, nil).Times(0)
 				mockawsEC2.EXPECT().describeVpcPeeringConnectionsWrapper(gomock.Any()).Return(&ec2.DescribeVpcPeeringConnectionsOutput{}, nil).Times(0)
-				mockClient.Create(context.Background(), secret)
+				_ = mockClient.Create(context.Background(), secret)
 				c := newAWSCloud(mockawsCloudHelper)
 				err := c.AddProviderAccount(mockClient, account)
 				Expect(err).Should(BeNil())
@@ -336,7 +336,7 @@ var _ = Describe("AWS cloud", func() {
 
 		SetAwsAccount := func(mockawsCloudHelper *MockawsServicesHelper) *awsCloud {
 			mockClient = fake.NewClientBuilder().Build()
-			mockClient.Create(context.Background(), secret)
+			_ = mockClient.Create(context.Background(), secret)
 			c1 := newAWSCloud(mockawsCloudHelper)
 			_ = c1.AddProviderAccount(mockClient, account)
 			return c1

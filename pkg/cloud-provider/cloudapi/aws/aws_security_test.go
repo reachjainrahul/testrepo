@@ -119,7 +119,7 @@ var _ = Describe("AWS Cloud Security", func() {
 		mockawsEC2.EXPECT().describeVpcPeeringConnectionsWrapper(gomock.Any()).Return(&ec2.DescribeVpcPeeringConnectionsOutput{}, nil).AnyTimes()
 
 		mockClient := fake.NewClientBuilder().Build()
-		mockClient.Create(context.Background(), secret)
+		_ = mockClient.Create(context.Background(), secret)
 		cloudInterface = newAWSCloud(mockawsCloudHelper)
 		err := cloudInterface.AddProviderAccount(mockClient, account)
 		Expect(err).Should(BeNil())
