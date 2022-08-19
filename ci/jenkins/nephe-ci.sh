@@ -164,19 +164,19 @@ trap cleanup_testbed EXIT
 # TODO: Dont like passing credentials from one machine to another
 case $testType in
     aws)
-    echo "Run tests on a Kind cluster with AWS VMs"
+    echo "Run tests on Kind cluster with AWS VMs"
     ssh -i id_rsa ubuntu@${ip_addr} "~/ci/jenkins/test-aws.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET}"
     ;;
     azure)
-    echo "Run tests on a Kind cluster with Azure VMs"
+    echo "Run tests on Kind cluster with Azure VMs"
     ssh -i id_rsa ubuntu@${ip_addr} "~/ci/jenkins/test-azure.sh ${AZURE_SUBSCRIPTION_ID} ${AZURE_APP_ID} ${AZURE_TENANT_ID} ${AZURE_PASSWORD}"
     ;;
     eks)
-    echo "Run tests on a EKS cluster with AWS VMs"
+    echo "Run tests on EKS cluster with AWS VMs"
     ssh -i id_rsa ubuntu@${ip_addr} "~/ci/jenkins/test-eks.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET}"
     ;;
     aks)
-    echo "Run tests on a AKS cluster with AWS VMs"
-    ssh -i id_rsa ubuntu@${ip_addr} "~/ci/jenkins/test-aks.sh"
+    echo "Run tests on AKS cluster with Azure VMs"
+    ssh -i id_rsa ubuntu@${ip_addr} "~/ci/jenkins/test-aks.sh ${AZURE_SUBSCRIPTION_ID} ${AZURE_APP_ID} ${AZURE_TENANT_ID} ${AZURE_PASSWORD}"
     ;;
 esac

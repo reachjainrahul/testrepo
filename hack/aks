@@ -77,7 +77,7 @@ function apply {
     exit 1
   fi
   echo aks cluster created.
-  $TERRAFORM output -json kube_config | jq -r > $RUN_PATH/kubeconfig
+  $TERRAFORM output -json kube_config | jq -r . > $RUN_PATH/kubeconfig
   echo run aks kubectl ... to acess it.
 
   if [ -z $CREATE_ONLY ]; then
