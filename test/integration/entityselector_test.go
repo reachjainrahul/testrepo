@@ -28,6 +28,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -60,6 +61,7 @@ var _ = Describe(fmt.Sprintf("%s: Entity selector test", focusAws), func() {
 		nameSpace     *v1.Namespace
 		account       *v1alpha1.CloudProviderAccount
 		selector      *v1alpha1.CloudEntitySelector
+		secret        *corev1.Secret
 		cloudProvider string
 	)
 
@@ -77,7 +79,9 @@ var _ = Describe(fmt.Sprintf("%s: Entity selector test", focusAws), func() {
 
 	createAccount := func() {
 		logf.Log.Info("Create", "account", account.Name)
-		err := k8sClient.Create(context.TODO(), account)
+		err := k8sClient.Create(context.TODO(), secret)
+		Expect(err).ToNot(HaveOccurred())
+		err = k8sClient.Create(context.TODO(), account)
 		Expect(err).ToNot(HaveOccurred())
 		time.Sleep(5 * time.Second)
 	}
@@ -85,6 +89,8 @@ var _ = Describe(fmt.Sprintf("%s: Entity selector test", focusAws), func() {
 	deleteAccount := func() {
 		logf.Log.Info("Delete", "account", account.Name)
 		err := k8sClient.Delete(context.TODO(), account)
+		Expect(err).ToNot(HaveOccurred())
+		err = k8sClient.Delete(context.TODO(), secret)
 		Expect(err).ToNot(HaveOccurred())
 	}
 
@@ -232,10 +238,13 @@ var _ = Describe(fmt.Sprintf("%s: Entity selector test", focusAws), func() {
 				Spec: v1alpha1.CloudProviderAccountSpec{
 					PollIntervalInSeconds: &pollInterval,
 					AWSConfig: &v1alpha1.CloudProviderAccountAWSConfig{
-						AccountID:       "id",
-						AccessKeyID:     accountParameters.Aws.Key,
-						AccessKeySecret: accountParameters.Aws.Secret,
-						Region:          accountParameters.Aws.Region,
+						AccountID: "id",
+						Region:    accountParameters.Aws.Region,
+						SecretRef: &v1alpha1.SecretReference{
+							Name:      accountParameters.SecretRef.Name,
+							Namespace: accountParameters.SecretRef.Namespace,
+							Key:       accountParameters.SecretRef.Key,
+						},
 					},
 				},
 			}
@@ -248,11 +257,12 @@ var _ = Describe(fmt.Sprintf("%s: Entity selector test", focusAws), func() {
 				Spec: v1alpha1.CloudProviderAccountSpec{
 					PollIntervalInSeconds: &pollInterval,
 					AzureConfig: &v1alpha1.CloudProviderAccountAzureConfig{
-						SubscriptionID: accountParameters.Azure.SubscriptionID,
-						ClientID:       accountParameters.Azure.ClientID,
-						TenantID:       accountParameters.Azure.TenantID,
-						ClientKey:      accountParameters.Azure.ClientKey,
-						Region:         accountParameters.Azure.Location,
+						Region: accountParameters.Azure.Location,
+						SecretRef: &v1alpha1.SecretReference{
+							Name:      accountParameters.SecretRef.Name,
+							Namespace: accountParameters.SecretRef.Namespace,
+							Key:       accountParameters.SecretRef.Key,
+						},
 					},
 				},
 			}
@@ -268,6 +278,14 @@ var _ = Describe(fmt.Sprintf("%s: Entity selector test", focusAws), func() {
 				AccountName: testAccountName,
 				VMSelector:  []v1alpha1.VirtualMachineSelector{},
 			},
+		}
+		// SDK call will automatically base64 encode data.
+		secret = &corev1.Secret{
+			ObjectMeta: v12.ObjectMeta{
+				Name:      accountParameters.SecretRef.Name,
+				Namespace: accountParameters.SecretRef.Namespace,
+			},
+			Data: map[string][]byte{accountParameters.SecretRef.Key: []byte(accountParameters.SecretRef.Credential)},
 		}
 		createNS()
 		createAccount()

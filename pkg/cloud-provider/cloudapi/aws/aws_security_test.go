@@ -15,6 +15,7 @@
 package aws
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"time"
@@ -24,8 +25,10 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	"antrea.io/nephe/apis/crd/v1alpha1"
 	"antrea.io/nephe/pkg/cloud-provider/securitygroup"
@@ -39,10 +42,12 @@ var _ = Describe("AWS Cloud Security", func() {
 
 		testAccountNamespacedName = &types.NamespacedName{Namespace: "namespace01", Name: "account01"}
 		testEntitySelectorName    = "testEntitySelector01"
+		credentials               = "credentials"
 
 		cloudInterface *awsCloud
 		account        *v1alpha1.CloudProviderAccount
 		selector       *v1alpha1.CloudEntitySelector
+		secret         *corev1.Secret
 
 		mockCtrl           *gomock.Controller
 		mockawsCloudHelper *MockawsServicesHelper
@@ -60,11 +65,25 @@ var _ = Describe("AWS Cloud Security", func() {
 			Spec: v1alpha1.CloudProviderAccountSpec{
 				PollIntervalInSeconds: &pollIntv,
 				AWSConfig: &v1alpha1.CloudProviderAccountAWSConfig{
-					AccountID:       "TestAccount01",
-					AccessKeyID:     "id",
-					AccessKeySecret: "secret",
-					Region:          "us-west-2",
+					AccountID: "TestAccount01",
+					Region:    "us-west-2",
+					SecretRef: &v1alpha1.SecretReference{
+						Name:      testAccountNamespacedName.Name,
+						Namespace: testAccountNamespacedName.Namespace,
+						Key:       credentials,
+					},
 				},
+			},
+		}
+		credential := `{"accessKeyId": "keyId","accessKeySecret": "keySecret","roleArn" : "roleArn","externalID" : "" }`
+
+		secret = &corev1.Secret{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      testAccountNamespacedName.Name,
+				Namespace: testAccountNamespacedName.Namespace,
+			},
+			Data: map[string][]byte{
+				"credentials": []byte(credential),
 			},
 		}
 		selector = &v1alpha1.CloudEntitySelector{
@@ -99,8 +118,10 @@ var _ = Describe("AWS Cloud Security", func() {
 		mockawsEC2.EXPECT().describeVpcsWrapper(gomock.Any()).Return(&ec2.DescribeVpcsOutput{}, nil).AnyTimes()
 		mockawsEC2.EXPECT().describeVpcPeeringConnectionsWrapper(gomock.Any()).Return(&ec2.DescribeVpcPeeringConnectionsOutput{}, nil).AnyTimes()
 
+		fakeClient := fake.NewClientBuilder().Build()
+		_ = fakeClient.Create(context.Background(), secret)
 		cloudInterface = newAWSCloud(mockawsCloudHelper)
-		err := cloudInterface.AddProviderAccount(account)
+		err := cloudInterface.AddProviderAccount(fakeClient, account)
 		Expect(err).Should(BeNil())
 
 		err = cloudInterface.AddAccountResourceSelector(testAccountNamespacedName, selector)

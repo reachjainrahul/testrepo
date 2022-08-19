@@ -104,7 +104,7 @@ make manifests
 ## TestBed and Deployment
 
 Nephe manifest deploys one `nephe-controller` Deployment. All the
-`Nephe Controller` related resources are namespaced under `kube-system`.
+`Nephe Controller` related resources are namespaced under `nephe-system`.
 
 ```bash
 kubectl get deployment -A
@@ -117,9 +117,9 @@ cert-manager         cert-manager              1/1     1            1           
 cert-manager         cert-manager-cainjector   1/1     1            1           41m
 cert-manager         cert-manager-webhook      1/1     1            1           41m
 kube-system          antrea-controller         1/1     1            1           41m
-kube-system          nephe-controller          1/1     1            1           40m
 kube-system          coredns                   2/2     2            2           43m
 local-path-storage   local-path-provisioner    1/1     1            1           43m
+nephe-system         nephe-controller          1/1     1            1           40m
 
 kubectl get pods -A 
 NAMESPACE            NAME                                         READY   STATUS    RESTARTS   AGE
@@ -130,7 +130,6 @@ kube-system          antrea-agent-6rrbn                           2/2     Runnin
 kube-system          antrea-agent-6szv8                           2/2     Running   0          42m
 kube-system          antrea-agent-7ggx9                           2/2     Running   0          42m
 kube-system          antrea-controller-5f9bfb6b5d-p8znw           1/1     Running   0          37m
-kube-system          nephe-controller-7f4795f64b-6hbn5            1/1     Running   0          33m
 kube-system          coredns-5598b8945f-6j7lp                     1/1     Running   0          43m
 kube-system          coredns-5598b8945f-qggsg                     1/1     Running   0          43m
 kube-system          etcd-kind-control-plane                      1/1     Running   0          44m
@@ -141,6 +140,7 @@ kube-system          kube-proxy-hrfm5                             1/1     Runnin
 kube-system          kube-proxy-rfzmn                             1/1     Running   0          43m
 kube-system          kube-scheduler-kind-control-plane            1/1     Running   0          44m
 local-path-storage   local-path-provisioner-5ddd94ff66-gdqzg      1/1     Running   0          43m
+nephe-system         nephe-controller-7f4795f64b-6hbn5            1/1     Running   0          33m
 ```
 
 ### Kind based cluster deployment

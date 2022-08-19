@@ -15,62 +15,97 @@
 package azure
 
 import (
+	"context"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
 	"strings"
+
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"antrea.io/nephe/apis/crd/v1alpha1"
 	"antrea.io/nephe/pkg/cloud-provider/cloudapi/internal"
 )
 
-type azureAccountCredentials struct {
-	subscriptionID   string
-	clientID         string
-	tenantID         string
-	clientKey        string
-	region           string
-	identityClientID string
+type azureAccountConfig struct {
+	v1alpha1.AzureAccountCredential
+	region string
 }
 
 // setAccountCredentials sets account credentials.
-func setAccountCredentials(credentials interface{}) (interface{}, error) {
-	azureConfig := credentials.(*v1alpha1.CloudProviderAccountAzureConfig)
-	accCreds := &azureAccountCredentials{
-		subscriptionID:   strings.TrimSpace(azureConfig.SubscriptionID),
-		clientID:         strings.TrimSpace(azureConfig.ClientID),
-		tenantID:         strings.TrimSpace(azureConfig.TenantID),
-		clientKey:        strings.TrimSpace(azureConfig.ClientKey),
-		region:           strings.TrimSpace(azureConfig.Region),
-		identityClientID: strings.TrimSpace(azureConfig.IdentityClientID),
+func setAccountCredentials(client client.Client, credentials interface{}) (interface{}, error) {
+	azureProviderConfig := credentials.(*v1alpha1.CloudProviderAccountAzureConfig)
+	accCred, err := extractSecret(client, azureProviderConfig.SecretRef)
+	if err != nil {
+		return nil, err
 	}
 
-	return accCreds, nil
+	azureConfig := &azureAccountConfig{
+		AzureAccountCredential: *accCred,
+		region:                 strings.TrimSpace(azureProviderConfig.Region),
+	}
+
+	return azureConfig, nil
 }
 
 func compareAccountCredentials(accountName string, existing interface{}, new interface{}) bool {
-	existingCreds := existing.(*azureAccountCredentials)
-	newCreds := new.(*azureAccountCredentials)
+	existingConfig := existing.(*azureAccountConfig)
+	newConfig := new.(*azureAccountConfig)
 
 	credsChanged := false
-	if strings.Compare(existingCreds.subscriptionID, newCreds.subscriptionID) != 0 {
+	if strings.Compare(existingConfig.SubscriptionID, newConfig.SubscriptionID) != 0 {
 		credsChanged = true
 		azurePluginLogger().Info("subscription ID updated", "account", accountName)
 	}
-	if strings.Compare(existingCreds.clientID, newCreds.clientID) != 0 {
+	if strings.Compare(existingConfig.ClientID, newConfig.ClientID) != 0 {
 		credsChanged = true
 		azurePluginLogger().Info("client ID updated", "account", accountName)
 	}
-	if strings.Compare(existingCreds.tenantID, newCreds.tenantID) != 0 {
+	if strings.Compare(existingConfig.TenantID, newConfig.TenantID) != 0 {
 		credsChanged = true
 		azurePluginLogger().Info("account tenant ID updated", "account", accountName)
 	}
-	if strings.Compare(existingCreds.clientKey, newCreds.clientKey) != 0 {
+	if strings.Compare(existingConfig.ClientKey, newConfig.ClientKey) != 0 {
 		credsChanged = true
 		azurePluginLogger().Info("account client key updated", "account", accountName)
 	}
-	if strings.Compare(existingCreds.region, newCreds.region) != 0 {
+	if strings.Compare(existingConfig.region, newConfig.region) != 0 {
 		credsChanged = true
 		azurePluginLogger().Info("account region updated", "account", accountName)
 	}
 	return credsChanged
+}
+
+// extractSecret extracts credentials from a Kubernetes secret.
+func extractSecret(c client.Client, s *v1alpha1.SecretReference) (*v1alpha1.AzureAccountCredential, error) {
+	if s == nil {
+		return nil, fmt.Errorf("secret reference not found")
+	}
+
+	u := &unstructured.Unstructured{}
+	u.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "",
+		Kind:    "Secret",
+		Version: "v1",
+	})
+	if err := c.Get(context.Background(), client.ObjectKey{Namespace: s.Namespace, Name: s.Name}, u); err != nil {
+		return nil, err
+	}
+
+	data := u.Object["data"].(map[string]interface{})
+	decode, err := base64.StdEncoding.DecodeString(data[s.Key].(string))
+	if err != nil {
+		return nil, err
+	}
+
+	cred := &v1alpha1.AzureAccountCredential{}
+	if err = json.Unmarshal(decode, cred); err != nil {
+		return nil, err
+	}
+
+	return cred, nil
 }
 
 // getVnetAccount returns first found account config to which this vnet id belongs.

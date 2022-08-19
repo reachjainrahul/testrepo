@@ -16,6 +16,7 @@ package aws
 
 import (
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"antrea.io/nephe/apis/crd/v1alpha1"
 	cloudv1alpha1 "antrea.io/nephe/apis/crd/v1alpha1"
@@ -84,8 +85,8 @@ func (c *awsCloud) IsVirtualPrivateCloudPresent(vpcUniqueIdentifier string) bool
 // 	AccountMgmtInterface Implementation
 // ////////////////////////////////////////////////////////
 // AddProviderAccount adds and initializes given account of a cloud provider.
-func (c *awsCloud) AddProviderAccount(account *v1alpha1.CloudProviderAccount) error {
-	return c.cloudCommon.AddCloudAccount(account, account.Spec.AWSConfig)
+func (c *awsCloud) AddProviderAccount(client client.Client, account *v1alpha1.CloudProviderAccount) error {
+	return c.cloudCommon.AddCloudAccount(client, account, account.Spec.AWSConfig)
 }
 
 // RemoveProviderAccount removes and cleans up any resources of given account of a cloud provider.

@@ -17,6 +17,7 @@ package utils
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -199,6 +200,19 @@ func AddCloudAccount(kubeCtl *KubeCtl, params k8stemplates.CloudAccountParameter
 	default:
 		return fmt.Errorf("unknowner cloud provider %v", params.Provider)
 	}
+
+	// apply secret
+	s := k8stemplates.AccountSecretParameters{
+		Name:       params.SecretRef.Name,
+		Namespace:  params.SecretRef.Namespace,
+		Key:        params.SecretRef.Key,
+		Credential: base64.StdEncoding.EncodeToString([]byte(params.SecretRef.Credential)),
+	}
+	if err := ConfigureK8s(kubeCtl, s, k8stemplates.AccountSecret, false); err != nil {
+		return err
+	}
+
+	// apply CloudProviderAccount
 	if err := ConfigureK8s(kubeCtl, params, t, false); err != nil {
 		return err
 	}
@@ -340,7 +354,7 @@ func CheckRestart(kubctl *KubeCtl) error {
 	controllers := []string{"nephe-controller"}
 	for _, c := range controllers {
 		cmd := fmt.Sprintf(
-			"get  pods -l control-plane=%s -n kube-system -o=jsonpath={.items[0].status.containerStatuses[0].restartCount}", c)
+			"get pods -l control-plane=%s -n nephe-system -o=jsonpath={.items[0].status.containerStatuses[0].restartCount}", c)
 		out, err := kubctl.Cmd(cmd)
 		if err != nil {
 			return err

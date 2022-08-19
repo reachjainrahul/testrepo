@@ -15,6 +15,7 @@
 package aws
 
 import (
+	"context"
 	"errors"
 	"reflect"
 	"sort"
@@ -22,16 +23,17 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/golang/mock/gomock"
+	. "github.com/onsi/gomega"
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
-
-	"github.com/golang/mock/gomock"
-
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	"antrea.io/nephe/apis/crd/v1alpha1"
+	. "github.com/onsi/ginkgo"
 )
 
 var (
@@ -41,6 +43,7 @@ var (
 var _ = Describe("AWS cloud", func() {
 	var (
 		testAccountNamespacedName = types.NamespacedName{Namespace: "namespace01", Name: "account01"}
+		credentials               = "credentials"
 	)
 
 	Context("AddProviderAccount", func() {
@@ -48,6 +51,8 @@ var _ = Describe("AWS cloud", func() {
 			account            *v1alpha1.CloudProviderAccount
 			mockCtrl           *gomock.Controller
 			mockawsCloudHelper *MockawsServicesHelper
+			secret             *corev1.Secret
+			fakeClient         client.WithWatch
 		)
 
 		BeforeEach(func() {
@@ -60,15 +65,27 @@ var _ = Describe("AWS cloud", func() {
 				Spec: v1alpha1.CloudProviderAccountSpec{
 					PollIntervalInSeconds: &pollIntv,
 					AWSConfig: &v1alpha1.CloudProviderAccountAWSConfig{
-						AccountID:       "TestAccount01",
-						AccessKeyID:     "keyId",
-						AccessKeySecret: "keySecret",
-						Region:          "us-east-1",
-						RoleArn:         "testArn",
+						AccountID: "TestAccount01",
+						Region:    "us-east-1",
+						SecretRef: &v1alpha1.SecretReference{
+							Name:      testAccountNamespacedName.Name,
+							Namespace: testAccountNamespacedName.Namespace,
+							Key:       credentials,
+						},
 					},
 				},
 			}
-
+			credential := `{"accessKeyId": "keyId","accessKeySecret": "keySecret","roleArn" : "roleArn","externalID" : "" }`
+			secret = &corev1.Secret{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      testAccountNamespacedName.Name,
+					Namespace: testAccountNamespacedName.Namespace,
+				},
+				Data: map[string][]byte{
+					"credentials": []byte(credential),
+				},
+			}
+			fakeClient = fake.NewClientBuilder().Build()
 			mockCtrl = gomock.NewController(GinkgoT())
 			mockawsCloudHelper = NewMockawsServicesHelper(mockCtrl)
 		})
@@ -80,9 +97,9 @@ var _ = Describe("AWS cloud", func() {
 		Context("New account add fail scenarios", func() {
 			It("Should fail for unsupported/unknown region", func() {
 				account.Spec.AWSConfig.Region = "invalid"
-
+				_ = fakeClient.Create(context.Background(), secret)
 				c := newAWSCloud(mockawsCloudHelper)
-				err := c.AddProviderAccount(account)
+				err := c.AddProviderAccount(fakeClient, account)
 
 				Expect(err).ShouldNot(BeNil())
 				accCfg, found := c.cloudCommon.GetCloudAccountByName(&testAccountNamespacedName)
@@ -120,15 +137,28 @@ var _ = Describe("AWS cloud", func() {
 
 			It("Should discover few instances with get ALL selector using credentials", func() {
 				instanceIds := []string{"i-01", "i-02"}
-				account.Spec.AWSConfig.RoleArn = ""
+				credential := `{"accessKeyId": "keyId","accessKeySecret": "keySecret"}`
+
+				secret = &corev1.Secret{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      testAccountNamespacedName.Name,
+						Namespace: testAccountNamespacedName.Namespace,
+					},
+					Data: map[string][]byte{
+						"credentials": []byte(credential),
+					},
+				}
+
 				mockawsEC2.EXPECT().pagedDescribeInstancesWrapper(gomock.Any()).Return(getEc2InstanceObject(instanceIds), nil).AnyTimes()
 				mockawsEC2.EXPECT().pagedDescribeNetworkInterfaces(gomock.Any()).Return([]*ec2.NetworkInterface{}, nil).AnyTimes()
 				mockawsEC2.EXPECT().describeVpcsWrapper(gomock.Any()).Return(&ec2.DescribeVpcsOutput{}, nil).AnyTimes()
 				mockawsEC2.EXPECT().describeVpcPeeringConnectionsWrapper(gomock.Any()).Return(&ec2.DescribeVpcPeeringConnectionsOutput{},
 					nil).AnyTimes()
 
+				_ = fakeClient.Create(context.Background(), secret)
 				c := newAWSCloud(mockawsCloudHelper)
-				err := c.AddProviderAccount(account)
+				err := c.AddProviderAccount(fakeClient, account)
+
 				Expect(err).Should(BeNil())
 				accCfg, found := c.cloudCommon.GetCloudAccountByName(&testAccountNamespacedName)
 				Expect(found).To(BeTrue())
@@ -142,16 +172,26 @@ var _ = Describe("AWS cloud", func() {
 			})
 			It("Should discover few instances with get ALL selector using roleArn", func() {
 				instanceIds := []string{"i-01", "i-02"}
-				account.Spec.AWSConfig.AccessKeyID = ""
-				account.Spec.AWSConfig.AccessKeySecret = ""
+				credential := `{"roleArn" : "roleArn","externalID" : "" }`
+				secret = &corev1.Secret{
+					ObjectMeta: v1.ObjectMeta{
+						Name:      testAccountNamespacedName.Name,
+						Namespace: testAccountNamespacedName.Namespace,
+					},
+					Data: map[string][]byte{
+						"credentials": []byte(credential),
+					},
+				}
 				mockawsEC2.EXPECT().pagedDescribeInstancesWrapper(gomock.Any()).Return(getEc2InstanceObject(instanceIds), nil).AnyTimes()
 				mockawsEC2.EXPECT().pagedDescribeNetworkInterfaces(gomock.Any()).Return([]*ec2.NetworkInterface{}, nil).AnyTimes()
 				mockawsEC2.EXPECT().describeVpcsWrapper(gomock.Any()).Return(&ec2.DescribeVpcsOutput{}, nil).AnyTimes()
 				mockawsEC2.EXPECT().describeVpcPeeringConnectionsWrapper(gomock.Any()).Return(&ec2.DescribeVpcPeeringConnectionsOutput{},
 					nil).AnyTimes()
 
+				_ = fakeClient.Create(context.Background(), secret)
 				c := newAWSCloud(mockawsCloudHelper)
-				err := c.AddProviderAccount(account)
+				err := c.AddProviderAccount(fakeClient, account)
+
 				Expect(err).Should(BeNil())
 				accCfg, found := c.cloudCommon.GetCloudAccountByName(&testAccountNamespacedName)
 				Expect(found).To(BeTrue())
@@ -170,9 +210,9 @@ var _ = Describe("AWS cloud", func() {
 				mockawsEC2.EXPECT().describeVpcsWrapper(gomock.Any()).Return(&ec2.DescribeVpcsOutput{}, nil).AnyTimes()
 				mockawsEC2.EXPECT().describeVpcPeeringConnectionsWrapper(gomock.Any()).Return(&ec2.DescribeVpcPeeringConnectionsOutput{},
 					nil).AnyTimes()
-
+				_ = fakeClient.Create(context.Background(), secret)
 				c := newAWSCloud(mockawsCloudHelper)
-				err := c.AddProviderAccount(account)
+				err := c.AddProviderAccount(fakeClient, account)
 				Expect(err).Should(BeNil())
 				accCfg, found := c.cloudCommon.GetCloudAccountByName(&testAccountNamespacedName)
 				Expect(found).To(BeTrue())
@@ -190,9 +230,9 @@ var _ = Describe("AWS cloud", func() {
 				mockawsEC2.EXPECT().pagedDescribeNetworkInterfaces(gomock.Any()).Return([]*ec2.NetworkInterface{}, nil).Times(0)
 				mockawsEC2.EXPECT().describeVpcsWrapper(gomock.Any()).Return(&ec2.DescribeVpcsOutput{}, nil).Times(0)
 				mockawsEC2.EXPECT().describeVpcPeeringConnectionsWrapper(gomock.Any()).Return(&ec2.DescribeVpcPeeringConnectionsOutput{}, nil).Times(0)
-
+				_ = fakeClient.Create(context.Background(), secret)
 				c := newAWSCloud(mockawsCloudHelper)
-				err := c.AddProviderAccount(account)
+				err := c.AddProviderAccount(fakeClient, account)
 				Expect(err).Should(BeNil())
 				accCfg, found := c.cloudCommon.GetCloudAccountByName(&testAccountNamespacedName)
 				Expect(found).To(BeTrue())
@@ -216,14 +256,15 @@ var _ = Describe("AWS cloud", func() {
 			testVMID02 = "vmID-02"
 		)
 		var (
-			c        *awsCloud
 			account  *v1alpha1.CloudProviderAccount
 			selector *v1alpha1.CloudEntitySelector
 
 			mockCtrl           *gomock.Controller
 			mockawsCloudHelper *MockawsServicesHelper
+			fakeClient         client.Client
 			mockawsEC2         *MockawsEC2Wrapper
 			mockawsService     *MockawsServiceClientCreateInterface
+			secret             *corev1.Secret
 		)
 
 		BeforeEach(func() {
@@ -236,10 +277,13 @@ var _ = Describe("AWS cloud", func() {
 				Spec: v1alpha1.CloudProviderAccountSpec{
 					PollIntervalInSeconds: &pollIntv,
 					AWSConfig: &v1alpha1.CloudProviderAccountAWSConfig{
-						AccountID:       "TestAccount01",
-						AccessKeyID:     "keyId",
-						AccessKeySecret: "keySecret",
-						Region:          "us-east-1",
+						AccountID: "TestAccount01",
+						Region:    "us-east-1",
+						SecretRef: &v1alpha1.SecretReference{
+							Name:      testAccountNamespacedName.Name,
+							Namespace: testAccountNamespacedName.Namespace,
+							Key:       credentials,
+						},
 					},
 				},
 			}
@@ -260,7 +304,16 @@ var _ = Describe("AWS cloud", func() {
 					},
 				},
 			}
-
+			credential := `{"accessKeyId": "","accessKeySecret": "","roleArn" : "roleArn","externalID" : "" }`
+			secret = &corev1.Secret{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      testAccountNamespacedName.Name,
+					Namespace: testAccountNamespacedName.Namespace,
+				},
+				Data: map[string][]byte{
+					"credentials": []byte(credential),
+				},
+			}
 			mockCtrl = gomock.NewController(GinkgoT())
 			mockawsCloudHelper = NewMockawsServicesHelper(mockCtrl)
 
@@ -275,17 +328,23 @@ var _ = Describe("AWS cloud", func() {
 			mockawsEC2.EXPECT().pagedDescribeNetworkInterfaces(gomock.Any()).Return([]*ec2.NetworkInterface{}, nil).AnyTimes()
 			mockawsEC2.EXPECT().describeVpcsWrapper(gomock.Any()).Return(&ec2.DescribeVpcsOutput{}, nil).AnyTimes()
 			mockawsEC2.EXPECT().describeVpcPeeringConnectionsWrapper(gomock.Any()).Return(&ec2.DescribeVpcPeeringConnectionsOutput{}, nil).AnyTimes()
-
-			c = newAWSCloud(mockawsCloudHelper)
-			_ = c.AddProviderAccount(account)
 		})
 
 		AfterEach(func() {
 			mockCtrl.Finish()
 		})
 
+		SetAwsAccount := func(mockawsCloudHelper *MockawsServicesHelper) *awsCloud {
+			fakeClient = fake.NewClientBuilder().Build()
+			_ = fakeClient.Create(context.Background(), secret)
+			c1 := newAWSCloud(mockawsCloudHelper)
+			_ = c1.AddProviderAccount(fakeClient, account)
+			return c1
+		}
+
 		Context("VM Selector scenarios", func() {
 			It("Should match expected filter - single vpcID only match", func() {
+				c := SetAwsAccount(mockawsCloudHelper)
 				var expectedFilters [][]*ec2.Filter
 				var vpcFilters []*ec2.Filter
 				vpc01Filter := &ec2.Filter{
@@ -313,6 +372,7 @@ var _ = Describe("AWS cloud", func() {
 			})
 		})
 		It("Should match expected filter - multiple vpcID only match", func() {
+			c := SetAwsAccount(mockawsCloudHelper)
 			var expectedFilters [][]*ec2.Filter
 			var vpcFilters []*ec2.Filter
 			vpc01Filter := &ec2.Filter{
@@ -343,6 +403,7 @@ var _ = Describe("AWS cloud", func() {
 			Expect(filters).To(Equal(expectedFilters))
 		})
 		It("Should match expected filter - multiple vpcName only match", func() {
+			c := SetAwsAccount(mockawsCloudHelper)
 			var expectedFilters [][]*ec2.Filter
 			var vpcFilters []*ec2.Filter
 			vpc01Filter := &ec2.Filter{
@@ -373,6 +434,7 @@ var _ = Describe("AWS cloud", func() {
 			Expect(filters).To(Equal(expectedFilters))
 		})
 		It("Should match expected filter - multiple vpcID & vmName match", func() {
+			c := SetAwsAccount(mockawsCloudHelper)
 			var expectedFilters [][]*ec2.Filter
 			var vpc01Filter []*ec2.Filter
 			vpc01VpcFilter := &ec2.Filter{
@@ -427,6 +489,7 @@ var _ = Describe("AWS cloud", func() {
 			Expect(filters).To(Equal(expectedFilters))
 		})
 		It("Should match expected filter - multiple with one all", func() {
+			c := SetAwsAccount(mockawsCloudHelper)
 			var expectedFilters [][]*ec2.Filter
 			vmSelector := []v1alpha1.VirtualMachineSelector{
 				{
@@ -453,6 +516,7 @@ var _ = Describe("AWS cloud", func() {
 			Expect(filters).To(Equal(expectedFilters))
 		})
 		It("Should match expected filter - multiple vm names only match", func() {
+			c := SetAwsAccount(mockawsCloudHelper)
 			var expectedFilters [][]*ec2.Filter
 			var vmNameFilters []*ec2.Filter
 			vmNameFilter := &ec2.Filter{
@@ -489,6 +553,7 @@ var _ = Describe("AWS cloud", func() {
 			Expect(filters).To(Equal(expectedFilters))
 		})
 		It("Should match expected filter - multiple vm IDs only match", func() {
+			c := SetAwsAccount(mockawsCloudHelper)
 			var expectedFilters [][]*ec2.Filter
 			var vmIDFilters []*ec2.Filter
 			vmIDFilter := &ec2.Filter{

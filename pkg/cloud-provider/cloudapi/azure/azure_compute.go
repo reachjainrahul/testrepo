@@ -38,7 +38,7 @@ type computeServiceConfig struct {
 	resourceGraphAPIClient azureResourceGraphWrapper
 	resourcesCache         *internal.CloudServiceResourcesCache
 	inventoryStats         *internal.CloudServiceStats
-	credentials            *azureAccountCredentials
+	credentials            *azureAccountConfig
 	computeFilters         map[string][]*string
 }
 
@@ -49,19 +49,19 @@ type computeResourcesCacheSnapshot struct {
 }
 
 func newComputeServiceConfig(name string, service azureServiceClientCreateInterface,
-	credentials *azureAccountCredentials) (internal.CloudServiceInterface, error) {
+	credentials *azureAccountConfig) (internal.CloudServiceInterface, error) {
 	// create compute sdk api client
-	nwIntfAPIClient, err := service.networkInterfaces(credentials.subscriptionID)
+	nwIntfAPIClient, err := service.networkInterfaces(credentials.SubscriptionID)
 	if err != nil {
 		return nil, fmt.Errorf("error creating compute sdk api client for account : %v, err: %v", name, err)
 	}
 	// create security-groups sdk api client
-	securityGroupsAPIClient, err := service.securityGroups(credentials.subscriptionID)
+	securityGroupsAPIClient, err := service.securityGroups(credentials.SubscriptionID)
 	if err != nil {
 		return nil, fmt.Errorf("error creating security-groups sdk api client for account : %v, err: %v", name, err)
 	}
 	// create application-security-groups sdk api client
-	applicationSecurityGroupsAPIClient, err := service.applicationSecurityGroups(credentials.subscriptionID)
+	applicationSecurityGroupsAPIClient, err := service.applicationSecurityGroups(credentials.SubscriptionID)
 	if err != nil {
 		return nil, fmt.Errorf("error creating application-security-groups sdk api client for account : %v, err: %v", name, err)
 	}
@@ -72,7 +72,7 @@ func newComputeServiceConfig(name string, service azureServiceClientCreateInterf
 	}
 
 	// create virtual networks sdk api client
-	vnetAPIClient, err := service.virtualNetworks(credentials.subscriptionID)
+	vnetAPIClient, err := service.virtualNetworks(credentials.SubscriptionID)
 	if err != nil {
 		return nil, fmt.Errorf("error creating virtual networks sdk api client for account : %v, err: %v", name, err)
 	}
@@ -156,7 +156,7 @@ func (computeCfg *computeServiceConfig) getVnetPeers(vnetID string) [][]string {
 
 func (computeCfg *computeServiceConfig) getVirtualMachines() ([]*virtualMachineTable, error) {
 	var subscriptions []string
-	subscriptions = append(subscriptions, computeCfg.credentials.subscriptionID)
+	subscriptions = append(subscriptions, computeCfg.credentials.SubscriptionID)
 
 	var virtualMachines []*virtualMachineTable
 	filters, _ := computeCfg.getComputeResourceFilters()
@@ -186,8 +186,8 @@ func (computeCfg *computeServiceConfig) getComputeResourceFilters() ([]*string, 
 		// if any selector found with nil filter, skip all other selectors. As nil indicates all
 		if len(filters) == 0 {
 			var queries []*string
-			subscriptionIDs := []string{computeCfg.credentials.subscriptionID}
-			tenantIDs := []string{computeCfg.credentials.tenantID}
+			subscriptionIDs := []string{computeCfg.credentials.SubscriptionID}
+			tenantIDs := []string{computeCfg.credentials.TenantID}
 			locations := []string{computeCfg.credentials.region}
 			queryStr, err := getVMsBySubscriptionIDsAndTenantIDsAndLocationsMatchQuery(subscriptionIDs, tenantIDs, locations)
 			if err != nil {
@@ -221,8 +221,8 @@ func (computeCfg *computeServiceConfig) DoResourceInventory() error {
 }
 
 func (computeCfg *computeServiceConfig) SetResourceFilters(selector *v1alpha1.CloudEntitySelector) {
-	subscriptionIDs := []string{computeCfg.credentials.subscriptionID}
-	tenantIDs := []string{computeCfg.credentials.tenantID}
+	subscriptionIDs := []string{computeCfg.credentials.SubscriptionID}
+	tenantIDs := []string{computeCfg.credentials.TenantID}
 	locations := []string{computeCfg.credentials.region}
 	if filters, found := convertSelectorToComputeQuery(selector, subscriptionIDs, tenantIDs, locations); found {
 		computeCfg.computeFilters[selector.GetName()] = filters

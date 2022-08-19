@@ -17,21 +17,21 @@ package integration
 import (
 	"context"
 	"fmt"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"math/rand"
 	"path"
 	"strings"
 	"time"
 
-	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
+	antreatypes "antrea.io/antrea/pkg/apis/crd/v1alpha2"
 	"antrea.io/nephe/pkg/controllers/config"
 	"antrea.io/nephe/pkg/converter/target"
 	"antrea.io/nephe/pkg/testing"
@@ -137,7 +137,7 @@ var _ = Describe(fmt.Sprintf("%s,%s: ExternalEntity", focusAws, focusAzure), fun
 		checkEndpoints(eeFetchKey, spec)
 
 		if restartController {
-			err = utils.RestartOrWaitDeployment(k8sClient, "nephe-controller", "kube-system", time.Second*120, true)
+			err = utils.RestartOrWaitDeployment(k8sClient, "nephe-controller", "nephe-system", time.Second*120, true)
 			Expect(err).ToNot(HaveOccurred())
 			// After restart controller, test need to permit time to allow ExternalEntitySources to be re-learnt.
 			time.Sleep(time.Second * 10)

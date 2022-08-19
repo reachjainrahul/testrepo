@@ -15,19 +15,30 @@
 package v1alpha1
 
 import (
+	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"k8s.io/apimachinery/pkg/types"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	ctrl "sigs.k8s.io/controller-runtime"
+	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
 // log is for logging in this package.
-var cloudprovideraccountlog = logf.Log.WithName("cloudprovideraccount-resource")
+var (
+	cloudprovideraccountlog = logf.Log.WithName("cloudprovideraccount-resource")
+	clientK8s               k8sclient.Client
+)
 
 func (r *CloudProviderAccount) SetupWebhookWithManager(mgr ctrl.Manager) error {
+	clientK8s = mgr.GetClient()
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
 		Complete()
@@ -64,6 +75,13 @@ func (r *CloudProviderAccount) ValidateCreate() error {
 	if err != nil {
 		return err
 	}
+	u := &unstructured.Unstructured{}
+	u.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "",
+		Kind:    "Secret",
+		Version: "v1",
+	})
+
 	switch cloudProviderType {
 	case AWSCloudProvider:
 		awsConfig := r.Spec.AWSConfig
@@ -72,14 +90,26 @@ func (r *CloudProviderAccount) ValidateCreate() error {
 		if len(strings.TrimSpace(awsConfig.AccountID)) == 0 {
 			return fmt.Errorf("account id cannot be blank or empty")
 		}
+		err := clientK8s.Get(context.TODO(), types.NamespacedName{
+			Namespace: awsConfig.SecretRef.Namespace,
+			Name:      awsConfig.SecretRef.Name}, u)
+		if err != nil {
+			return fmt.Errorf("unable to get secret: %s", err.Error())
+		}
+		data := u.Object["data"].(map[string]interface{})
+		decode, err := base64.StdEncoding.DecodeString(data[awsConfig.SecretRef.Key].(string))
+		if err != nil {
+			return fmt.Errorf("unable to decode the secret: %s", err.Error())
+		}
 
-		// warning for using role based auth
-		if len(strings.TrimSpace(awsConfig.RoleArn)) != 0 {
+		awsCredential := &AwsAccountCredential{}
+		if err = json.Unmarshal(decode, awsCredential); err != nil {
+			return fmt.Errorf("unable to unmarshal the json: %s", err.Error())
+		}
+		// validate roleArn or A
+		if len(strings.TrimSpace(awsCredential.RoleArn)) != 0 {
 			cloudprovideraccountlog.Info("Role ARN configured will be used for cloud-account access")
-			// empty credentials when role based access is configured
-			awsConfig.AccessKeyID = ""
-			awsConfig.AccessKeySecret = ""
-		} else if len(strings.TrimSpace(awsConfig.AccessKeyID)) == 0 || len(strings.TrimSpace(awsConfig.AccessKeySecret)) == 0 {
+		} else if len(strings.TrimSpace(awsCredential.AccessKeyID)) == 0 || len(strings.TrimSpace(awsCredential.AccessKeySecret)) == 0 {
 			return fmt.Errorf("must specify either credentials or role arn, cannot both be empty")
 		}
 
@@ -89,23 +119,33 @@ func (r *CloudProviderAccount) ValidateCreate() error {
 	case AzureCloudProvider:
 		azureConfig := r.Spec.AzureConfig
 
+		err := clientK8s.Get(context.TODO(), types.NamespacedName{
+			Namespace: azureConfig.SecretRef.Namespace,
+			Name:      azureConfig.SecretRef.Name}, u)
+		if err != nil {
+			return fmt.Errorf("unable to get secret: %s", err.Error())
+		}
+		data := u.Object["data"].(map[string]interface{})
+		decode, err := base64.StdEncoding.DecodeString(data[azureConfig.SecretRef.Key].(string))
+		if err != nil {
+			return fmt.Errorf("unable to decode the secret: %s", err.Error())
+		}
+
+		azureCredential := &AzureAccountCredential{}
+		if err = json.Unmarshal(decode, azureCredential); err != nil {
+			return fmt.Errorf("unable to unmarshal the json: %s", err.Error())
+		}
+
 		// validate subscription ID
-		if len(strings.TrimSpace(azureConfig.SubscriptionID)) == 0 {
+		if len(strings.TrimSpace(azureCredential.SubscriptionID)) == 0 {
 			return fmt.Errorf("subscription id cannot be blank or empty")
 		}
-
 		// validate tenant ID
-		if len(strings.TrimSpace(azureConfig.TenantID)) == 0 {
+		if len(strings.TrimSpace(azureCredential.TenantID)) == 0 {
 			return fmt.Errorf("tenant id cannot be blank or empty")
 		}
-
 		// validate credentials
-		if len(strings.TrimSpace(azureConfig.IdentityClientID)) != 0 {
-			cloudprovideraccountlog.Info("Managed Identity Client ID configured will be used for cloud-account access")
-			// empty credentials when role based access is configured
-			azureConfig.ClientID = ""
-			azureConfig.ClientKey = ""
-		} else if len(strings.TrimSpace(azureConfig.ClientID)) == 0 || len(strings.TrimSpace(azureConfig.ClientKey)) == 0 {
+		if len(strings.TrimSpace(azureCredential.ClientID)) == 0 || len(strings.TrimSpace(azureCredential.ClientKey)) == 0 {
 			return fmt.Errorf("must specify either credentials or managed identity client id, cannot both be empty")
 		}
 

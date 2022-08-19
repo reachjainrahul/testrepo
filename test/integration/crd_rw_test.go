@@ -24,6 +24,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -44,6 +45,7 @@ var _ = Describe(fmt.Sprintf("%s,%s: Basic CRD Read-Write", focusAws, focusAzure
 
 	var (
 		namespace     v1.Namespace
+		secret        *corev1.Secret
 		account       *v1alpha1.CloudProviderAccount
 		cloudProvider string
 
@@ -88,10 +90,13 @@ var _ = Describe(fmt.Sprintf("%s,%s: Basic CRD Read-Write", focusAws, focusAzure
 				},
 				Spec: v1alpha1.CloudProviderAccountSpec{
 					AWSConfig: &v1alpha1.CloudProviderAccountAWSConfig{
-						AccountID:       "id",
-						AccessKeyID:     accountParameters.Aws.Key,
-						AccessKeySecret: accountParameters.Aws.Secret,
-						Region:          accountParameters.Aws.Region,
+						AccountID: "id",
+						Region:    accountParameters.Aws.Region,
+						SecretRef: &v1alpha1.SecretReference{
+							Name:      accountParameters.SecretRef.Name,
+							Namespace: accountParameters.SecretRef.Namespace,
+							Key:       accountParameters.SecretRef.Key,
+						},
 					},
 				},
 			}
@@ -103,14 +108,23 @@ var _ = Describe(fmt.Sprintf("%s,%s: Basic CRD Read-Write", focusAws, focusAzure
 				},
 				Spec: v1alpha1.CloudProviderAccountSpec{
 					AzureConfig: &v1alpha1.CloudProviderAccountAzureConfig{
-						SubscriptionID: accountParameters.Azure.SubscriptionID,
-						ClientID:       accountParameters.Azure.ClientID,
-						TenantID:       accountParameters.Azure.TenantID,
-						ClientKey:      accountParameters.Azure.ClientKey,
-						Region:         accountParameters.Azure.Location,
+						Region: accountParameters.Azure.Location,
+						SecretRef: &v1alpha1.SecretReference{
+							Name:      accountParameters.SecretRef.Name,
+							Namespace: accountParameters.SecretRef.Namespace,
+							Key:       accountParameters.SecretRef.Key,
+						},
 					},
 				},
 			}
+		}
+		// SDK call will automatically base64 encode data.
+		secret = &corev1.Secret{
+			ObjectMeta: v12.ObjectMeta{
+				Name:      accountParameters.SecretRef.Name,
+				Namespace: accountParameters.SecretRef.Namespace,
+			},
+			Data: map[string][]byte{accountParameters.SecretRef.Key: []byte(accountParameters.SecretRef.Credential)},
 		}
 	}
 
@@ -127,8 +141,11 @@ var _ = Describe(fmt.Sprintf("%s,%s: Basic CRD Read-Write", focusAws, focusAzure
 	}
 	createAccount := func() {
 		setCloudAccount()
+		logf.Log.Info("Create", "secret", secret.Name)
+		err := k8sClient.Create(context.TODO(), secret)
+		Expect(err).ToNot(HaveOccurred())
 		logf.Log.Info("Create", "account", account.Name)
-		err := k8sClient.Create(context.TODO(), account)
+		err = k8sClient.Create(context.TODO(), account)
 		Expect(err).ToNot(HaveOccurred())
 		time.Sleep(5 * time.Second)
 	}

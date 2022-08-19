@@ -1,8 +1,13 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nephe-system
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    cert-manager.io/inject-ca-from: kube-system/serving-cert
+    cert-manager.io/inject-ca-from: nephe-system/serving-cert
     controller-gen.kubebuilder.io/version: v0.8.0
   name: cloudentityselectors.crd.cloud.antrea.io
 spec:
@@ -13,7 +18,7 @@ spec:
         caBundle: Cg==
         service:
           name: nephe-controller-webhook-service
-          namespace: kube-system
+          namespace: nephe-system
           path: /convert
       conversionReviewVersions:
       - v1
@@ -95,7 +100,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    cert-manager.io/inject-ca-from: kube-system/serving-cert
+    cert-manager.io/inject-ca-from: nephe-system/serving-cert
     controller-gen.kubebuilder.io/version: v0.8.0
   name: cloudprovideraccounts.crd.cloud.antrea.io
 spec:
@@ -106,7 +111,7 @@ spec:
         caBundle: Cg==
         service:
           name: nephe-controller-webhook-service
-          namespace: kube-system
+          namespace: nephe-system
           path: /convert
       conversionReviewVersions:
       - v1
@@ -139,45 +144,57 @@ spec:
             description: CloudProviderAccountSpec defines the desired state of CloudProviderAccount.
             properties:
               awsConfig:
-                description: Cloud provider account config
+                description: Cloud provider account config.
                 properties:
-                  accessKeyId:
-                    description: Cloud provider account access key ID
-                    type: string
-                  accessKeySecret:
-                    description: Cloud provider account access key secret (TODO Secret needs to be saved using k8 secrets)
-                    type: string
                   accountID:
-                    description: Cloud provider account identifier
-                    type: string
-                  externalId:
-                    description: Cloud provider external id used in assume role
+                    description: Cloud provider account identifier.
                     type: string
                   region:
-                    description: Cloud provider account region
+                    description: Cloud provider account region.
                     type: string
-                  roleArn:
-                    description: Cloud provider role arn to be assumed
-                    type: string
+                  secretRef:
+                    description: Reference to k8s secret which has cloud provider credentials.
+                    properties:
+                      key:
+                        description: Key to select in the secret.
+                        type: string
+                      name:
+                        description: Name of the secret.
+                        type: string
+                      namespace:
+                        description: Namespace of the secret.
+                        type: string
+                    required:
+                    - key
+                    - name
+                    - namespace
+                    type: object
                 type: object
               azureConfig:
-                description: Cloud provider account config
+                description: Cloud provider account config.
                 properties:
-                  clientId:
-                    type: string
-                  clientKey:
-                    type: string
-                  identityClientId:
-                    type: string
                   region:
                     type: string
-                  subscriptionId:
-                    type: string
-                  tenantId:
-                    type: string
+                  secretRef:
+                    description: SecretReference is a reference to a k8s secret resource in an arbitrary namespace.
+                    properties:
+                      key:
+                        description: Key to select in the secret.
+                        type: string
+                      name:
+                        description: Name of the secret.
+                        type: string
+                      namespace:
+                        description: Namespace of the secret.
+                        type: string
+                    required:
+                    - key
+                    - name
+                    - namespace
+                    type: object
                 type: object
               pollIntervalInSeconds:
-                description: PollIntervalInSeconds defines account poll interval (default value is 60, if not specified)
+                description: PollIntervalInSeconds defines account poll interval (default value is 60, if not specified).
                 type: integer
             type: object
           status:
@@ -203,7 +220,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    cert-manager.io/inject-ca-from: kube-system/serving-cert
+    cert-manager.io/inject-ca-from: nephe-system/serving-cert
     controller-gen.kubebuilder.io/version: v0.8.0
   name: virtualmachines.crd.cloud.antrea.io
 spec:
@@ -214,7 +231,7 @@ spec:
         caBundle: Cg==
         service:
           name: nephe-controller-webhook-service
-          namespace: kube-system
+          namespace: nephe-system
           path: /convert
       conversionReviewVersions:
       - v1
@@ -315,7 +332,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: leader-election-role
-  namespace: kube-system
+  namespace: nephe-system
 rules:
 - apiGroups:
   - ""
@@ -349,6 +366,21 @@ rules:
   - leases
   verbs:
   - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: secret-viewer-role
+  namespace: nephe-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -515,7 +547,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: leader-election-rolebinding
-  namespace: kube-system
+  namespace: nephe-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -523,7 +555,21 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: default
-  namespace: kube-system
+  namespace: nephe-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: secret-viewer-rolebinding
+  namespace: nephe-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: secret-viewer-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: nephe-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -536,7 +582,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: default
-  namespace: kube-system
+  namespace: nephe-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -549,13 +595,13 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: default
-  namespace: kube-system
+  namespace: nephe-system
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: nephe-controller-service
-  namespace: kube-system
+  namespace: nephe-system
 spec:
   ports:
   - port: 443
@@ -568,7 +614,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nephe-controller-webhook-service
-  namespace: kube-system
+  namespace: nephe-system
 spec:
   ports:
   - port: 443
@@ -582,7 +628,7 @@ metadata:
   labels:
     control-plane: nephe-controller
   name: nephe-controller
-  namespace: kube-system
+  namespace: nephe-system
 spec:
   replicas: 1
   selector:
@@ -635,14 +681,14 @@ apiVersion: apiregistration.k8s.io/v1
 kind: APIService
 metadata:
   annotations:
-    cert-manager.io/inject-ca-from: kube-system/serving-cert
+    cert-manager.io/inject-ca-from: nephe-system/serving-cert
   name: v1alpha1.runtime.cloud.antrea.io
 spec:
   group: runtime.cloud.antrea.io
   groupPriorityMinimum: 100
   service:
     name: nephe-controller-service
-    namespace: kube-system
+    namespace: nephe-system
   version: v1alpha1
   versionPriority: 100
 ---
@@ -650,11 +696,11 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: serving-cert
-  namespace: kube-system
+  namespace: nephe-system
 spec:
   dnsNames:
-  - '*.kube-system.svc'
-  - '*.kube-system.svc.cluster.local'
+  - '*.nephe-system.svc'
+  - '*.nephe-system.svc.cluster.local'
   issuerRef:
     kind: Issuer
     name: selfsigned-issuer
@@ -664,7 +710,7 @@ apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: selfsigned-issuer
-  namespace: kube-system
+  namespace: nephe-system
 spec:
   selfSigned: {}
 ---
@@ -672,7 +718,7 @@ apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
   annotations:
-    cert-manager.io/inject-ca-from: kube-system/serving-cert
+    cert-manager.io/inject-ca-from: nephe-system/serving-cert
   name: nephe-controller-mutating-webhook-configuration
 webhooks:
 - admissionReviewVersions:
@@ -682,7 +728,7 @@ webhooks:
     caBundle: Cg==
     service:
       name: nephe-controller-webhook-service
-      namespace: kube-system
+      namespace: nephe-system
       path: /mutate-crd-cloud-antrea-io-v1alpha1-virtualmachine
   failurePolicy: Fail
   name: mvirtualmachine.kb.io
@@ -704,7 +750,7 @@ webhooks:
     caBundle: Cg==
     service:
       name: nephe-controller-webhook-service
-      namespace: kube-system
+      namespace: nephe-system
       path: /mutate-crd-cloud-antrea-io-v1alpha1-cloudentityselector
   failurePolicy: Fail
   name: mcloudentityselector.kb.io
@@ -726,7 +772,7 @@ webhooks:
     caBundle: Cg==
     service:
       name: nephe-controller-webhook-service
-      namespace: kube-system
+      namespace: nephe-system
       path: /mutate-crd-cloud-antrea-io-v1alpha1-cloudprovideraccount
   failurePolicy: Fail
   name: mcloudprovideraccount.kb.io
@@ -745,7 +791,7 @@ apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   annotations:
-    cert-manager.io/inject-ca-from: kube-system/serving-cert
+    cert-manager.io/inject-ca-from: nephe-system/serving-cert
   name: nephe-controller-validating-webhook-configuration
 webhooks:
 - admissionReviewVersions:
@@ -755,7 +801,7 @@ webhooks:
     caBundle: Cg==
     service:
       name: nephe-controller-webhook-service
-      namespace: kube-system
+      namespace: nephe-system
       path: /validate-crd-cloud-antrea-io-v1alpha1-virtualmachine
   failurePolicy: Fail
   name: vvirtualmachine.kb.io
@@ -777,7 +823,7 @@ webhooks:
     caBundle: Cg==
     service:
       name: nephe-controller-webhook-service
-      namespace: kube-system
+      namespace: nephe-system
       path: /validate-crd-cloud-antrea-io-v1alpha1-cloudentityselector
   failurePolicy: Fail
   name: vcloudentityselector.kb.io
@@ -799,7 +845,7 @@ webhooks:
     caBundle: Cg==
     service:
       name: nephe-controller-webhook-service
-      namespace: kube-system
+      namespace: nephe-system
       path: /validate-crd-cloud-antrea-io-v1alpha1-cloudprovideraccount
   failurePolicy: Fail
   name: vcloudprovideraccount.kb.io

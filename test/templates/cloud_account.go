@@ -18,20 +18,20 @@ type CloudAccountParameters struct {
 	Name      string
 	Namespace string
 	Provider  string
+	SecretRef AccountSecretParameters
 	Aws       struct {
-		Key     string
-		Secret  string
-		Region  string
-		RoleArn string
+		Region string
 	}
 	Azure struct {
-		SubscriptionID   string
-		ClientID         string
-		TenantID         string
-		ClientKey        string
-		Location         string
-		IdentityClientID string
+		Location string
 	}
+}
+
+type AccountSecretParameters struct {
+	Name       string
+	Namespace  string
+	Key        string
+	Credential string
 }
 
 const AWSCloudAccount = `
@@ -43,10 +43,11 @@ metadata:
 spec:
   awsConfig:
     accountID: "id"
-    accessKeyId: {{.Aws.Key}}
-    accessKeySecret: {{.Aws.Secret}}
-    roleArn: {{.Aws.RoleArn}}
     region: {{.Aws.Region}}
+    secretRef:
+      name: {{.SecretRef.Name}}
+      namespace: {{.SecretRef.Namespace}}
+      key: {{.SecretRef.Key}}
 `
 
 const AzureCloudAccount = `
@@ -57,10 +58,20 @@ metadata:
   namespace: {{.Namespace}}
 spec:
   azureConfig:
-    subscriptionId: {{.Azure.SubscriptionID}}
-    clientId:  {{.Azure.ClientID}}
-    tenantId: {{.Azure.TenantID}}
-    clientKey: {{.Azure.ClientKey}}
     region:    {{.Azure.Location}}
-    identityClientId: {{.Azure.IdentityClientID}}
+    secretRef:
+      name: {{.SecretRef.Name}}
+      namespace: {{.SecretRef.Namespace}}
+      key: {{.SecretRef.Key}}
+`
+
+const AccountSecret = `
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{.Name}}
+  namespace: {{.Namespace}}
+type: Opaque
+data:
+  {{.Key}}: {{.Credential}}
 `

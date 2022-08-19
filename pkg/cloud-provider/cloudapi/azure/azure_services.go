@@ -46,30 +46,20 @@ type azureServiceSdkConfigProvider struct {
 
 // azureServicesHelper.
 type azureServicesHelper interface {
-	newServiceSdkConfigProvider(accCfg *azureAccountCredentials) (azureServiceClientCreateInterface, error)
+	newServiceSdkConfigProvider(accCfg *azureAccountConfig) (azureServiceClientCreateInterface, error)
 }
 
 type azureServicesHelperImpl struct{}
 
 // newServiceSdkConfigProvider returns config to create azure services clients.
-func (h *azureServicesHelperImpl) newServiceSdkConfigProvider(accCreds *azureAccountCredentials) (
+func (h *azureServicesHelperImpl) newServiceSdkConfigProvider(accCreds *azureAccountConfig) (
 	azureServiceClientCreateInterface, error) {
 	var authorizer autorest.Authorizer
 	var err error
-	// use msi role base access if identity client id provided
-	if len(accCreds.identityClientID) != 0 {
-		msiConfig := auth.NewMSIConfig()
-		msiConfig.ClientID = accCreds.identityClientID
-		authorizer, err = msiConfig.Authorizer()
-		if err != nil {
-			return nil, fmt.Errorf("unable to initialize Azure authorizer with identity: %v", err)
-		}
-	} else {
-		clientConfig := auth.NewClientCredentialsConfig(accCreds.clientID, accCreds.clientKey, accCreds.tenantID)
-		authorizer, err = clientConfig.Authorizer()
-		if err != nil {
-			return nil, fmt.Errorf("unable to initialize Azure authorizer from credentials: %v", err)
-		}
+	clientConfig := auth.NewClientCredentialsConfig(accCreds.ClientID, accCreds.ClientKey, accCreds.TenantID)
+	authorizer, err = clientConfig.Authorizer()
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize Azure authorizer from credentials: %v", err)
 	}
 	configProvider := &azureServiceSdkConfigProvider{
 		authorizer: authorizer,
@@ -80,7 +70,7 @@ func (h *azureServicesHelperImpl) newServiceSdkConfigProvider(accCreds *azureAcc
 func newAzureServiceConfigs(accountNamespacedName *types.NamespacedName, accCredentials interface{}, azureSpecificHelper interface{}) (
 	[]internal.CloudServiceInterface, error) {
 	azureServicesHelper := azureSpecificHelper.(azureServicesHelper)
-	azureAccountCredentials := accCredentials.(*azureAccountCredentials)
+	azureAccountCredentials := accCredentials.(*azureAccountConfig)
 
 	var serviceConfigs []internal.CloudServiceInterface
 

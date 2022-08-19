@@ -23,7 +23,6 @@ import (
 	"time"
 
 	"k8s.io/apimachinery/pkg/util/wait"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	"antrea.io/nephe/apis/crd/v1alpha1"
 	"antrea.io/nephe/pkg/cloud-provider/utils"
@@ -209,24 +208,28 @@ func (p *azureVPC) Reapply(timeout time.Duration) error {
 	return err
 }
 
-func (p *azureVPC) GetCloudAccountParameters(name, namespace string, cloudCluster bool) k8stemplates.CloudAccountParameters {
+func (p *azureVPC) GetCloudAccountParameters(name, namespace string, _ bool) k8stemplates.CloudAccountParameters {
 	p.currentAccountName = name
 	out := k8stemplates.CloudAccountParameters{
 		Name:      name,
 		Namespace: namespace,
-		Provider:  string(v1alpha1.AzureCloudProvider)}
-	// use managed identity access if cloud cluster and the role is set in env variable
-	identity := os.Getenv("TF_VAR_cloud_controller_identity_client_id")
-	if cloudCluster && len(identity) != 0 {
-		out.Azure.IdentityClientID = identity
-		logf.Log.Info("Using Azure managed identity based access")
-	} else {
-		out.Azure.ClientID = os.Getenv("TF_VAR_azure_client_id")
-		out.Azure.ClientKey = os.Getenv("TF_VAR_azure_client_secret")
+		Provider:  string(v1alpha1.AzureCloudProvider),
+		SecretRef: k8stemplates.AccountSecretParameters{
+			Name:      name + "-azure-cred",
+			Namespace: "nephe-system",
+			Key:       "credential",
+		},
 	}
-	out.Azure.SubscriptionID = os.Getenv("TF_VAR_azure_client_subscription_id")
-	out.Azure.TenantID = os.Getenv("TF_VAR_azure_client_tenant_id")
 	out.Azure.Location = strings.ReplaceAll(p.output["location"].(map[string]interface{})["value"].(string), " ", "")
+
+	cred := v1alpha1.AzureAccountCredential{
+		SubscriptionID: os.Getenv("TF_VAR_azure_client_subscription_id"),
+		ClientID:       os.Getenv("TF_VAR_azure_client_id"),
+		TenantID:       os.Getenv("TF_VAR_azure_client_tenant_id"),
+		ClientKey:      os.Getenv("TF_VAR_azure_client_secret"),
+	}
+	secretString, _ := json.Marshal(cred)
+	out.SecretRef.Credential = string(secretString)
 	return out
 }
 

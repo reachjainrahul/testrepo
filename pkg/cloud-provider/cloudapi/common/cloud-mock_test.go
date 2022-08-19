@@ -26,6 +26,7 @@ import (
 	securitygroup "antrea.io/nephe/pkg/cloud-provider/securitygroup"
 	gomock "github.com/golang/mock/gomock"
 	types "k8s.io/apimachinery/pkg/types"
+	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // MockCloudInterface is a mock of CloudInterface interface.
@@ -66,17 +67,17 @@ func (mr *MockCloudInterfaceMockRecorder) AddAccountResourceSelector(accNamespac
 }
 
 // AddProviderAccount mocks base method.
-func (m *MockCloudInterface) AddProviderAccount(account *v1alpha1.CloudProviderAccount) error {
+func (m *MockCloudInterface) AddProviderAccount(client client.Client, account *v1alpha1.CloudProviderAccount) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddProviderAccount", account)
+	ret := m.ctrl.Call(m, "AddProviderAccount", client, account)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddProviderAccount indicates an expected call of AddProviderAccount.
-func (mr *MockCloudInterfaceMockRecorder) AddProviderAccount(account interface{}) *gomock.Call {
+func (mr *MockCloudInterfaceMockRecorder) AddProviderAccount(client, account interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddProviderAccount", reflect.TypeOf((*MockCloudInterface)(nil).AddProviderAccount), account)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddProviderAccount", reflect.TypeOf((*MockCloudInterface)(nil).AddProviderAccount), client, account)
 }
 
 // CreateSecurityGroup mocks base method.
@@ -285,17 +286,17 @@ func (mr *MockAccountMgmtInterfaceMockRecorder) AddAccountResourceSelector(accNa
 }
 
 // AddProviderAccount mocks base method.
-func (m *MockAccountMgmtInterface) AddProviderAccount(account *v1alpha1.CloudProviderAccount) error {
+func (m *MockAccountMgmtInterface) AddProviderAccount(client client.Client, account *v1alpha1.CloudProviderAccount) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddProviderAccount", account)
+	ret := m.ctrl.Call(m, "AddProviderAccount", client, account)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddProviderAccount indicates an expected call of AddProviderAccount.
-func (mr *MockAccountMgmtInterfaceMockRecorder) AddProviderAccount(account interface{}) *gomock.Call {
+func (mr *MockAccountMgmtInterfaceMockRecorder) AddProviderAccount(client, account interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddProviderAccount", reflect.TypeOf((*MockAccountMgmtInterface)(nil).AddProviderAccount), account)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddProviderAccount", reflect.TypeOf((*MockAccountMgmtInterface)(nil).AddProviderAccount), client, account)
 }
 
 // GetAccountStatus mocks base method.

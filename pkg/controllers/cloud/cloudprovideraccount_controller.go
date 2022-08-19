@@ -84,7 +84,7 @@ func (r *CloudProviderAccountReconciler) processCreate(namespacedName *types.Nam
 	if err != nil {
 		return err
 	}
-	return cloudInterface.AddProviderAccount(account)
+	return cloudInterface.AddProviderAccount(r.Client, account)
 }
 
 func (r *CloudProviderAccountReconciler) processDelete(namespacedName *types.NamespacedName) error {
