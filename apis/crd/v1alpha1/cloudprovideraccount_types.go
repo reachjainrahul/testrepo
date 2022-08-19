@@ -46,8 +46,6 @@ type CloudProviderAccountSpec struct {
 }
 
 type CloudProviderAccountAWSConfig struct {
-	// Cloud provider account identifier.
-	AccountID string `json:"accountID,omitempty"`
 	// Reference to k8s secret which has cloud provider credentials.
 	SecretRef *SecretReference `json:"secretRef,omitempty"`
 	// Cloud provider account region.

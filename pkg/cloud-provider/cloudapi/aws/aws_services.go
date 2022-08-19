@@ -73,10 +73,9 @@ func (h *awsServicesHelperImpl) newServiceSdkConfigProvider(accConfig *awsAccoun
 		}
 		stsClient := sts.New(sess)
 		creds = credentials.NewCredentials(&stscreds.AssumeRoleProvider{
-			Client:          stsClient,
-			RoleARN:         accConfig.RoleArn,
-			RoleSessionName: accConfig.accountID,
-			ExternalID:      externalID,
+			Client:     stsClient,
+			RoleARN:    accConfig.RoleArn,
+			ExternalID: externalID,
 		})
 	} else {
 		// use static credentials passed in

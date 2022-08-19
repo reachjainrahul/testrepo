@@ -82,7 +82,6 @@ metadata:
   namespace: sample-ns
 spec:
   awsConfig:
-    accountID: "<REPLACE_ME>"
     region: "<REPLACE_ME>"
     secretRef:
       name: aws-account-creds
@@ -96,7 +95,8 @@ EOF
 To get the base64 encoded json string for credential, run:
 
 ```bash
-echo '{"subscriptionId": "AZURE_SUBSCRIPTION_ID", "clientId": "YOUR_AZURE_CLIENT_ID", "tenantId": "AZURE_TENANT_ID", "clientKey": "YOUR_AZURE_CLIENT_KEY"}' | openssl base64
+echo '{"subscriptionId": "AZURE_SUBSCRIPTION_ID", "clientId": "YOUR_AZURE_CLIENT_ID", \
+       "tenantId": "AZURE_TENANT_ID", "clientKey": "YOUR_AZURE_CLIENT_KEY"}' | openssl base64
 ```
 
 ```bash

@@ -85,11 +85,6 @@ func (r *CloudProviderAccount) ValidateCreate() error {
 	switch cloudProviderType {
 	case AWSCloudProvider:
 		awsConfig := r.Spec.AWSConfig
-
-		// validate account ID
-		if len(strings.TrimSpace(awsConfig.AccountID)) == 0 {
-			return fmt.Errorf("account id cannot be blank or empty")
-		}
 		err := clientK8s.Get(context.TODO(), types.NamespacedName{
 			Namespace: awsConfig.SecretRef.Namespace,
 			Name:      awsConfig.SecretRef.Name}, u)

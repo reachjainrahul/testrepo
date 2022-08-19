@@ -42,7 +42,6 @@ metadata:
   namespace: {{.Namespace}}
 spec:
   awsConfig:
-    accountID: "id"
     region: {{.Aws.Region}}
     secretRef:
       name: {{.SecretRef.Name}}

@@ -65,8 +65,7 @@ var _ = Describe("AWS Cloud Security", func() {
 			Spec: v1alpha1.CloudProviderAccountSpec{
 				PollIntervalInSeconds: &pollIntv,
 				AWSConfig: &v1alpha1.CloudProviderAccountAWSConfig{
-					AccountID: "TestAccount01",
-					Region:    "us-west-2",
+					Region: "us-west-2",
 					SecretRef: &v1alpha1.SecretReference{
 						Name:      testAccountNamespacedName.Name,
 						Namespace: testAccountNamespacedName.Namespace,
