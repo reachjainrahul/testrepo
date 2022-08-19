@@ -16,13 +16,15 @@ package v1alpha1
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"k8s.io/apimachinery/pkg/types"
 	"strings"
 
-	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	ctrl "sigs.k8s.io/controller-runtime"
 	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -73,6 +75,13 @@ func (r *CloudProviderAccount) ValidateCreate() error {
 	if err != nil {
 		return err
 	}
+	u := &unstructured.Unstructured{}
+	u.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "",
+		Kind:    "Secret",
+		Version: "v1",
+	})
+
 	switch cloudProviderType {
 	case AWSCloudProvider:
 		awsConfig := r.Spec.AWSConfig
@@ -81,32 +90,26 @@ func (r *CloudProviderAccount) ValidateCreate() error {
 		if len(strings.TrimSpace(awsConfig.AccountID)) == 0 {
 			return fmt.Errorf("account id cannot be blank or empty")
 		}
-
-		secret := &corev1.Secret{}
-		if err := clientK8s.Get(context.TODO(), types.NamespacedName{Namespace: awsConfig.SecretRef.Namespace, Name: awsConfig.SecretRef.Name}, secret); err != nil {
+		err := clientK8s.Get(context.TODO(), types.NamespacedName{Namespace: awsConfig.SecretRef.Namespace, Name: awsConfig.SecretRef.Name}, u)
+		if err != nil {
 			return fmt.Errorf("unable to get secret: %s", err.Error())
 		}
-
-		var jsonMap map[string]string
-		if err := json.Unmarshal(secret.Data[awsConfig.SecretRef.Key], &jsonMap); err != nil {
-			return fmt.Errorf("unable to parse secret data: %s", err.Error())
+		data := u.Object["data"].(map[string]interface{})
+		decode, err := base64.StdEncoding.DecodeString(data[awsConfig.SecretRef.Key].(string))
+		if err != nil {
+			return fmt.Errorf("unable to decode the secret: %s", err.Error())
 		}
 
-		if len(strings.TrimSpace(jsonMap["roleArn"])) != 0 {
+		awsCredential := &AwsAccountCredential{}
+		if err = json.Unmarshal(decode, awsCredential); err != nil {
+			return fmt.Errorf("unable to unmarshal the json: %s", err.Error())
+		}
+		// validate roleArn or A
+		if len(strings.TrimSpace(awsCredential.RoleArn)) != 0 {
 			cloudprovideraccountlog.Info("Role ARN configured will be used for cloud-account access")
-		} else if len(strings.TrimSpace(jsonMap["accessKeyID"])) == 0 || len(strings.TrimSpace(jsonMap["accessKeySecret"])) == 0 {
+		} else if len(strings.TrimSpace(awsCredential.AccessKeyID)) == 0 || len(strings.TrimSpace(awsCredential.AccessKeySecret)) == 0 {
 			return fmt.Errorf("must specify either credentials or role arn, cannot both be empty")
 		}
-
-		// warning for using role based auth
-		//if len(strings.TrimSpace(awsConfig.RoleArn)) != 0 {
-		//	cloudprovideraccountlog.Info("Role ARN configured will be used for cloud-account access")
-		//	// empty credentials when role based access is configured
-		//	awsConfig.AccessKeyID = ""
-		//	awsConfig.AccessKeySecret = ""
-		//} else if len(strings.TrimSpace(awsConfig.AccessKeyID)) == 0 || len(strings.TrimSpace(awsConfig.AccessKeySecret)) == 0 {
-		//	return fmt.Errorf("must specify either credentials or role arn, cannot both be empty")
-		//}
 
 		if len(strings.TrimSpace(awsConfig.Region)) == 0 {
 			return fmt.Errorf("region cannot be blank or empty")
@@ -114,49 +117,33 @@ func (r *CloudProviderAccount) ValidateCreate() error {
 	case AzureCloudProvider:
 		azureConfig := r.Spec.AzureConfig
 
-		secret := &corev1.Secret{}
-		if err := clientK8s.Get(context.TODO(), types.NamespacedName{Namespace: azureConfig.SecretRef.Namespace, Name: azureConfig.SecretRef.Name}, secret); err != nil {
+		err := clientK8s.Get(context.TODO(), types.NamespacedName{Namespace: azureConfig.SecretRef.Namespace, Name: azureConfig.SecretRef.Name}, u)
+		if err != nil {
 			return fmt.Errorf("unable to get secret: %s", err.Error())
 		}
+		data := u.Object["data"].(map[string]interface{})
+		decode, err := base64.StdEncoding.DecodeString(data[azureConfig.SecretRef.Key].(string))
+		if err != nil {
+			return fmt.Errorf("unable to decode the secret: %s", err.Error())
+		}
 
-		var jsonMap map[string]string
-		if err := json.Unmarshal(secret.Data[azureConfig.SecretRef.Key], &jsonMap); err != nil {
-			return fmt.Errorf("unable to parse secret data: %s", err.Error())
+		azureCredential := &AzureAccountCredential{}
+		if err = json.Unmarshal(decode, azureCredential); err != nil {
+			return fmt.Errorf("unable to unmarshal the json: %s", err.Error())
 		}
 
 		// validate subscription ID
-		if len(strings.TrimSpace(jsonMap["subscriptionID"])) == 0 {
+		if len(strings.TrimSpace(azureCredential.SubscriptionID)) == 0 {
 			return fmt.Errorf("subscription id cannot be blank or empty")
 		}
-
 		// validate tenant ID
-		if len(strings.TrimSpace(jsonMap["tenantID"])) == 0 {
+		if len(strings.TrimSpace(azureCredential.TenantID)) == 0 {
 			return fmt.Errorf("tenant id cannot be blank or empty")
 		}
-
 		// validate credentials
-		if len(strings.TrimSpace(jsonMap["identityClientID"])) != 0 {
-			cloudprovideraccountlog.Info("Managed Identity Client ID configured will be used for cloud-account access")
-			// empty credentials when role based access is configured
-		} else if len(strings.TrimSpace(jsonMap["clientID"])) == 0 || len(strings.TrimSpace(jsonMap["ClientKey"])) == 0 {
+		if len(strings.TrimSpace(azureCredential.ClientID)) == 0 || len(strings.TrimSpace(azureCredential.ClientKey)) == 0 {
 			return fmt.Errorf("must specify either credentials or managed identity client id, cannot both be empty")
 		}
-
-		//
-		//// validate subscription ID
-		//if len(strings.TrimSpace(azureConfig.SubscriptionID)) == 0 {
-		//	return fmt.Errorf("subscription id cannot be blank or empty")
-		//}
-		//
-		//// validate tenant ID
-		//if len(strings.TrimSpace(azureConfig.TenantID)) == 0 {
-		//	return fmt.Errorf("tenant id cannot be blank or empty")
-		//}
-		//
-		//// validate credentials
-		//if len(strings.TrimSpace(azureConfig.ClientID)) == 0 || len(strings.TrimSpace(azureConfig.ClientKey)) == 0 {
-		//	return fmt.Errorf("must specify either credentials or managed identity client id, cannot both be empty")
-		//}
 
 		// validate region
 		if len(strings.TrimSpace(azureConfig.Region)) == 0 {

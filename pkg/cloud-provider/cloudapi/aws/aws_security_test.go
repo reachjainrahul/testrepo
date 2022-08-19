@@ -24,7 +24,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -118,10 +117,10 @@ var _ = Describe("AWS Cloud Security", func() {
 		mockawsEC2.EXPECT().describeVpcsWrapper(gomock.Any()).Return(&ec2.DescribeVpcsOutput{}, nil).AnyTimes()
 		mockawsEC2.EXPECT().describeVpcPeeringConnectionsWrapper(gomock.Any()).Return(&ec2.DescribeVpcPeeringConnectionsOutput{}, nil).AnyTimes()
 
-		fakeRemoteClient := fake.NewClientBuilder().Build()
-		fakeRemoteClient.Create(context.Background(), secret)
+		mockClient := fake.NewClientBuilder().Build()
+		mockClient.Create(context.Background(), secret)
 		cloudInterface = newAWSCloud(mockawsCloudHelper)
-		err := cloudInterface.AddProviderAccount(fakeRemoteClient, account)
+		err := cloudInterface.AddProviderAccount(mockClient, account)
 		Expect(err).Should(BeNil())
 
 		err = cloudInterface.AddAccountResourceSelector(testAccountNamespacedName, selector)

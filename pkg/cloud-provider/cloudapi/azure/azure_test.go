@@ -22,7 +22,6 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -53,11 +52,11 @@ var _ = Describe("Azure", func() {
 
 	Context("AddAccountResourceSelector", func() {
 		var (
-			c                *azureCloud
-			account          *v1alpha1.CloudProviderAccount
-			selector         *v1alpha1.CloudEntitySelector
-			secret           *corev1.Secret
-			fakeRemoteClient client.WithWatch
+			c          *azureCloud
+			account    *v1alpha1.CloudProviderAccount
+			selector   *v1alpha1.CloudEntitySelector
+			secret     *corev1.Secret
+			mockClient client.WithWatch
 
 			mockCtrl                        *gomock.Controller
 			mockAzureServiceHelper          *MockazureServicesHelper
@@ -151,7 +150,7 @@ var _ = Describe("Azure", func() {
 			mockazureVirtualNetworksWrapper.EXPECT().listAllComplete(gomock.Any()).AnyTimes()
 			mockazureResourceGraph.EXPECT().resources(gomock.Any(), gomock.Any()).Return(getResourceGraphResult(), nil).AnyTimes()
 
-			fakeRemoteClient = fake.NewClientBuilder().Build()
+			mockClient = fake.NewClientBuilder().Build()
 			c = newAzureCloud(mockAzureServiceHelper)
 		})
 
@@ -173,8 +172,9 @@ var _ = Describe("Azure", func() {
 					},
 				}
 
-				fakeRemoteClient.Create(context.Background(), secret)
-				err := c.AddProviderAccount(fakeRemoteClient, account)
+				err := mockClient.Create(context.Background(), secret)
+				Expect(err).Should(BeNil())
+				err = c.AddProviderAccount(mockClient, account)
 				Expect(err).Should(BeNil())
 				selector.Spec.VMSelector = vmSelector
 				err = c.AddAccountResourceSelector(testAccountNamespacedName, selector)
@@ -204,8 +204,9 @@ var _ = Describe("Azure", func() {
 				},
 			}
 
-			fakeRemoteClient.Create(context.Background(), secret)
-			err := c.AddProviderAccount(fakeRemoteClient, account)
+			err := mockClient.Create(context.Background(), secret)
+			Expect(err).Should(BeNil())
+			err = c.AddProviderAccount(mockClient, account)
 			Expect(err).Should(BeNil())
 			selector.Spec.VMSelector = vmSelector
 			err = c.AddAccountResourceSelector(testAccountNamespacedName, selector)
@@ -229,8 +230,9 @@ var _ = Describe("Azure", func() {
 				},
 			}
 
-			fakeRemoteClient.Create(context.Background(), secret)
-			err := c.AddProviderAccount(fakeRemoteClient, account)
+			err := mockClient.Create(context.Background(), secret)
+			Expect(err).Should(BeNil())
+			err = c.AddProviderAccount(mockClient, account)
 			Expect(err).Should(BeNil())
 			selector.Spec.VMSelector = vmSelector
 			err = c.AddAccountResourceSelector(testAccountNamespacedName, selector)

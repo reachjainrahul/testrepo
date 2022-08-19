@@ -31,10 +31,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-
 	"antrea.io/nephe/apis/crd/v1alpha1"
+	. "github.com/onsi/ginkgo"
 )
 
 var (
@@ -53,7 +51,7 @@ var _ = Describe("AWS cloud", func() {
 			mockCtrl           *gomock.Controller
 			mockawsCloudHelper *MockawsServicesHelper
 			secret             *corev1.Secret
-			fakeRemoteClient   client.WithWatch
+			mockClient         client.WithWatch
 		)
 
 		BeforeEach(func() {
@@ -86,7 +84,7 @@ var _ = Describe("AWS cloud", func() {
 					"credentials": []byte(credential),
 				},
 			}
-			fakeRemoteClient = fake.NewClientBuilder().Build()
+			mockClient = fake.NewClientBuilder().Build()
 			mockCtrl = gomock.NewController(GinkgoT())
 			mockawsCloudHelper = NewMockawsServicesHelper(mockCtrl)
 		})
@@ -98,9 +96,9 @@ var _ = Describe("AWS cloud", func() {
 		Context("New account add fail scenarios", func() {
 			It("Should fail for unsupported/unknown region", func() {
 				account.Spec.AWSConfig.Region = "invalid"
-				fakeRemoteClient.Create(context.Background(), secret)
+				mockClient.Create(context.Background(), secret)
 				c := newAWSCloud(mockawsCloudHelper)
-				err := c.AddProviderAccount(fakeRemoteClient, account)
+				err := c.AddProviderAccount(mockClient, account)
 
 				Expect(err).ShouldNot(BeNil())
 				accCfg, found := c.cloudCommon.GetCloudAccountByName(&testAccountNamespacedName)
@@ -156,9 +154,9 @@ var _ = Describe("AWS cloud", func() {
 				mockawsEC2.EXPECT().describeVpcPeeringConnectionsWrapper(gomock.Any()).Return(&ec2.DescribeVpcPeeringConnectionsOutput{},
 					nil).AnyTimes()
 
-				_ = fakeRemoteClient.Create(context.Background(), secret)
+				_ = mockClient.Create(context.Background(), secret)
 				c := newAWSCloud(mockawsCloudHelper)
-				err := c.AddProviderAccount(fakeRemoteClient, account)
+				err := c.AddProviderAccount(mockClient, account)
 
 				Expect(err).Should(BeNil())
 				accCfg, found := c.cloudCommon.GetCloudAccountByName(&testAccountNamespacedName)
@@ -189,9 +187,9 @@ var _ = Describe("AWS cloud", func() {
 				mockawsEC2.EXPECT().describeVpcPeeringConnectionsWrapper(gomock.Any()).Return(&ec2.DescribeVpcPeeringConnectionsOutput{},
 					nil).AnyTimes()
 
-				fakeRemoteClient.Create(context.Background(), secret)
+				mockClient.Create(context.Background(), secret)
 				c := newAWSCloud(mockawsCloudHelper)
-				err := c.AddProviderAccount(fakeRemoteClient, account)
+				err := c.AddProviderAccount(mockClient, account)
 
 				Expect(err).Should(BeNil())
 				accCfg, found := c.cloudCommon.GetCloudAccountByName(&testAccountNamespacedName)
@@ -211,9 +209,9 @@ var _ = Describe("AWS cloud", func() {
 				mockawsEC2.EXPECT().describeVpcsWrapper(gomock.Any()).Return(&ec2.DescribeVpcsOutput{}, nil).AnyTimes()
 				mockawsEC2.EXPECT().describeVpcPeeringConnectionsWrapper(gomock.Any()).Return(&ec2.DescribeVpcPeeringConnectionsOutput{},
 					nil).AnyTimes()
-				fakeRemoteClient.Create(context.Background(), secret)
+				mockClient.Create(context.Background(), secret)
 				c := newAWSCloud(mockawsCloudHelper)
-				err := c.AddProviderAccount(fakeRemoteClient, account)
+				err := c.AddProviderAccount(mockClient, account)
 				Expect(err).Should(BeNil())
 				accCfg, found := c.cloudCommon.GetCloudAccountByName(&testAccountNamespacedName)
 				Expect(found).To(BeTrue())
@@ -231,9 +229,9 @@ var _ = Describe("AWS cloud", func() {
 				mockawsEC2.EXPECT().pagedDescribeNetworkInterfaces(gomock.Any()).Return([]*ec2.NetworkInterface{}, nil).Times(0)
 				mockawsEC2.EXPECT().describeVpcsWrapper(gomock.Any()).Return(&ec2.DescribeVpcsOutput{}, nil).Times(0)
 				mockawsEC2.EXPECT().describeVpcPeeringConnectionsWrapper(gomock.Any()).Return(&ec2.DescribeVpcPeeringConnectionsOutput{}, nil).Times(0)
-				fakeRemoteClient.Create(context.Background(), secret)
+				mockClient.Create(context.Background(), secret)
 				c := newAWSCloud(mockawsCloudHelper)
-				err := c.AddProviderAccount(fakeRemoteClient, account)
+				err := c.AddProviderAccount(mockClient, account)
 				Expect(err).Should(BeNil())
 				accCfg, found := c.cloudCommon.GetCloudAccountByName(&testAccountNamespacedName)
 				Expect(found).To(BeTrue())
@@ -262,7 +260,7 @@ var _ = Describe("AWS cloud", func() {
 
 			mockCtrl           *gomock.Controller
 			mockawsCloudHelper *MockawsServicesHelper
-			fakeRemoteClient   client.Client
+			mockClient         client.Client
 			mockawsEC2         *MockawsEC2Wrapper
 			mockawsService     *MockawsServiceClientCreateInterface
 			secret             *corev1.Secret
@@ -336,10 +334,10 @@ var _ = Describe("AWS cloud", func() {
 		})
 
 		SetAwsAccount := func(mockawsCloudHelper *MockawsServicesHelper) *awsCloud {
-			fakeRemoteClient = fake.NewClientBuilder().Build()
-			fakeRemoteClient.Create(context.Background(), secret)
+			mockClient = fake.NewClientBuilder().Build()
+			mockClient.Create(context.Background(), secret)
 			c1 := newAWSCloud(mockawsCloudHelper)
-			_ = c1.AddProviderAccount(fakeRemoteClient, account)
+			_ = c1.AddProviderAccount(mockClient, account)
 			return c1
 		}
 
