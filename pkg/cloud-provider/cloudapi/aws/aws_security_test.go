@@ -118,10 +118,10 @@ var _ = Describe("AWS Cloud Security", func() {
 		mockawsEC2.EXPECT().describeVpcsWrapper(gomock.Any()).Return(&ec2.DescribeVpcsOutput{}, nil).AnyTimes()
 		mockawsEC2.EXPECT().describeVpcPeeringConnectionsWrapper(gomock.Any()).Return(&ec2.DescribeVpcPeeringConnectionsOutput{}, nil).AnyTimes()
 
-		mockClient := fake.NewClientBuilder().Build()
-		_ = mockClient.Create(context.Background(), secret)
+		fakeClient := fake.NewClientBuilder().Build()
+		_ = fakeClient.Create(context.Background(), secret)
 		cloudInterface = newAWSCloud(mockawsCloudHelper)
-		err := cloudInterface.AddProviderAccount(mockClient, account)
+		err := cloudInterface.AddProviderAccount(fakeClient, account)
 		Expect(err).Should(BeNil())
 
 		err = cloudInterface.AddAccountResourceSelector(testAccountNamespacedName, selector)
@@ -129,8 +129,6 @@ var _ = Describe("AWS Cloud Security", func() {
 
 		// wait for instances to be populated
 		time.Sleep(time.Duration(pollIntv+1) * time.Second)
-		_ = account
-		_ = selector
 	})
 
 	AfterEach(func() {

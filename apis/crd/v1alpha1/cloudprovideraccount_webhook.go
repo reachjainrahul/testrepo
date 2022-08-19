@@ -90,7 +90,9 @@ func (r *CloudProviderAccount) ValidateCreate() error {
 		if len(strings.TrimSpace(awsConfig.AccountID)) == 0 {
 			return fmt.Errorf("account id cannot be blank or empty")
 		}
-		err := clientK8s.Get(context.TODO(), types.NamespacedName{Namespace: awsConfig.SecretRef.Namespace, Name: awsConfig.SecretRef.Name}, u)
+		err := clientK8s.Get(context.TODO(), types.NamespacedName{
+			Namespace: awsConfig.SecretRef.Namespace,
+			Name:      awsConfig.SecretRef.Name}, u)
 		if err != nil {
 			return fmt.Errorf("unable to get secret: %s", err.Error())
 		}
@@ -117,7 +119,9 @@ func (r *CloudProviderAccount) ValidateCreate() error {
 	case AzureCloudProvider:
 		azureConfig := r.Spec.AzureConfig
 
-		err := clientK8s.Get(context.TODO(), types.NamespacedName{Namespace: azureConfig.SecretRef.Namespace, Name: azureConfig.SecretRef.Name}, u)
+		err := clientK8s.Get(context.TODO(), types.NamespacedName{
+			Namespace: azureConfig.SecretRef.Namespace,
+			Name:      azureConfig.SecretRef.Name}, u)
 		if err != nil {
 			return fmt.Errorf("unable to get secret: %s", err.Error())
 		}

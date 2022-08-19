@@ -57,7 +57,7 @@ var _ = Describe("Azure", func() {
 			account    *v1alpha1.CloudProviderAccount
 			selector   *v1alpha1.CloudEntitySelector
 			secret     *corev1.Secret
-			mockClient client.WithWatch
+			fakeClient client.WithWatch
 
 			mockCtrl                        *gomock.Controller
 			mockAzureServiceHelper          *MockazureServicesHelper
@@ -151,7 +151,7 @@ var _ = Describe("Azure", func() {
 			mockazureVirtualNetworksWrapper.EXPECT().listAllComplete(gomock.Any()).AnyTimes()
 			mockazureResourceGraph.EXPECT().resources(gomock.Any(), gomock.Any()).Return(getResourceGraphResult(), nil).AnyTimes()
 
-			mockClient = fake.NewClientBuilder().Build()
+			fakeClient = fake.NewClientBuilder().Build()
 			c = newAzureCloud(mockAzureServiceHelper)
 		})
 
@@ -173,9 +173,9 @@ var _ = Describe("Azure", func() {
 					},
 				}
 
-				err := mockClient.Create(context.Background(), secret)
+				err := fakeClient.Create(context.Background(), secret)
 				Expect(err).Should(BeNil())
-				err = c.AddProviderAccount(mockClient, account)
+				err = c.AddProviderAccount(fakeClient, account)
 				Expect(err).Should(BeNil())
 				selector.Spec.VMSelector = vmSelector
 				err = c.AddAccountResourceSelector(testAccountNamespacedName, selector)
@@ -205,9 +205,9 @@ var _ = Describe("Azure", func() {
 				},
 			}
 
-			err := mockClient.Create(context.Background(), secret)
+			err := fakeClient.Create(context.Background(), secret)
 			Expect(err).Should(BeNil())
-			err = c.AddProviderAccount(mockClient, account)
+			err = c.AddProviderAccount(fakeClient, account)
 			Expect(err).Should(BeNil())
 			selector.Spec.VMSelector = vmSelector
 			err = c.AddAccountResourceSelector(testAccountNamespacedName, selector)
@@ -231,9 +231,9 @@ var _ = Describe("Azure", func() {
 				},
 			}
 
-			err := mockClient.Create(context.Background(), secret)
+			err := fakeClient.Create(context.Background(), secret)
 			Expect(err).Should(BeNil())
-			err = c.AddProviderAccount(mockClient, account)
+			err = c.AddProviderAccount(fakeClient, account)
 			Expect(err).Should(BeNil())
 			selector.Spec.VMSelector = vmSelector
 			err = c.AddAccountResourceSelector(testAccountNamespacedName, selector)
