@@ -488,42 +488,70 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusAws
 		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, false)
 	}
 
-	It("Controllers Restart", func() {
-		ids := cloudVPC.GetVMs()
-		ips := cloudVPC.GetVMPrivateIPs()
+	table.DescribeTable("AppliedTo",
+		func(kind string, diffNS bool) {
+			testAppliedTo(kind, diffNS)
+		},
+		table.Entry(fmt.Sprintf("%s: VM In Same Namespace", focusAzure),
+			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
+		table.Entry("VM In Different Namespaces",
+			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
+	)
 
-		kind := reflect.TypeOf(v1alpha1.VirtualMachine{}).Name()
-		setup(kind, len(ids), false, []string{"22"}, false)
-		appliedIdx := len(ids) - 1
-		srcVMs := cloudVPC.GetVMs()[:appliedIdx]
+	table.DescribeTable("Egress",
+		func(kind string, diffNS bool) {
+			testEgress(kind, diffNS)
+		},
+		table.Entry("VM In Same Namespace",
+			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
+		table.Entry("VM In Different Namespaces",
+			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
+	)
 
-		oks := make([]bool, len(ids)-1)
-		var err error
-		By(fmt.Sprintf("Ingress NetworkPolicy on %v by kind label selector while restarting Antrea controller", kind))
-		anpParams.AppliedTo = configANPApplyTo(kind, ids[appliedIdx], "", "", "")
-		for i := range oks {
-			oks[i] = true
-		}
-		anpParams.From = configANPToFrom(kind, "", "", "", "", "", namespace.Name,
-			[]string{apachePort}, false)
-		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, false)
-		err = utils.RestartOrWaitDeployment(k8sClient, "antrea-controller", "kube-system", time.Second*200, true)
-		Expect(err).ToNot(HaveOccurred())
-		time.Sleep(time.Second * 30)
-		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, true)
+	table.DescribeTable("Ingress",
+		func(kind string, diffNS bool) {
+			testIngress(kind, diffNS)
+		},
+		table.Entry(fmt.Sprintf("%s: VM In Same Namespaces", focusAzure),
+			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
+		table.Entry("VM In Different Namespaces",
+			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
+	)
 
-		By(fmt.Sprintf("Ingress NetworkPolicy on %v by name label selector while restarting Nephe controller", kind))
-		anpParams.AppliedTo = configANPApplyTo(kind, ids[appliedIdx], "", "", "")
-		oks = make([]bool, len(ids)-1)
-		oks[0] = true
-		anpParams.From = configANPToFrom(kind, ids[0], "", "", "", "", namespace.Name,
-			[]string{apachePort}, false)
-		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, false)
-		By("Restarting controllers now...")
-		err = utils.RestartOrWaitDeployment(k8sClient, "nephe-controller", "nephe-system", time.Second*200, true)
-		Expect(err).ToNot(HaveOccurred())
-		time.Sleep(time.Second * 30)
-		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, true)
+	Context("Enforce Before Import", func() {
+		JustBeforeEach(func() {
+			importAfterANP = true
+			abbreviated = true
+		})
+		table.DescribeTable("AppliedTo",
+			func(kind string, diffNS bool) {
+				testAppliedTo(kind, diffNS)
+			},
+			table.Entry(fmt.Sprintf("%s: VM In Same Namespace", focusAzure),
+				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
+			table.Entry("VM In Different Namespaces",
+				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
+		)
+
+		table.DescribeTable("Egress",
+			func(kind string, diffNS bool) {
+				testEgress(kind, diffNS)
+			},
+			table.Entry("VM In Same Namespace",
+				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
+			table.Entry("VM In Different Namespaces",
+				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
+		)
+
+		table.DescribeTable("Ingress",
+			func(kind string, diffNS bool) {
+				testIngress(kind, diffNS)
+			},
+			table.Entry(fmt.Sprintf("%s: VM In Same Namespaces", focusAzure),
+				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
+			table.Entry("VM In Different Namespaces",
+				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
+		)
 	})
 
 	It("Reconcile with cloud", func() {
@@ -590,69 +618,41 @@ var _ = Describe(fmt.Sprintf("%s,%s: NetworkPolicy On Cloud Resources", focusAws
 		Expect(err).ToNot(HaveOccurred())
 	})
 
-	table.DescribeTable("AppliedTo",
-		func(kind string, diffNS bool) {
-			testAppliedTo(kind, diffNS)
-		},
-		table.Entry(fmt.Sprintf("%s: VM In Same Namespace", focusAzure),
-			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
-		table.Entry("VM In Different Namespaces",
-			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
-	)
+	It("Controllers Restart", func() {
+		ids := cloudVPC.GetVMs()
+		ips := cloudVPC.GetVMPrivateIPs()
 
-	table.DescribeTable("Egress",
-		func(kind string, diffNS bool) {
-			testEgress(kind, diffNS)
-		},
-		table.Entry("VM In Same Namespace",
-			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
-		table.Entry("VM In Different Namespaces",
-			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
-	)
+		kind := reflect.TypeOf(v1alpha1.VirtualMachine{}).Name()
+		setup(kind, len(ids), false, []string{"22"}, false)
+		appliedIdx := len(ids) - 1
+		srcVMs := cloudVPC.GetVMs()[:appliedIdx]
 
-	table.DescribeTable("Ingress",
-		func(kind string, diffNS bool) {
-			testIngress(kind, diffNS)
-		},
-		table.Entry(fmt.Sprintf("%s: VM In Same Namespaces", focusAzure),
-			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
-		table.Entry("VM In Different Namespaces",
-			reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
-	)
+		oks := make([]bool, len(ids)-1)
+		var err error
+		By(fmt.Sprintf("Ingress NetworkPolicy on %v by kind label selector while restarting Antrea controller", kind))
+		anpParams.AppliedTo = configANPApplyTo(kind, ids[appliedIdx], "", "", "")
+		for i := range oks {
+			oks[i] = true
+		}
+		anpParams.From = configANPToFrom(kind, "", "", "", "", "", namespace.Name,
+			[]string{apachePort}, false)
+		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, false)
+		err = utils.RestartOrWaitDeployment(k8sClient, "antrea-controller", "kube-system", time.Second*200, true)
+		Expect(err).ToNot(HaveOccurred())
+		time.Sleep(time.Second * 30)
+		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, true)
 
-	Context("Enforce Before Import", func() {
-		JustBeforeEach(func() {
-			importAfterANP = true
-			abbreviated = true
-		})
-		table.DescribeTable("AppliedTo",
-			func(kind string, diffNS bool) {
-				testAppliedTo(kind, diffNS)
-			},
-			table.Entry(fmt.Sprintf("%s: VM In Same Namespace", focusAzure),
-				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
-			table.Entry("VM In Different Namespaces",
-				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
-		)
-
-		table.DescribeTable("Egress",
-			func(kind string, diffNS bool) {
-				testEgress(kind, diffNS)
-			},
-			table.Entry("VM In Same Namespace",
-				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
-			table.Entry("VM In Different Namespaces",
-				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
-		)
-
-		table.DescribeTable("Ingress",
-			func(kind string, diffNS bool) {
-				testIngress(kind, diffNS)
-			},
-			table.Entry(fmt.Sprintf("%s: VM In Same Namespaces", focusAzure),
-				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), false),
-			table.Entry("VM In Different Namespaces",
-				reflect.TypeOf(v1alpha1.VirtualMachine{}).Name(), true),
-		)
+		By(fmt.Sprintf("Ingress NetworkPolicy on %v by name label selector while restarting Nephe controller", kind))
+		anpParams.AppliedTo = configANPApplyTo(kind, ids[appliedIdx], "", "", "")
+		oks = make([]bool, len(ids)-1)
+		oks[0] = true
+		anpParams.From = configANPToFrom(kind, ids[0], "", "", "", "", namespace.Name,
+			[]string{apachePort}, false)
+		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, false)
+		By("Restarting controllers now...")
+		err = utils.RestartOrWaitDeployment(k8sClient, "nephe-controller", "nephe-system", time.Second*200, true)
+		Expect(err).ToNot(HaveOccurred())
+		time.Sleep(time.Second * 30)
+		verifyIngress(kind, ids[appliedIdx], ips[appliedIdx], srcVMs, oks, true)
 	})
 })
