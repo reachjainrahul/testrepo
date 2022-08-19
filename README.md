@@ -6,12 +6,10 @@ Nephe supports security policy enforcement across different Public
 Clouds. It translates and enforces Antrea `NetworkPolicies` on Public Cloud
 Virtual Machines using Cloud Network Security Groups. Nephe deploys  a 
 `nephe-controller` Pod in a Kubernetes cluster. Antrea must be the CNI of the
-Kubernetes cluster and provides Antrea `NetworkPolicy`(ANP) CRD.
+Kubernetes cluster.
 
 ## Dependencies
 
-* [Golang](https://go.dev/dl/): Nephe is developed and tested with go
-  version 1.17.
 * [Docker](https://docs.docker.com/install/): Nephe is developed and tested
   with Docker version 20.10.17.
 * [Antrea](https://github.com/antrea-io/antrea/): Provides Antrea
@@ -30,11 +28,11 @@ Getting started with Nephe is simple and fast. You can follow the
 The Antrea community welcomes new contributors. We are waiting for your PRs!
 
 * Before contributing, please get familiar with our [Code of Conduct](CODE_OF_CONDUCT.md).
-* Check out the [Contributing Guide](CODE_OF_CONDUCT.md) for information
+* Check out the [Contributing Guide](CONTRIBUTING.md) for information
   about setting up your development environment and our contribution workflow.
 * Learn about Nephe's [Architecture and Design](docs/architecture.md).
   Your feedback is more than welcome!
-* Check out [Open Issues](TBD).
+* Check out [Open Issues](https://github.com/antrea-io/nephe/issues).
 
 ## License
 
