@@ -269,6 +269,12 @@
                       - text:
                             credential-id: AWS_KEY_PAIR_NAME
                             variable: AWS_KEY_PAIR_NAME
+                      - text:
+                            credential-id: EKS_IAM_ROLE
+                            variable: EKS_IAM_ROLE
+                      - text:
+                            credential-id: EKS_IAM_INSTANCE_PROFILE
+                            variable: EKS_IAM_INSTANCE_PROFILE
             publishers:
                 - archive:
                       allow-empty: true

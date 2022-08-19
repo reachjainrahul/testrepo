@@ -173,7 +173,7 @@ case $testType in
     ;;
     eks)
     echo "Run tests on EKS cluster with AWS VMs"
-    ssh -i id_rsa ubuntu@${ip_addr} "~/ci/jenkins/test-eks.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET}"
+    ssh -i id_rsa ubuntu@${ip_addr} "~/ci/jenkins/test-eks.sh ${AWS_ACCESS_KEY_ID} ${AWS_ACCESS_KEY_SECRET} ${EKS_IAM_ROLE} ${EKS_IAM_INSTANCE_PROFILE}"
     ;;
     aks)
     echo "Run tests on AKS cluster with Azure VMs"

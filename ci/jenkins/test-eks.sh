@@ -64,9 +64,8 @@ aws ec2 import-key-pair --key-name ${KEY_PAIR} --public-key-material fileb://~/.
 export TF_VAR_aws_key_pair_name=${KEY_PAIR}
 export TF_VAR_eks_key_pair_name=${KEY_PAIR}
 
-# TODO: Change the profile via secrets
-export TF_VAR_eks_cluster_iam_role_name=k8s
-export TF_VAR_eks_iam_instance_profile_name="suwang-eks-worker-nodes-1-NodeInstanceProfile-8LL239W4W3GN"
+export TF_VAR_eks_cluster_iam_role_name=$3
+export TF_VAR_eks_iam_instance_profile_name=$4
 
 function cleanup() {
   $HOME/terraform/eks destroy
