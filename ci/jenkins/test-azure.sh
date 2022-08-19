@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -e
 KIND_VERSION=v0.12.0
 KUBECTL_VERSION=v1.24.1
 TERRAFORM_VERSION=0.13.5

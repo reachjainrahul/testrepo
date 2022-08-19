@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -e
 KUBECTL_VERSION=v1.24.1
 TERRAFORM_VERSION=0.13.5
 
@@ -67,6 +68,12 @@ export TF_VAR_eks_key_pair_name=${KEY_PAIR}
 export TF_VAR_eks_cluster_iam_role_name=k8s
 export TF_VAR_eks_iam_instance_profile_name="suwang-eks-worker-nodes-1-NodeInstanceProfile-8LL239W4W3GN"
 
+function cleanup() {
+  $HOME/terraform/eks destroy
+  aws ec2 delete-key-pair  --key-name ${KEY_PAIR}  --region ${TF_VAR_region}
+}
+
+trap cleanup EXIT
 hack/install-cloud-tools.sh
 echo "Creating EKS Cluster"
 $HOME/terraform/eks create
@@ -80,7 +87,3 @@ echo "Loading nephe image"
 $HOME/terraform/eks load antrea/nephe
 mkdir -p $HOME/logs
 ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*test-cloud-cluster.*" -kubeconfig=$HOME/tmp/terraform-eks/kubeconfig -cloud-provider=AWS -support-bundle-dir=$HOME/logs
-
-# Cleanup
-aws ec2 delete-key-pair  --key-name ${KEY_PAIR}  --region ${TF_VAR_region}
-$HOME/terraform/eks destroy

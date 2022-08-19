@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -e
+
 KIND_VERSION=v0.12.0
 KUBECTL_VERSION=v1.24.1
 TERRAFORM_VERSION=0.13.5
@@ -76,8 +78,11 @@ aws ec2 import-key-pair --key-name ${KEY_PAIR} --public-key-material fileb://~/.
 export TF_VAR_aws_key_pair_name=${KEY_PAIR}
 export TF_VAR_owner="nephe-ci"
 
-mkdir ~/logs
-ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*test-aws.*" -kubeconfig=$HOME/.kube/config -cloud-provider=AWS -support-bundle-dir=~/logs
+function cleanup() {
+  # Delete key pair
+  aws ec2 delete-key-pair  --key-name ${KEY_PAIR}  --region ${TF_VAR_region}
+}
+trap cleanup EXIT
 
-# Delete key pair
-aws ec2 delete-key-pair  --key-name ${KEY_PAIR}  --region ${TF_VAR_region}
+mkdir $HOME/logs
+ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*test-aws.*" -kubeconfig=$HOME/.kube/config -cloud-provider=AWS -support-bundle-dir=$HOME/logs
