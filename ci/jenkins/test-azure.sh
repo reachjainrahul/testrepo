@@ -61,5 +61,5 @@ export TF_VAR_azure_client_tenant_id=$3
 export TF_VAR_azure_client_secret=$4
 export TF_VAR_owner="nephe-ci"
 
-mkdir ~/logs
-ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*test-azure.*" -kubeconfig=$HOME/.kube/config -cloud-provider=Azure -support-bundle-dir=~/logs
+mkdir -p $HOME/logs
+ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*test-azure.*" -kubeconfig=$HOME/.kube/config -cloud-provider=Azure -support-bundle-dir=$HOME/logs
