@@ -31,7 +31,7 @@ import (
 
 type awsAccountConfig struct {
 	v1alpha1.AwsAccountCredential
-	region    string
+	region string
 }
 
 // setAccountCredentials sets account credentials.
