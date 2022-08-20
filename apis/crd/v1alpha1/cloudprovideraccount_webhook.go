@@ -81,11 +81,11 @@ func (r *CloudProviderAccount) ValidateCreate() error {
 
 	switch cloudProviderType {
 	case AWSCloudProvider:
-		if err := r.ValidateAWSAccount(); err != nil {
+		if err := r.validateAWSAccount(); err != nil {
 			return err
 		}
 	case AzureCloudProvider:
-		if err := r.ValidateAzureAccount(); err != nil {
+		if err := r.validateAzureAccount(); err != nil {
 			return err
 		}
 	}
@@ -108,11 +108,11 @@ func (r *CloudProviderAccount) ValidateUpdate(old runtime.Object) error {
 
 	switch cloudProviderType {
 	case AWSCloudProvider:
-		if err := r.ValidateAWSAccount(); err != nil {
+		if err := r.validateAWSAccount(); err != nil {
 			return err
 		}
 	case AzureCloudProvider:
-		if err := r.ValidateAzureAccount(); err != nil {
+		if err := r.validateAzureAccount(); err != nil {
 			return err
 		}
 	}
@@ -142,7 +142,7 @@ func (r *CloudProviderAccount) GetAccountProviderType() (CloudProvider, error) {
 	}
 }
 
-func (r *CloudProviderAccount) ValidateAWSAccount() error {
+func (r *CloudProviderAccount) validateAWSAccount() error {
 	u := &unstructured.Unstructured{}
 	u.SetGroupVersionKind(schema.GroupVersionKind{
 		Group:   "",
@@ -194,7 +194,7 @@ func (r *CloudProviderAccount) ValidateAWSAccount() error {
 	return nil
 }
 
-func (r *CloudProviderAccount) ValidateAzureAccount() error {
+func (r *CloudProviderAccount) validateAzureAccount() error {
 	u := &unstructured.Unstructured{}
 	u.SetGroupVersionKind(schema.GroupVersionKind{
 		Group:   "",
