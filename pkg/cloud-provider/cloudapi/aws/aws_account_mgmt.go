@@ -26,7 +26,6 @@ import (
 
 	"antrea.io/nephe/apis/crd/v1alpha1"
 	"antrea.io/nephe/pkg/cloud-provider/cloudapi/internal"
-	"github.com/aws/aws-sdk-go/aws/endpoints"
 )
 
 type awsAccountConfig struct {
@@ -45,18 +44,6 @@ func setAccountCredentials(client client.Client, credentials interface{}) (inter
 	awsConfig := &awsAccountConfig{
 		AwsAccountCredential: *accCred,
 		region:               strings.TrimSpace(awsProviderConfig.Region),
-	}
-
-	// NOTE: currently only AWS standard partition regions supported (aws-cn, aws-us-gov etc are not
-	// supported). As we add support for other partitions, validation needs to be updated
-	regions := endpoints.AwsPartition().Regions()
-	_, found := regions[awsConfig.region]
-	if !found {
-		var supportedRegions []string
-		for key := range regions {
-			supportedRegions = append(supportedRegions, key)
-		}
-		return nil, fmt.Errorf("%v not in supported regions [%v]", awsConfig.region, supportedRegions)
 	}
 
 	return awsConfig, nil

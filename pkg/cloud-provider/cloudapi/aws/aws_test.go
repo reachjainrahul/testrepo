@@ -92,21 +92,6 @@ var _ = Describe("AWS cloud", func() {
 		AfterEach(func() {
 			mockCtrl.Finish()
 		})
-
-		Context("New account add fail scenarios", func() {
-			It("Should fail for unsupported/unknown region", func() {
-				account.Spec.AWSConfig.Region = "invalid"
-				_ = fakeClient.Create(context.Background(), secret)
-				c := newAWSCloud(mockawsCloudHelper)
-				err := c.AddProviderAccount(fakeClient, account)
-
-				Expect(err).ShouldNot(BeNil())
-				accCfg, found := c.cloudCommon.GetCloudAccountByName(&testAccountNamespacedName)
-				Expect(found).To(BeFalse())
-				Expect(accCfg).To(BeNil())
-			})
-		})
-
 		Context("New account add success scenarios", func() {
 			var (
 				selector *v1alpha1.CloudEntitySelector

@@ -126,6 +126,7 @@ webhooks:
           - v1alpha1
         operations:
           - CREATE
+          - UPDATE
         resources:
           - cloudprovideraccounts
     sideEffects: None
