@@ -29,6 +29,36 @@ const (
 	AddressTypeExternalIP AddressType = "ExternalIP"
 )
 
+type VMState string
+
+const (
+	Running      VMState = "running"
+	Stopped      VMState = "stopped"
+	Stopping     VMState = "stopping"
+	ShuttingDown VMState = "shutting down"
+	Starting     VMState = "starting"
+	Unknown      VMState = "unknown"
+)
+
+func (this VMState) String() string {
+	switch this {
+	case Running:
+		return "running"
+	case Stopped:
+		return "stopped"
+	case Stopping:
+		return "stopping"
+	case ShuttingDown:
+		return "shutting down"
+	case Starting:
+		return "starting"
+	case Unknown:
+		return "unknown status"
+	default:
+		return "unknown status"
+	}
+}
+
 type IPAddress struct {
 	AddressType AddressType `json:"addressType"`
 	Address     string      `json:"address"`
@@ -55,7 +85,7 @@ type VirtualMachineStatus struct {
 	// NetworkInterfaces is array of NetworkInterfaces attached to this VirtualMachine.
 	NetworkInterfaces []NetworkInterface `json:"networkInterfaces,omitempty"`
 	// State indicates current state of the VirtualMachine.
-	State string `json:"state,omitempty"`
+	State VMState `json:"state,omitempty"`
 }
 
 // +genclient
