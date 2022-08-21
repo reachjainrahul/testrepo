@@ -84,7 +84,7 @@ jobs:
       run: ./ci/check-copyright.sh
 
   verify:
-    name: Verify spelling
+    name: Verify docs and spelling
     runs-on: [ubuntu-latest]
     steps:
     - name: Set up Go 1.17

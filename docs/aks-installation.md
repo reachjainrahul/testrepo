@@ -1,5 +1,21 @@
 # Deploying Nephe in Azure AKS
 
+## Table of Contents
+<!-- toc -->
+- [Prerequisites](#prerequisites)
+- [Create an AKS cluster via terraform](#create-an-aks-cluster-via-terraform)
+  - [Setup Terraform Environment](#setup-terraform-environment)
+  - [Create an AKS cluster](#create-an-aks-cluster)
+  - [Deploy Nephe Controller](#deploy-nephe-controller)
+  - [Interact with AKS cluster](#interact-with-aks-cluster)
+  - [Destroy AKS cluster](#destroy-aks-cluster)
+- [Create Azure VMs](#create-azure-vms)
+  - [Setup Terraform Environment](#setup-terraform-environment-1)
+  - [Create VMs](#create-vms)
+  - [Get VNET attributes](#get-vnet-attributes)
+  - [Destroy VMs](#destroy-vms)
+<!-- /toc -->
+
 ## Prerequisites
 
 1. Install and configure [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest).

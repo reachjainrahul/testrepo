@@ -1,5 +1,21 @@
 # Nephe Architecture
 
+## Table of Contents
+
+<!-- toc -->
+- [Introduction](#introduction)
+- [Components](#components)
+  - [Cloud Provider Account (CPA) Controller](#cloud-provider-account-cpa-controller)
+  - [Cloud Entity Selector (CES) Controller](#cloud-entity-selector-ces-controller)
+  - [Account Poller](#account-poller)
+  - [Virtual Machine (VM) Controller](#virtual-machine-vm-controller)
+  - [Converter](#converter)
+  - [Antrea Controller](#antrea-controller)
+  - [Network Policy (NP) Controller](#network-policy-np-controller)
+  - [Cloud Plugins](#cloud-plugins)
+<!-- /toc -->
+
+## Introduction
 Nephe supports micro-segmentation of public cloud virtual machines by
 realizing [Antrea NetworkPolicies](https://github.com/antrea-io/antrea/blob/main/docs/antrea-network-policy.md)
 on virtual machines. It leverages cloud network security groups to enforce
