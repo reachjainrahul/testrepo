@@ -16,6 +16,7 @@
 <!-- /toc -->
 
 ## Introduction
+
 Nephe supports micro-segmentation of Public Cloud Virtual Machines by
 realizing [Antrea NetworkPolicies](https://github.com/antrea-io/antrea/blob/main/docs/antrea-network-policy.md)
 on Virtual Machines. It leverages cloud network security groups to enforce
@@ -75,21 +76,10 @@ updated CR objects to the Converter module.
 ### Converter
 
 The Converter receives `VirtualMachine` CRs from VM controller and converts them
-into `ExternalEntity` CRs, which will be consumed by `Nephe Controller` and NP
-Controller. Each `ExternalEntity` object has K8s Labels that matches cloud
+into `ExternalEntity` CRs, which will be consumed by `Antrea Controller` and
+`NP Controller`. Each `ExternalEntity` object has K8s Labels that matches cloud
 resource properties, such as Kind, Name, VPC / VNET, tags. It may also contain
 IP addresses of cloud resources when applicable.
-
-The Converter has two packages:
-
-- The source package implements the target interface which the source is
-  intended to be converted to. It also contains the core converter logic, which
-  utilizes the helper functions in target package to generate target resource
-  and perform operations on target CRs in the API Server. `VirtualMachine` is a
-  source object.
-- The target package defines an interface specifying information getters it
-  needs and provides series of helper functions to populate target resource
-  objects. `ExternalEntity` is a target object.
 
 ### Antrea Controller
 
