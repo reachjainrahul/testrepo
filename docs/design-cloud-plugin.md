@@ -58,7 +58,7 @@ Cloud Interface plugin implementation for a specific cloud type.
 The sequence diagram shows cloud plugin registration as part of `Nephe Controller`
 initialization.
 
-<img src="assets/cloud-plugin-register.png" width="442" alt="Cloud Plugin Register Sequence Diagram">
+<img src="assets/cloud-plugin-register.png" width="600" alt="Cloud Plugin Register Sequence Diagram">
 
 ### 2.2 Cloud Interface Plugin
 
@@ -72,9 +72,9 @@ interfaces:
 
 **AccountMgmtInterface**:
 - Provides APIs to add/remove/update cloud accounts using CloudProviderAccount
-  CRD.
+  CR.
 - Provides APIs to add/remove/update cloud resource selectors using
-  CloudEntitySelector CRD.
+  CloudEntitySelector CR.
 
 **SecurityGroupInterface**:
 - Provides APIs to realize Kubernetes NetworkPolicy via the cloud native
@@ -94,7 +94,7 @@ respectively.
   [Service Interface](design-cloud-plugin.md#241-cloud-service-interface)
   level.
 
-<img src="assets/cloud-interface-apis.png" width="842" alt="Cloud Interface APIs Sequence Diagram">
+<img src="assets/cloud-interface-apis.png" width="950" alt="Cloud Interface APIs Sequence Diagram">
 
 ### 2.3 Common Plugin Framework
 

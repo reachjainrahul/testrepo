@@ -2,8 +2,8 @@
 
 ## Table of Contents
 <!-- toc -->
-- [Overview](#overview)
 - [Introduction](#introduction)
+- [Basic Concepts](#basic-concepts)
   - [Antrea Internal NetworkPolicy](#antrea-internal-networkpolicy)
   - [Cloud Network Security Group](#cloud-network-security-group)
 - [Implementation](#implementation)
@@ -29,15 +29,15 @@
   - [Verify ANP Rule realization on VM](#verify-anp-rule-realization-on-vm-1)
 <!-- /toc -->
 
-## Overview
+## Introduction
 
 The Nephe project does not consume the Antrea `NetworkPolicy`(ANP) CR directly.
 The ANP CR is used by [Antrea](https://antrea.io/) project, where
-`antrea-controller` Pod watches for the Antrea `NetworkPolicy`(ANP) CR and
+`antrea-controller` pod watches for the Antrea `NetworkPolicy`(ANP) CR and
 converts each ANP CR to an Antrea internal [NetworkPolicy](https://github.com/antrea-io/antrea/blob/main/pkg/apis/controlplane/v1beta2/types.go#L202)
 object for further processing. This Antrea internal NetworkPolicy object
-will be used by the Nephe Controller to enforce the network policies on public
-cloud virtual machines.
+will be used by the Nephe Controller to enforce the network policies on Public
+Cloud Virtual Machines.
 
 `Nephe Controller` registers with the antrea `API server`, to receive all
 the events related to `AddressGroups`, `AppliedToGroups` and
@@ -50,11 +50,11 @@ of a cloud network security rule. The `AppliedToGroups` will translated to a
 NSG, and it will be attached to the public cloud VMs. Currently, enforcing ANP
 is only supported on AWS and Azure clouds.
 
-## Introduction
+## Basic Concepts
 
 This section gives a brief introduction about cloud network security groups and
 Antrea internal NetworkPolicy object. These two concepts are the basics to
-understand how `nephe-controller` realizes network polices on public cloud
+understand how `nephe-controller` realizes network polices on Public Cloud
 VMs. If you are already familiar with these two concepts, please skip this
 section and proceed to the [Implementation](#implementation) section.
 
@@ -63,8 +63,10 @@ section and proceed to the [Implementation](#implementation) section.
 Each Antrea internal NetworkPolicy object contains a `Name` and `Namespace`
 field that uniquely identifies an Antrea internal NetworkPolicy object. 
 `Name` and `Namespace` corresponds to user facing Antrea `NetworkPolicy`(ANP).
-It contains list of rules and a list of references to the appliedToGroups. 
-Each rule contains,
+It contains list of rules and a list of references to the appliedToGroups and
+addressGroups.
+
+Each `Rule` contains:
 - A direction field.
 - A list of services(port).
 - To/From field - IPBlock and reference to a list `AddressGroups`.
@@ -86,7 +88,7 @@ contains the following:
 ### Cloud Network Security Group
 
 Cloud Network Security Group(NSG) is a whitelist, which is at a VPC/VNET level.
-It is uniquely identified by its name or an ID. It contains zero or more Network
+It is uniquely identified by its Name or an ID. It contains zero or more Network
 Interface Cards(NIC). A NIC may be associated with zero or more NSGs. A NSG
 contains Ingress and Egress rules.
 
@@ -109,36 +111,36 @@ enforce network polices on public cloud VMs, which are called as
 `AddressGroup NSG` and `AppliedTo NSG`. An Antrea internal NetworkPolicy is
 realized on the cloud VMs via a combination of `AddressGroup NSG` and
 `AppliedTo NSG`. For better performance/scalability, all cloud calls to manage
-antrea created NSGs are designed to be asynchronous.
+Nephe created NSGs are designed to be asynchronous.
 
 ### AddressGroup NSG 
 
 AddressGroup NSG internally is referred to as cloud membership only security
 group, as it contains only the GroupMembers. This type of NSG is created with a
-prefix `nephe-ag-adressgroupname`, where the prefix `ag-` implies it is just
+prefix `nephe-ag-<adressGroupName>`, where the prefix `ag-` implies it is just
 an `AddressGroup` based NSG. 
 
 - Each Antrea AddressGroup is mapped to zero or more cloud membership only
 `AddressGroup NSG`, and zero or more IP blocks. 
-- Each `AddressGroup NSG`, correspond to a VPC, and a list of cloud resources,
-  which will not have ingress/egress rules.
+- Each `AddressGroup NSG` scope is at a VPC level, and which will not have
+any ingress/egress rules.
 
 ### AppliedTo NSG
 
-AppliedTo NSG will be applied to the public cloud VMs. This type of NSG is
-created with a prefix `nephe-at-appliedtogroupname`, where the prefix `at-`
+AppliedTo NSG will be applied to the Public Cloud VMs. This type of NSG is
+created with a prefix `nephe-at-<appliedToGroupName>`, where the prefix `at-`
 implies it is an `AppliedTo` based NSG.
 
 - Each Antrea AppliedGroup is mapped to zero or more cloud `AppliedTo NSG`
-- Each `AppliedTo NSG` correspond to a VPC and a list of cloud resources, which
-  will have ingress/egress rules associated with it.
+- Each `AppliedTo NSG` scope is at a VPC level, and which will have ingress/egress
+rules associated with it.
 
 ### Mapping Antrea NetworkPolicy To NSG
 
 Each `AddressGroup NSG` and IPBlocks uniquely maps `To/From` fields in the user
 configured Antrea `NetworkPolicy`. Each `AppliedTo NSG` uniquely maps to an
 `AppliedTo` field in the Antrea `NetworkPolicy`. Each `AppliedTo NSG` creates
-ingress and egress rules based on cloud membership only `AddressGroup NSG` and
+ingress and egress rules based on cloud membership only `AddressGroup NSG` or
 IPBlocks associated with an Antrea `NetworkPolicy`.
 
 ### ANP Rule realization
@@ -158,7 +160,7 @@ a network resource, when the following expectations are met.
 
 In this example, AWS cloud is configured using CloudProviderAccount(CPA) and
 the cloud resource filter is configured using CloudEntitySelector(CES) to import
-3 VMs that belong to vpc `vpc-0cfddb48a8119837e`.
+3 VMs that belong to vpc `vpc-0d6bb6a4a880bd9ad`.
 
 ### List Virtual Machines
 
@@ -186,7 +188,6 @@ corresponding to each VM:
 ```bash
 kubectl get externalentities -A
 kubectl get ee -A
-
 ```
 
 ```text
@@ -338,7 +339,7 @@ aws-ns      i-05e3fb66922d56e0a   SUCCESS       1
 
 In this example, Azure cloud is configured using CloudProviderAccount(CPA) and
 the cloud resource filter is configured using CloudEntitySelector(CES) to
-import 3 VMs that belong to vnet `cloudcontroller-vnet-e36c7b85c7c139ea`.
+import 3 VMs that belong to vnet `nephe-vnet-e4d5cd72369467d9`.
 
 ### List Virtual Machines
 
@@ -352,10 +353,10 @@ kubectl get vm -A
 
 ```text
 # Output
-NAMESPACE   NAME                                     CLOUD-PROVIDER   VIRTUAL-PRIVATE-CLOUD               STATE
-azure-ns    centos-host-kumaranand-vmlinux-0-16117   Azure            nephe-vnet-e4d5cd72369467d9-15165   running
-azure-ns    rhel-host-kumaranand-vmlinux-0-15892     Azure            nephe-vnet-e4d5cd72369467d9-15165   running
-azure-ns    ubuntu-host-kumaranand-vmlinux-0-16140   Azure            nephe-vnet-e4d5cd72369467d9-15165   running
+NAMESPACE   NAME                                     CLOUD-PROVIDER   VIRTUAL-PRIVATE-CLOUD        STATE
+azure-ns    centos-host-kumaranand-vmlinux-0-16117   Azure            nephe-vnet-e4d5cd72369467d9  running
+azure-ns    rhel-host-kumaranand-vmlinux-0-15892     Azure            nephe-vnet-e4d5cd72369467d9  running
+azure-ns    ubuntu-host-kumaranand-vmlinux-0-16140   Azure            nephe-vnet-e4d5cd72369467d9  running
 ```
 
 ### List External Entities
@@ -370,17 +371,17 @@ kubectl get ee -A
 
 ```text
 # Output
-NAMESPACE   NAME                                                    AGE
-azure-ns    virtualmachine-centos-host-kumaranand-vmlinux-0-16117   3m59s
-azure-ns    virtualmachine-rhel-host-kumaranand-vmlinux-0-15892     3m59s
-azure-ns    virtualmachine-ubuntu-host-kumaranand-vmlinux-0-16140   3m59s
+NAMESPACE   NAME                                         AGE
+azure-ns    virtualmachine-centos-host-vmlinux-0-16117   3m59s
+azure-ns    virtualmachine-rhel-host-vmlinux-0-15892     3m59s
+azure-ns    virtualmachine-ubuntu-host-vmlinux-0-16140   3m59s
 ```
 
 ### Create a sample Antrea NetworkPolicy
 
 A sample Antrea `NetworkPolicy` is shown below, which specifies an Ingress rule
 allowing TCP traffic on port 22. The `from` field is an externalEntitySelector
-with matching labels as `name.nephe: rhel-host-kumaranand-vmlinux-0-15892`.
+with matching labels as `name.nephe: rhel-host-vmlinux-0-15892`.
 And the `appliedTo` field is an externalEntitySelector with a matching
 label as `kind.nephe: virtualmachine`.
 
@@ -401,7 +402,7 @@ spec:
     from:
     - externalEntitySelector:
         matchLabels:
-          name.nephe: rhel-host-kumaranand-vmlinux-0-15892
+          name.nephe: rhel-host-vmlinux-0-15892
     ports:
     - protocol: TCP
       port: 22

@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial framework to deploy the `Nephe Controller` in a single cluster.
 - CRD definitions: VirtualMachine, CloudProviderAccount and CloudEntitySelector. 
-- Antrea NetworkPolicy on AWS/Azure VMs using cloud network security groups.
+- Cloud Plugin for AWS and Azure Cloud.
+- Antrea NetworkPolicy on AWS and Azure VMs using Cloud Network Security Groups.
+- Terraform scripts for deploying EKS, AKS Cluster and a 3 VM VPC/VNET environment.
+- Initial Nephe Documentation.
 
 

@@ -9,6 +9,7 @@
   - [Create an EKS cluster](#create-an-eks-cluster)
   - [Deploy Nephe Controller](#deploy-nephe-controller)
   - [Interact with EKS cluster](#interact-with-eks-cluster)
+  - [Display EKS attributes](#display-eks-attributes)
   - [Destroy EKS cluster](#destroy-eks-cluster)
 - [Create AWS VMs](#create-aws-vms)
   - [Setup Terraform Environment](#setup-terraform-environment-1)
@@ -20,7 +21,7 @@
 ## Prerequisites
 
 1. Install and configure [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html).
-2. Install [Terraform](https://learn.hashicorp.com/terraform/getting-started/install.html).
+2. Install [Terraform](https://learn.hashicorp.com/terraform/getting-started/install.html). Recommend v0.13.5.
 3. Install `jq`, `pv`, and `bzip2`.
 4. Set the below environment variables.
 
@@ -86,11 +87,10 @@ export KUBECONFIG=~/tmp/terraform-eks/kubeconfig
 Loading locally built `antrea/nephe` images to EKS cluster.
 
 ```bash
-~/terraform/eks load ...
 ~/terraform/eks load antrea/nephe
 ```
 
-Display EKS attributes.
+### Display EKS attributes
 
 ```bash
 ~/terraform/eks output
@@ -104,7 +104,7 @@ Display EKS attributes.
 
 ## Create AWS VMs
 
-Additionally, you can also create a compute VPC with 3 VMs using the terraform
+Additionally, you can also create compute VPC with 3 VMs using terraform
 scripts for testing purpose. Each VM will have a public IP and an Apache Tomcat
 server deployed on port 80. Use curl `<PUBLIC_IP>:80` to access a sample web
 page. Create or obtain AWS key and secret and configure the below environment
