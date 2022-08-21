@@ -220,6 +220,9 @@ sample-ns   virtualmachine-i-05e3fb66922d56e0a   13m
 sample-ns   virtualmachine-i-0a20bae92ddcdb60b   13m
 ```
 
+Issue kubectl command to get detailed information about the
+ExternalEntity CR.
+
 ```bash
 kubectl describe ee virtualmachine-i-0033eb4a6c846451d -n sample-ns
 ```
@@ -326,9 +329,9 @@ policy is applied.
 
 <img src="./assets/cloud-sg.png" width="1500" alt="CloudConsoleSGs"/>
 
-The VirtualMachinePolicy(VMP) API will display the policy realization status of all
-policies applied to a VM. The ANP status on a virtual machine will be shown in
-the `Realization` field. In the below example, `vm-anp` is successfully
+The VirtualMachinePolicy (VMP) API will display the policy realization status of
+all the policies applied to a VM. The ANP status on a virtual machine will be
+shown in the `Realization` field. In the below example, `vm-anp` is successfully
 applied to all VMs.
 
 ```bash
@@ -356,6 +359,6 @@ labels:
   is meaningful only within the K8s cluster. For AWS, virtual machine name is
   the AWS VM instance ID. For Azure virtual machine name is the hashed values of
   the Azure VM resource ID.
-* `KEY.tag.nephe`: Select based on cloud resource tag key/value pair,
-  where `KEY` is the cloud resource tag `key` in lower case and `label` value
-  is cloud resource tag value in lower case.
+* `key.tag.nephe`: Select based on cloud resource tag key/value pair,
+  where `key` is the cloud resource `Key` tag (in lower case) and the `label`
+  value is cloud resource tag `Value` in lower case.

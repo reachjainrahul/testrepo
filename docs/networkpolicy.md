@@ -273,7 +273,7 @@ Events:                <none>
 ### AppliedToGroup NSG
 
 The AppliedToGroup `c98c24e5-c4b9-59d8-8dc7-3c7d9ce96347` corresponds to the
-`appliedTo` field of the ANP. This group contains all the 3 ExternalEntity as
+`appliedTo` field of the ANP. This group contains all the 3 ExternalEntities as
 the Group Members. `Nephe Controller` will convert this AppliedToGroup into
 an `AppliedTo NSG` with NSG name as
 `nephe-at-c98c24e5-c4b9-59d8-8dc7-3c7d9ce96347` and it will attach this
@@ -455,7 +455,7 @@ Events:                <none>
 ### AppliedTo ASG
 
 The AppliedToGroup `ab957ac3-b12c-52ca-a5d1-7aba1ab9c560` corresponds to the
-`appliedTo` field of the ANP. This group contains all the 3 ExternalEntity as
+`appliedTo` field of the ANP. This group contains all the 3 ExternalEntities as
 the Group Members. `Nephe Controller` will convert this AppliedToGroup into
 an `AppliedTo ASG` with ASG name as
 `nephe-at-ab957ac3-b12c-52ca-a5d1-7aba1ab9c560` and it will attach this

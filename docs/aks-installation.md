@@ -1,6 +1,7 @@
 # Deploying Nephe in Azure AKS
 
 ## Table of Contents
+
 <!-- toc -->
 - [Prerequisites](#prerequisites)
 - [Create an AKS cluster via terraform](#create-an-aks-cluster-via-terraform)
@@ -13,7 +14,7 @@
 - [Create Azure VMs](#create-azure-vms)
   - [Setup Terraform Environment](#setup-terraform-environment-1)
   - [Create VMs](#create-vms)
-  - [Get VNET attributes](#get-vnet-attributes)
+  - [Display VNET attributes](#display-vnet-attributes)
   - [Destroy VMs](#destroy-vms)
 <!-- /toc -->
 
@@ -26,16 +27,16 @@
    variables. Please refer to [Azure documentation](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#create-an-azure-active-directory-application)
    for more information.
 
-```bash
-export TF_VAR_aks_client_id=YOUR_SERVICE_PRINCIPAL_ID
-export TF_VAR_aks_client_secret=YOUR_SERVICE_PRINCIPAL_SECRET
-export TF_VAR_aks_client_subscription_id=YOUR_SUBCRIPTION_ID
-export TF_VAR_aks_client_tenant_id=YOUR_TENANT_ID
-export TF_VAR_owner=YOUR_NAME
-```
+   ```bash
+   export TF_VAR_aks_client_id=YOUR_SERVICE_PRINCIPAL_ID
+   export TF_VAR_aks_client_secret=YOUR_SERVICE_PRINCIPAL_SECRET
+   export TF_VAR_aks_client_subscription_id=YOUR_SUBCRIPTION_ID
+   export TF_VAR_aks_client_tenant_id=YOUR_TENANT_ID
+   export TF_VAR_owner=YOUR_NAME
+   ```
 
-- `TF_VAR_owner` may be set so that you can identify your own cloud resources.
-  It should be one word, with no spaces and in lower case.
+   Note: `TF_VAR_owner` may be set so that you can identify your own cloud resources.
+   It should be one word, with no spaces and in lower case.
 
 ## Create an AKS cluster via terraform
 
@@ -57,7 +58,7 @@ Terraform state files and other runtime info will be stored under
 `~/tmp/terraform-aks/`. You can also create an AKS cluster in other ways and
 deploy prerequisites manually.
 
-This will deploy `cert-manager v1.8.2` and `antrea v1.8`.
+This also deploys `cert-manager v1.8.2` and `antrea v1.8`.
 
 ```bash
 ~/terraform/aks create
@@ -72,7 +73,7 @@ This will deploy `cert-manager v1.8.2` and `antrea v1.8`.
 ### Interact with AKS cluster
 
 Issue kubectl commands to AKS cluster using the helper scripts. To run kubectl
-commands directly, export `KUBECONFIG` environment variable.
+commands directly, set `KUBECONFIG` environment variable.
 
 ```bash
 ~/terraform/aks kubectl ...
@@ -128,7 +129,7 @@ export TF_VAR_owner=YOUR_NAME
 Terraform state files and other runtime info will be stored under
 `~/tmp/terraform-azure/`
 
-### Get VNET attributes
+### Display VNET attributes
 
 ```bash
 ~/terraform/azure-tf output
