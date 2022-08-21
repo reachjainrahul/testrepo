@@ -144,7 +144,6 @@ func (c *KubeCtl) PodCmd(pod *types.NamespacedName, podCmd []string, timeout tim
 	args = append(args, podCmd...)
 	cmd := c.getCommand(args...)
 	output, err := cmd.CombinedOutput()
-	// logf.Log.V(1).Info("TODO: remove later", "cmd", cmd.String(), "output", string(output), "err", err)
 	if err != nil {
 		return "", fmt.Errorf("execute cmd [%s] on pod %s failed: err %w, output %s", cmd.String(), pod.String(), err, output)
 	}
