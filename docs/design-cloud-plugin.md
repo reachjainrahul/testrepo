@@ -58,7 +58,7 @@ Cloud Interface plugin implementation for a specific cloud type.
 The sequence diagram shows cloud plugin registration as part of `Nephe Controller`
 initialization.
 
-<img src="assets/cloud-plugin-register.png" width="600" alt="Cloud Plugin Register Sequence Diagram">
+<img src="assets/cloud-plugin-register.png" height="420" width="620" alt="Cloud Plugin Register Sequence Diagram">
 
 ### 2.2 Cloud Interface Plugin
 
