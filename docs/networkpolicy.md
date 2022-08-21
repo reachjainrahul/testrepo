@@ -1,6 +1,7 @@
 # Nephe NetworkPolicy
 
 ## Table of Contents
+
 <!-- toc -->
 - [Introduction](#introduction)
 - [Basic Concepts](#basic-concepts)
@@ -33,10 +34,10 @@
 
 The Nephe project does not consume the Antrea `NetworkPolicy`(ANP) CR directly.
 The ANP CR is used by [Antrea](https://antrea.io/) project, where
-`antrea-controller` pod watches for the Antrea `NetworkPolicy`(ANP) CR and
+`antrea-controller` pod watches for the Antrea `NetworkPolicy` CR and
 converts each ANP CR to an Antrea internal [NetworkPolicy](https://github.com/antrea-io/antrea/blob/main/pkg/apis/controlplane/v1beta2/types.go#L202)
 object for further processing. This Antrea internal NetworkPolicy object
-will be used by the Nephe Controller to enforce the network policies on Public
+will be used by the `Nephe Controller` to enforce the network policies on Public
 Cloud Virtual Machines.
 
 `Nephe Controller` registers with the antrea `API server`, to receive all
@@ -44,7 +45,7 @@ the events related to `AddressGroups`, `AppliedToGroups` and
 `NetworkPolicies` objects. `Nephe Controller` translates these
 NetworkPolicy related objects to the corresponding cloud constructs. Each antrea
 internal NetworkPolicy object will result in a combination of one
-or more cloud network security groups(NSG). The `AddressGroups` field will be
+or more cloud network security groups. The `AddressGroups` field will be
 translated to a cloud NSG, and it will be embedded in `source/destination` field
 of a cloud network security rule. The `AppliedToGroups` will translated to a
 NSG, and it will be attached to the public cloud VMs. Currently, enforcing ANP
@@ -52,8 +53,8 @@ is only supported on AWS and Azure clouds.
 
 ## Basic Concepts
 
-This section gives a brief introduction about cloud network security groups and
-Antrea internal NetworkPolicy object. These two concepts are the basics to
+This section gives a brief introduction about Antrea internal NetworkPolicy
+object and cloud network security groups. These two concepts are the basics to
 understand how `nephe-controller` realizes network polices on Public Cloud
 VMs. If you are already familiar with these two concepts, please skip this
 section and proceed to the [Implementation](#implementation) section.
@@ -68,7 +69,7 @@ addressGroups.
 
 Each `Rule` contains:
 - A direction field.
-- A list of services(port).
+- A list of services (port).
 - To/From field - IPBlock and reference to a list `AddressGroups`.
 
 An `AddressGroup` is used in `To/From` field of an ANP Rule. Each 
@@ -80,16 +81,16 @@ An `AddressGroup` is used in `To/From` field of an ANP Rule. Each
 
 An `AppliedToGroup` is used in `AppliedTo` field of an ANP. Each `AppliedToGroup`
 contains the following:
-- An auto-generated name(namespace-less) uniquely identifies a `AppliedToGroup`.
+- An auto-generated name (namespace-less) uniquely identifies a `AppliedToGroup`.
 - A list of GroupMembers, each may contain references of ExternalEntities if
   applicable.
 - A list of Endpoints, each contains IP address and ports.
 
 ### Cloud Network Security Group
 
-Cloud Network Security Group(NSG) is a whitelist, which is at a VPC/VNET level.
+Cloud Network Security Group (NSG) is a whitelist, which is at a VPC/VNET level.
 It is uniquely identified by its Name or an ID. It contains zero or more Network
-Interface Cards(NIC). A NIC may be associated with zero or more NSGs. A NSG
+Interface Cards (NIC). A NIC may be associated with zero or more NSGs. A NSG
 contains Ingress and Egress rules.
 
 **An Ingress Rule includes**:
@@ -106,7 +107,7 @@ contains Ingress and Egress rules.
 
 ## Implementation 
 
-The Nephe Controller creates two types of network security groups(NSGs) to
+The `Nephe Controller` creates two types of network security groups (NSGs) to
 enforce network polices on public cloud VMs, which are called as
 `AddressGroup NSG` and `AppliedTo NSG`. An Antrea internal NetworkPolicy is
 realized on the cloud VMs via a combination of `AddressGroup NSG` and
@@ -133,7 +134,7 @@ implies it is an `AppliedTo` based NSG.
 
 - Each Antrea AppliedGroup is mapped to zero or more cloud `AppliedTo NSG`
 - Each `AppliedTo NSG` scope is at a VPC level, and which will have ingress/egress
-rules associated with it.
+  rules associated with it.
 
 ### Mapping Antrea NetworkPolicy To NSG
 
@@ -156,9 +157,9 @@ a network resource, when the following expectations are met.
 
 ## AWS Example
 
-In this example, AWS cloud is configured using CloudProviderAccount(CPA) and
-the cloud resource filter is configured using CloudEntitySelector(CES) to import
-3 VMs that belong to vpc `vpc-0d6bb6a4a880bd9ad`.
+In this example, AWS cloud is configured using CloudProviderAccount (CPA) and
+the cloud resource filter is configured using CloudEntitySelector (CES) to
+import 3 VMs that belong to vpc `vpc-0d6bb6a4a880bd9ad`.
 
 ### List Virtual Machines
 
@@ -335,8 +336,8 @@ aws-ns      i-05e3fb66922d56e0a   SUCCESS       1
 
 ## Azure Example
 
-In this example, Azure cloud is configured using CloudProviderAccount(CPA) and
-the cloud resource filter is configured using CloudEntitySelector(CES) to
+In this example, Azure cloud is configured using CloudProviderAccount (CPA) and
+the cloud resource filter is configured using CloudEntitySelector (CES) to
 import 3 VMs that belong to vnet `nephe-vnet-e4d5cd72369467d9`.
 
 ### List Virtual Machines
@@ -351,10 +352,10 @@ kubectl get vm -A
 
 ```text
 # Output
-NAMESPACE   NAME                                     CLOUD-PROVIDER   VIRTUAL-PRIVATE-CLOUD        STATE
-azure-ns    centos-host-kumaranand-vmlinux-0-16117   Azure            nephe-vnet-e4d5cd72369467d9  running
-azure-ns    rhel-host-kumaranand-vmlinux-0-15892     Azure            nephe-vnet-e4d5cd72369467d9  running
-azure-ns    ubuntu-host-kumaranand-vmlinux-0-16140   Azure            nephe-vnet-e4d5cd72369467d9  running
+NAMESPACE   NAME                          CLOUD-PROVIDER   VIRTUAL-PRIVATE-CLOUD        STATE
+azure-ns    centos-host-vmlinux-0-16117   Azure            nephe-vnet-e4d5cd72369467d9  running
+azure-ns    rhel-host-vmlinux-0-15892     Azure            nephe-vnet-e4d5cd72369467d9  running
+azure-ns    ubuntu-host-vmlinux-0-16140   Azure            nephe-vnet-e4d5cd72369467d9  running
 ```
 
 ### List External Entities
@@ -410,7 +411,7 @@ spec:
 
 In Azure each network interface is a member of only one network security group,
 but a network interface can be a member of multiple application security
-group(ASG). `Nephe Controller` converts the sample ANP into a combination of
+group (ASG). `Nephe Controller` converts the sample ANP into a combination of
 `AddressGroup ASG` and `AppliedTo ASG`. These ASGs are then associated with
 respective network interface of the VMs as shown in the below image.
 
@@ -439,7 +440,7 @@ Annotations:  <none>
 API Version:  controlplane.antrea.io/v1beta2
 Group Members:
   External Entity:
-    Name:       virtualmachine-rhel-host-kumaranand-vmlinux-0-15892
+    Name:       virtualmachine-rhel-host-vmlinux-0-15892
     Namespace:  azure-ns
   Ips:
     AAAAAAAAAAAAAP//CgABBQ==
@@ -473,19 +474,19 @@ Annotations:  <none>
 API Version:  controlplane.antrea.io/v1beta2
 Group Members:
   External Entity:
-    Name:       virtualmachine-ubuntu-host-kumaranand-vmlinux-0-16140
+    Name:       virtualmachine-ubuntu-host-vmlinux-0-16140
     Namespace:  azure-ns
   Ips:
     AAAAAAAAAAAAAP//CgABBA==
     AAAAAAAAAAAAAP//FGJH1w==
   External Entity:
-    Name:       virtualmachine-centos-host-kumaranand-vmlinux-0-16117
+    Name:       virtualmachine-centos-host-vmlinux-0-16117
     Namespace:  azure-ns
   Ips:
     AAAAAAAAAAAAAP//CgABBg==
     AAAAAAAAAAAAAP//FGJHcg==
   External Entity:
-    Name:       virtualmachine-rhel-host-kumaranand-vmlinux-0-15892
+    Name:       virtualmachine-rhel-host-vmlinux-0-15892
     Namespace:  azure-ns
   Ips:
     AAAAAAAAAAAAAP//CgABBQ==
@@ -509,8 +510,8 @@ kubectl get virtualmachinepolicy -A
 
 ```text
 # Output
-NAMESPACE   VM NAME                                  REALIZATION   COUNT
-azure-ns    ubuntu-host-kumaranand-vmlinux-0-16140   SUCCESS       1
-azure-ns    centos-host-kumaranand-vmlinux-0-16117   SUCCESS       1
-azure-ns    rhel-host-kumaranand-vmlinux-0-15892     SUCCESS       1
+NAMESPACE   VM NAME                       REALIZATION   COUNT
+azure-ns    ubuntu-host-vmlinux-0-16140   SUCCESS       1
+azure-ns    centos-host-vmlinux-0-16117   SUCCESS       1
+azure-ns    rhel-host-vmlinux-0-15892     SUCCESS       1
 ```

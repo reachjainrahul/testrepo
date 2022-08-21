@@ -60,14 +60,12 @@ the target VMs onto `Nephe Controller`. The following section explains
 how to set up access to public cloud account, select target VMs, and
 import VMs into the K8s cluster as VirtualMachine CRs.
 
-TODO: Explain the access controls required to read VM and configure
-NSG.
-
 ### CloudProviderAccount
 
 To import cloud VMs, user needs to configure a `CloudProviderAccount` CR, with
 a K8s secret containing base64 encoded cloud account credentials. The secret
-should be created in `nephe-system` namespace so nephe controller can access it.
+should be created in `nephe-system` namespace, so that `Nephe Controller` can
+access it.
 
 #### Sample Secret for AWS
 
@@ -77,10 +75,9 @@ To get the base64 encoded json string for credential, run:
 echo '{"accessKeyId": "YOUR_AWS_ACCESS_KEY_ID", "accessKeySecret": "YOUR_AWS_ACCESS_KEY_SECRET", "roleArn": "YOUR_AWS_IAM_ROLE_ARN", "externalId": "IAM_ROLE_EXTERNAL_ID"}' | openssl base64 | tr -d '\n'
 ```
 
-`roleArn` and `externalId` are for role based access on AWS. They can be
-removed if the credentials are provided.
+Note: `roleArn` and `externalId` are used for role based access on AWS, they can
+be removed if credentials are provided.
 
-TODO: Update the examples with correct values.
 
 ```bash
 kubectl create namespace sample-ns
@@ -93,6 +90,7 @@ metadata:
 type: Opaque
 data:
   credentials: "<BASE64_ENCODED_JSON_STRING>"
+EOF
 ``` 
 
 #### Sample CloudProviderAccount for AWS
@@ -169,7 +167,7 @@ cat <<EOF | kubectl apply -f -
 apiVersion: crd.cloud.antrea.io/v1alpha1
 kind: CloudEntitySelector
 metadata:
-  name: cloudentityselector-aws
+  name: cloudentityselector-aws-sample
   namespace: sample-ns
 spec:
   accountName: cloudprovideraccount-aws-sample
@@ -223,84 +221,67 @@ sample-ns   virtualmachine-i-0a20bae92ddcdb60b   13m
 ```
 
 ```bash
-kubectl describe vm i-0033eb4a6c846451d -n sample-ns
+kubectl describe ee virtualmachine-i-0033eb4a6c846451d -n sample-ns
 ```
 
 ```text
 # Output
-Name:         i-0033eb4a6c846451d
+Name:         virtualmachine-i-0033eb4a6c846451d
 Namespace:    sample-ns
-Labels:       <none>
-Annotations:  cloud-assigned-id: i-0033eb4a6c846451d
-              cloud-assigned-name: vpc-0d6bb6a4a880bd9ad-ubuntu1
-              cloud-assigned-vpc-id: vpc-0d6bb6a4a880bd9ad
-API Version:  crd.cloud.antrea.io/v1alpha1
-Kind:         VirtualMachine
+Labels:       environment.tag.nephe=nephe
+              kind.nephe=virtualmachine
+              login.tag.nephe=ubuntu
+              name.nephe=i-0033eb4a6c846451d
+              name.tag.nephe=vpc-0d6bb6a4a880bd9ad-ubuntu1
+              namespace.nephe=sample-ns
+              terraform.tag.nephe=true
+              vpc.nephe=vpc-0d6bb6a4a880bd9ad
+Annotations:  <none>
+API Version:  crd.antrea.io/v1alpha2
+Kind:         ExternalEntity
 Metadata:
-  Creation Timestamp:  2022-08-12T05:34:29Z
+  Creation Timestamp:  2022-08-21T12:27:16Z
   Generation:          1
   Managed Fields:
-    API Version:  crd.cloud.antrea.io/v1alpha1
+    API Version:  crd.antrea.io/v1alpha2
     Fields Type:  FieldsV1
     fieldsV1:
       f:metadata:
-        f:annotations:
+        f:labels:
           .:
-          f:cloud-assigned-id:
-          f:cloud-assigned-name:
-          f:cloud-assigned-vpc-id:
+          f:environment.tag.nephe:
+          f:kind.nephe:
+          f:login.tag.nephe:
+          f:name.nephe:
+          f:name.tag.nephe:
+          f:namespace.nephe:
+          f:terraform.tag.nephe:
+          f:vpc.nephe:
         f:ownerReferences:
           .:
-          k:{"uid":"b5b48b74-53bc-4943-836f-9d58a4f245e8"}:
-            .:
-            f:apiVersion:
-            f:blockOwnerDeletion:
-            f:controller:
-            f:kind:
-            f:name:
-            f:uid:
-      f:status:
+          k:{"uid":"aff897e4-5e4d-4f88-8a7c-d48f18d41bf7"}:
+      f:spec:
         .:
-        f:networkInterfaces:
-        f:provider:
-        f:state:
-        f:tags:
-          .:
-          f:Environment:
-          f:Login:
-          f:Name:
-          f:Terraform:
-        f:virtualPrivateCloud:
+        f:endpoints:
+        f:externalNode:
     Manager:    nephe-controller
     Operation:  Update
-    Time:       2022-08-12T05:34:29Z
+    Time:       2022-08-21T12:27:16Z
   Owner References:
     API Version:           crd.cloud.antrea.io/v1alpha1
     Block Owner Deletion:  true
     Controller:            true
-    Kind:                  CloudEntitySelector
-    Name:                  cloudentityselector-aws
-    UID:                   b5b48b74-53bc-4943-836f-9d58a4f245e8
-  Resource Version:        378157
-  UID:                     acbf686e-b3d3-421c-bd42-37308e7fd060
-Status:
-  Network Interfaces:
-    Ips:
-      Address:       10.0.1.173
-      Address Type:  InternalIP
-      Address:       54.177.32.161
-      Address Type:  ExternalIP
-    Mac:             02:4c:d7:4a:f4:f3
-    Name:            eni-0bef7c10929c98111
-  Provider:          AWS
-  State:             running
-  Tags:
-    Environment:          nephe
-    Login:                ubuntu
-    Name:                 vpc-0d6bb6a4a880bd9ad-ubuntu1
-    Terraform:            true
-  Virtual Private Cloud:  vpc-0d6bb6a4a880bd9ad
-Events:                   <none>
+    Kind:                  VirtualMachine
+    Name:                  i-0033eb4a6c846451d
+    UID:                   aff897e4-5e4d-4f88-8a7c-d48f18d41bf7
+  Resource Version:        478254
+  UID:                     bf01e92f-095a-48d2-8b3b-482e2084a135
+Spec:
+  Endpoints:
+    Ip:           10.0.1.173
+    Ip:           54.177.32.161
+  External Node:  nephe-controller
+Events:           <none>
 ```
 
 ## Apply Antrea NetworkPolicy
