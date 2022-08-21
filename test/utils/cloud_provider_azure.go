@@ -270,7 +270,6 @@ func (p *azureVPC) VMCmd(vm string, vmCmd []string, timeout time.Duration) (stri
 	args = append(args, vmCmd...)
 	cmd := exec.Command("ssh", args...)
 	output, err := cmd.CombinedOutput()
-	// logf.Log.V(1).Info("TODO: remove later", "cmd", cmd.String(), "output", string(output), "err", err)
 	if err != nil {
 		return "", fmt.Errorf("execute cmd [%s] on VM %s failed: err %w, output %s", cmd.String(), vm, err, output)
 	}
