@@ -201,14 +201,6 @@ func (ec2Cfg *ec2ServiceConfig) getInstances() ([]*ec2.Instance, error) {
 		}
 		request := &ec2.DescribeInstancesInput{Filters: filter}
 		filterInstances, e := ec2Cfg.apiClient.pagedDescribeInstancesWrapper(request)
-		if e == credentials.ErrNoValidProvidersFoundInChain {
-			resp, reqErr := http.Get("http://169.254.169.254/")
-			if reqErr != nil {
-				return nil, fmt.Errorf("Unable to reach instance metadata service: %v", reqErr)
-			}
-			awsPluginLogger().Info("error from ErrNoValidProvidersFoundInChain", "http response:", resp)
-		}
-		//TODO: remove this part in the future
 		if e != nil {
 			return nil, e
 		}
