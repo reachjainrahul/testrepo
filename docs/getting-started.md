@@ -10,10 +10,10 @@
   - [Deploying Nephe in AKS cluster](#deploying-nephe-in-aks-cluster)
 - [Importing Cloud VMs](#importing-cloud-vms)
   - [CloudProviderAccount](#cloudprovideraccount)
-    - [Sample <code>Secret</code> for AWS:](#sample--for-aws)
-    - [Sample <code>CloudProviderAccount</code> for AWS:](#sample--for-aws-1)
-    - [Sample <code>Secret</code> for Azure:](#sample--for-azure)
-    - [Sample <code>CloudProviderAccount</code> for Azure:](#sample--for-azure-1)
+    - [Sample Secret for AWS](#sample-secret-for-aws)
+    - [Sample CloudProviderAccount for AWS](#sample-cloudprovideraccount-for-aws)
+    - [Sample Secret for Azure](#sample-secret-for-azure)
+    - [Sample CloudProviderAccount for Azure:](#sample-cloudprovideraccount-for-azure)
   - [CloudEntitySelector](#cloudentityselector)
   - [External Entity](#external-entity)
 - [Apply Antrea NetworkPolicy](#apply-antrea-networkpolicy)
@@ -21,10 +21,10 @@
 
 ## Prerequisites
 
-* [kubectl](https://kubernetes.io/docs/tasks/tools/) installed.
+* [Kubectl](https://kubernetes.io/docs/tasks/tools/) installed.
 * An active Kubernetes cluster, accessible using kubectl.
-* [Antrea](https://github.com/antrea-io/antrea/) deployed. Recommend v1.7.
-* [cert-manager](https://github.com/jetstack/cert-manager) deployed. Recommend
+* [Antrea](https://github.com/antrea-io/antrea/) deployed. Recommend v1.8.
+* [Cert-Manager](https://github.com/jetstack/cert-manager) deployed. Recommend
   v1.8.
 
 ## Nephe Installation
@@ -45,7 +45,7 @@ kubectl apply -f config/nephe.yml
 
 ### Deploying Nephe in EKS cluster
 
-To deploy Nephe on an EKS cluster, please refer 
+To deploy Nephe on an EKS cluster, please refer
 to [the EKS installation guide](eks-installation.md).
 
 ### Deploying Nephe in AKS cluster
@@ -55,26 +55,29 @@ to [the AKS installation guide](aks-installation.md).
 
 ## Importing Cloud VMs
 
-To manage security policies of VMs, we need to first import target VMs onto the
-`Nephe Controller`. Below sections sets up access to public cloud account,
-select target VMs, and import VMs into the K8s cluster as `VirtualMachine` CRs.
+To manage security policies of Public Cloud VMs, we need to first import
+the target VMs onto `Nephe Controller`. The following section explains
+how to set up access to public cloud account, select target VMs, and
+import VMs into the K8s cluster as VirtualMachine CRs.
 
 ### CloudProviderAccount
 
 To import cloud VMs, user needs to configure a `CloudProviderAccount` CR, with
 a K8s secret containing base64 encoded cloud account credentials. The secret
-should be created in `nephe-system` namespace so nephe controller can access it.
+should be created in `nephe-system` namespace, so that `Nephe Controller` can
+access it.
 
-#### Sample `Secret` for AWS:
+#### Sample Secret for AWS
 
 To get the base64 encoded json string for credential, run:
 
 ```bash
-echo '{"accessKeyId": "YOUR_AWS_ACCESS_KEY_ID", "accessKeySecret": "YOUR_AWS_ACCESS_KEY_SECRET", "roleArn": "YOUR_AWS_IAM_ROLE_ARN", "externalId": "IAM_ROLE_EXTERNAL_ID"}' | openssl base64
+echo '{"accessKeyId": "YOUR_AWS_ACCESS_KEY_ID", "accessKeySecret": "YOUR_AWS_ACCESS_KEY_SECRET", "roleArn": "YOUR_AWS_IAM_ROLE_ARN", "externalId": "IAM_ROLE_EXTERNAL_ID"}' | openssl base64 | tr -d '\n'
 ```
 
-`roleArn` and `externalId` are for role based access on AWS. They can be
-removed if the credentials are provided.
+Note: `roleArn` and `externalId` are used for role based access on AWS, they can
+be removed if credentials are provided.
+
 
 ```bash
 kubectl create namespace sample-ns
@@ -87,9 +90,10 @@ metadata:
 type: Opaque
 data:
   credentials: "<BASE64_ENCODED_JSON_STRING>"
+EOF
 ``` 
 
-#### Sample `CloudProviderAccount` for AWS:
+#### Sample CloudProviderAccount for AWS
 
 ```bash
 kubectl create namespace sample-ns
@@ -109,13 +113,12 @@ spec:
 EOF
 ``` 
 
-#### Sample `Secret` for Azure:
+#### Sample Secret for Azure
 
 To get the base64 encoded json string for credential, run:
 
 ```bash
-echo '{"subscriptionId": "AZURE_SUBSCRIPTION_ID", "clientId": "YOUR_AZURE_CLIENT_ID", \
-       "tenantId": "AZURE_TENANT_ID", "clientKey": "YOUR_AZURE_CLIENT_KEY"}' | openssl base64
+echo '{"subscriptionId": "YOUR_AZURE_SUBSCRIPTION_ID", "clientId": "YOUR_AZURE_CLIENT_ID", "tenantId": "YOUR_AZURE_TENANT_ID", "clientKey": "YOUR_AZURE_CLIENT_KEY"}' | openssl base64 | tr -d '\n'
 ```
 
 ```bash
@@ -132,7 +135,7 @@ data:
 EOF
 ``` 
 
-#### Sample `CloudProviderAccount` for Azure:
+#### Sample CloudProviderAccount for Azure:
 
 ```bash
 kubectl create namespace sample-ns
@@ -155,7 +158,7 @@ EOF
 ### CloudEntitySelector
 
 Once a `CloudProviderAccount` CR is added, virtual machines (VMs) may be
-imported in the same Namespace via `CloudEntitySelector` CRD. The below example
+imported in the same Namespace via `CloudEntitySelector` CR. The below example
 selects VMs in VPC `VPC_ID` from `cloudprovideraccount-sample` to import in
 `sample-ns` Namespace.
 
@@ -164,10 +167,10 @@ cat <<EOF | kubectl apply -f -
 apiVersion: crd.cloud.antrea.io/v1alpha1
 kind: CloudEntitySelector
 metadata:
-  name: cloudentityselector-sample01
+  name: cloudentityselector-aws-sample
   namespace: sample-ns
 spec:
-  accountName: cloudprovideraccount-sample
+  accountName: cloudprovideraccount-aws-sample
   vmSelector:
       - vpcMatch:
           matchID: "<VPC_ID>"
@@ -185,9 +188,9 @@ kubectl get vm -A
 ```text
 # Output
 NAMESPACE        NAME                  CLOUD-PROVIDER   VIRTUAL-PRIVATE-CLOUD   STATE
-sample-ns        i-01b09fee2f216c1d7   AWS              vpc-02d3e1e0f15a56f4b   running
-sample-ns        i-02a0b61c39cb34e5c   AWS              vpc-02d3e1e0f15a56f4b   running
-sample-ns        i-0ae693c487e22dca8   AWS              vpc-02d3e1e0f15a56f4b   running
+sample-ns        i-0033eb4a6c846451d   AWS              vpc-0d6bb6a4a880bd9ad   running
+sample-ns        i-05e3fb66922d56e0a   AWS              vpc-0d6bb6a4a880bd9ad   running
+sample-ns        i-0a20bae92ddcdb60b   AWS              vpc-0d6bb6a4a880bd9ad   running
 ```
 
 Currently, the following matching criteria are supported to import VMs.
@@ -217,97 +220,83 @@ sample-ns   virtualmachine-i-05e3fb66922d56e0a   13m
 sample-ns   virtualmachine-i-0a20bae92ddcdb60b   13m
 ```
 
+Issue kubectl command to get detailed information about the
+ExternalEntity CR.
+
 ```bash
-kubectl describe vm i-0033eb4a6c846451d -n sample-ns
+kubectl describe ee virtualmachine-i-0033eb4a6c846451d -n sample-ns
 ```
 
 ```text
 # Output
-Name:         i-0033eb4a6c846451d
+Name:         virtualmachine-i-0033eb4a6c846451d
 Namespace:    sample-ns
-Labels:       <none>
-Annotations:  cloud-assigned-id: i-0033eb4a6c846451d
-              cloud-assigned-name: vpc-0d6bb6a4a880bd9ad-ubuntu1-kumaranand
-              cloud-assigned-vpc-id: vpc-0d6bb6a4a880bd9ad
-API Version:  crd.cloud.antrea.io/v1alpha1
-Kind:         VirtualMachine
+Labels:       environment.tag.nephe=nephe
+              kind.nephe=virtualmachine
+              login.tag.nephe=ubuntu
+              name.nephe=i-0033eb4a6c846451d
+              name.tag.nephe=vpc-0d6bb6a4a880bd9ad-ubuntu1
+              namespace.nephe=sample-ns
+              terraform.tag.nephe=true
+              vpc.nephe=vpc-0d6bb6a4a880bd9ad
+Annotations:  <none>
+API Version:  crd.antrea.io/v1alpha2
+Kind:         ExternalEntity
 Metadata:
-  Creation Timestamp:  2022-08-12T05:34:29Z
+  Creation Timestamp:  2022-08-21T12:27:16Z
   Generation:          1
   Managed Fields:
-    API Version:  crd.cloud.antrea.io/v1alpha1
+    API Version:  crd.antrea.io/v1alpha2
     Fields Type:  FieldsV1
     fieldsV1:
       f:metadata:
-        f:annotations:
+        f:labels:
           .:
-          f:cloud-assigned-id:
-          f:cloud-assigned-name:
-          f:cloud-assigned-vpc-id:
+          f:environment.tag.nephe:
+          f:kind.nephe:
+          f:login.tag.nephe:
+          f:name.nephe:
+          f:name.tag.nephe:
+          f:namespace.nephe:
+          f:terraform.tag.nephe:
+          f:vpc.nephe:
         f:ownerReferences:
           .:
-          k:{"uid":"b5b48b74-53bc-4943-836f-9d58a4f245e8"}:
-            .:
-            f:apiVersion:
-            f:blockOwnerDeletion:
-            f:controller:
-            f:kind:
-            f:name:
-            f:uid:
-      f:status:
+          k:{"uid":"aff897e4-5e4d-4f88-8a7c-d48f18d41bf7"}:
+      f:spec:
         .:
-        f:networkInterfaces:
-        f:provider:
-        f:state:
-        f:tags:
-          .:
-          f:Environment:
-          f:Login:
-          f:Name:
-          f:Terraform:
-        f:virtualPrivateCloud:
+        f:endpoints:
+        f:externalNode:
     Manager:    nephe-controller
     Operation:  Update
-    Time:       2022-08-12T05:34:29Z
+    Time:       2022-08-21T12:27:16Z
   Owner References:
     API Version:           crd.cloud.antrea.io/v1alpha1
     Block Owner Deletion:  true
     Controller:            true
-    Kind:                  CloudEntitySelector
-    Name:                  cloudentityselector-aws
-    UID:                   b5b48b74-53bc-4943-836f-9d58a4f245e8
-  Resource Version:        378157
-  UID:                     acbf686e-b3d3-421c-bd42-37308e7fd060
-Status:
-  Network Interfaces:
-    Ips:
-      Address:       10.0.1.173
-      Address Type:  InternalIP
-      Address:       54.177.32.161
-      Address Type:  ExternalIP
-    Mac:             02:4c:d7:4a:f4:f3
-    Name:            eni-0bef7c10929c98111
-  Provider:          AWS
-  State:             running
-  Tags:
-    Environment:          nephe
-    Login:                ubuntu
-    Name:                 vpc-0d6bb6a4a880bd9ad-ubuntu1-kumaranand
-    Terraform:            true
-  Virtual Private Cloud:  vpc-0d6bb6a4a880bd9ad
-Events:                   <none>
+    Kind:                  VirtualMachine
+    Name:                  i-0033eb4a6c846451d
+    UID:                   aff897e4-5e4d-4f88-8a7c-d48f18d41bf7
+  Resource Version:        478254
+  UID:                     bf01e92f-095a-48d2-8b3b-482e2084a135
+Spec:
+  Endpoints:
+    Ip:           10.0.1.173
+    Ip:           54.177.32.161
+  External Node:  nephe-controller
+Events:           <none>
 ```
 
 ## Apply Antrea NetworkPolicy
 
 With the VMs imported into the cluster, we can now configure their security
 policies by setting and applying [Antrea NetworkPolicies (ANP)](https://github.com/antrea-io/antrea/blob/main/docs/antrea-network-policy.md)
-on them. The policy will be realized with cloud native security groups and
-security rules. Please refer to [NetworkPolicy documentation](networkpolicy.md)
-for more information on how ANPs are used, translated, and applied.
+on them. The policy will be realized with cloud network security groups and
+rules. Please refer to [NetworkPolicy](networkpolicy.md) documentation for
+more information on how ANPs are used, translated, and applied.
 
-Cloud VM CRs may be selected in `externalEntitySelectors` under `To`, `From` and
-`AppliedTo` fields of the Antrea `NetworkPolicy`.
+Cloud VirtualMachine CRs may be selected in `externalEntitySelectors` under
+`To`, `From` and  `AppliedTo` fields of Antrea `NetworkPolicy`.
 
 The below sample ANP allows ssh traffic to all VMs.
 
@@ -319,7 +308,6 @@ metadata:
   name: vm-anp
   namespace: sample-ns
 spec:
-  priority: 1
   appliedTo:
   - externalEntitySelector:
       matchLabels:
@@ -341,8 +329,8 @@ policy is applied.
 
 <img src="./assets/cloud-sg.png" width="1500" alt="CloudConsoleSGs"/>
 
-The VirtualMachinePolicy API will display the policy realization status of all
-policies being applied to a VM. The ANP status on a virtual machine will be
+The VirtualMachinePolicy (VMP) API will display the policy realization status of
+all the policies applied to a VM. The ANP status on a virtual machine will be
 shown in the `Realization` field. In the below example, `vm-anp` is successfully
 applied to all VMs.
 
@@ -363,14 +351,14 @@ The `externalEntitySelector` field in ANP supports the following pre-defined
 labels:
 
 * `kind.nephe`: Select based on CRD type. Currently, only supported
-  CRD types is `virtualmachine` in lower case. `virtualmachine` may be used in
+  CRD type is `virtualmachine` in lower case. `virtualmachine` may be used in
   `To`, `From`, `AppliedTo` ANP fields. Thus, an ANP may be applied to virtual
   machines.
-* `vpc.nephe`: Select based on cloud resources VPC.
+* `vpc.nephe`: Select based on cloud resource VPC.
 * `name.nephe`: Select based on K8s resource name. The resource name
   is meaningful only within the K8s cluster. For AWS, virtual machine name is
   the AWS VM instance ID. For Azure virtual machine name is the hashed values of
   the Azure VM resource ID.
-* `KEY.tag.nephe`: Select based on cloud resource tag key/value pair,
-  where KEY is the cloud resource tag key in lower case and label value is cloud
-  resource tag value in lower case.
+* `key.tag.nephe`: Select based on cloud resource tag key/value pair,
+  where `key` is the cloud resource `Key` tag (in lower case) and the `label`
+  value is cloud resource tag `Value` in lower case.

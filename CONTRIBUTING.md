@@ -65,7 +65,7 @@ please make sure to change the name of repository from antrea to nephe.
 
 In Nephe, we have trigger phrases to run AWS and Azure tests on AKS, EKS and
 Kind cluster. Only Nephe [maintainers](MAINTAINERS.md#nephe-maintainers) will
-be able to add the trigger phrase in the PR. Please run the required tests
+be able to add the trigger phrases in the PR. Please run the required tests
 locally for your PR, and then reach out to maintainers.
 
 Here are the trigger phrases for individual checks:

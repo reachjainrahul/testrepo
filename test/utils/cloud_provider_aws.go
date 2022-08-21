@@ -202,7 +202,7 @@ func (p *awsVPC) GetCloudAccountParameters(name, namespace string, cloudCluster 
 
 	cred := v1alpha1.AwsAccountCredential{}
 	// use role access if cloud cluster and the role is set in env variable
-	roleArn := os.Getenv("TF_VAR_cloud_controller_role_arn")
+	roleArn := os.Getenv("TF_VAR_nephe_controller_role_arn")
 	if cloudCluster && len(roleArn) != 0 {
 		cred.RoleArn = roleArn
 		logf.Log.Info("Using AWS role based access")
