@@ -55,16 +55,25 @@ tidy: docker-builder
 
 .PHONY: check-copyright
 check-copyright:
-	$(DOCKERIZE) hack/add-license.sh
+	hack/add-license.sh
 
 .PHONY: add-copyright
 add-copyright:
-	$(DOCKERIZE) hack/add-license.sh --add
+	hack/add-license.sh --add
+
+.PHONY: toc
+toc:
+	echo "===> Generating Table of Contents for Nephe docs <==="
+	$(CURDIR)/hack/update-toc.sh
 
 .PHONY: verify
 verify:
 	@echo "===> Verifying spellings <==="
 	GO=$(GO) $(CURDIR)/hack/verify-spelling.sh
+	@echo "===> Verifying Table of Contents <==="
+	GO=$(GO) $(CURDIR)/hack/verify-toc.sh
+	@echo "===> Verifying documentation formatting for website <==="
+	$(CURDIR)/hack/verify-docs-for-website.sh
 
 # Generate code
 generate: docker-builder

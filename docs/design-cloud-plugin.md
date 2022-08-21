@@ -1,5 +1,26 @@
 # Cloud Plugin Design
 
+## Table of Contents
+
+<!-- toc -->
+- [1. Overview](#1-overview)
+  - [1.1 Expectations](#11-expectations)
+- [2. Cloud Plugin Components](#2-cloud-plugin-components)
+  - [2.1 Cloud Provider Plugin](#21-cloud-provider-plugin)
+  - [2.2 Cloud Interface Plugin](#22-cloud-interface-plugin)
+  - [2.3 Common Plugin Framework](#23-common-plugin-framework)
+  - [2.4 Cloud Specific Plugin](#24-cloud-specific-plugin)
+      - [2.4.1 Cloud Service Interface](#241-cloud-service-interface)
+      - [2.4.2 Credential Management](#242-credential-management)
+- [3. Component Interaction UML Diagram](#3-component-interaction-uml-diagram)
+- [4. Developing Cloud Plugin Workflow](#4-developing-cloud-plugin-workflow)
+    - [4.1 Add cloud-plugin type](#41-add-cloud-plugin-type)
+    - [4.2 Create cloud plugin package](#42-create-cloud-plugin-package)
+    - [4.3 Implement Cloud-interface](#43-implement-cloud-interface)
+    - [4.4 Service Registration](#44-service-registration)
+    - [4.5 Credentials Management](#45-credentials-management)
+<!-- /toc -->
+
 ## 1. Overview
 
 This document covers the design details of Cloud Plugin component in

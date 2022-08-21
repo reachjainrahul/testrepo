@@ -1,5 +1,22 @@
 # Deploying Nephe in EKS
 
+## Table of Contents
+
+<!-- toc -->
+- [Prerequisites](#prerequisites)
+- [Create an EKS cluster via terraform](#create-an-eks-cluster-via-terraform)
+  - [Setup Terraform Environment](#setup-terraform-environment)
+  - [Create an EKS cluster](#create-an-eks-cluster)
+  - [Deploy Nephe Controller](#deploy-nephe-controller)
+  - [Interact with EKS cluster](#interact-with-eks-cluster)
+  - [Destroy EKS cluster](#destroy-eks-cluster)
+- [Create AWS VMs](#create-aws-vms)
+  - [Setup Terraform Environment](#setup-terraform-environment-1)
+  - [Create VMs](#create-vms)
+  - [Get VPC attributes](#get-vpc-attributes)
+  - [Destroy VMs](#destroy-vms)
+<!-- /toc -->
+
 ## Prerequisites
 
 1. Install and configure [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html).

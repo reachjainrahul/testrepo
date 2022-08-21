@@ -1,5 +1,36 @@
 # Nephe NetworkPolicy
 
+## Table of Contents
+<!-- toc -->
+- [Overview](#overview)
+- [Introduction](#introduction)
+  - [Antrea Internal NetworkPolicy](#antrea-internal-networkpolicy)
+  - [Cloud Network Security Group](#cloud-network-security-group)
+- [Implementation](#implementation)
+  - [AddressGroup NSG](#addressgroup-nsg)
+  - [AppliedTo NSG](#appliedto-nsg)
+  - [Mapping Antrea NetworkPolicy To NSG](#mapping-antrea-networkpolicy-to-nsg)
+  - [ANP Rule realization](#anp-rule-realization)
+- [AWS Example](#aws-example)
+  - [List Virtual Machines](#list-virtual-machines)
+  - [List External Entities](#list-external-entities)
+  - [Create a sample Antrea NetworkPolicy](#create-a-sample-antrea-networkpolicy)
+  - [Mapping Antrea NetworkPolicy To NSG](#mapping-antrea-networkpolicy-to-nsg-1)
+  - [AddressGroup NSG](#addressgroup-nsg-1)
+  - [AppliedToGroup NSG](#appliedtogroup-nsg)
+  - [Verify ANP Rule realization on VM](#verify-anp-rule-realization-on-vm)
+- [Azure Example](#azure-example)
+  - [List Virtual Machines](#list-virtual-machines-1)
+  - [List External Entities](#list-external-entities-1)
+  - [Create a sample Antrea NetworkPolicy](#create-a-sample-antrea-networkpolicy-1)
+  - [Mapping Antrea NetworkPolicy To NSG](#mapping-antrea-networkpolicy-to-nsg-2)
+  - [AddressGroup ASG](#addressgroup-asg)
+  - [AppliedTo ASG](#appliedto-asg)
+  - [Verify ANP Rule realization on VM](#verify-anp-rule-realization-on-vm-1)
+<!-- /toc -->
+
+## Overview
+
 The Nephe project does not consume the Antrea `NetworkPolicy`(ANP) CR directly.
 The ANP CR is used by [Antrea](https://antrea.io/) project, where
 `antrea-controller` Pod watches for the Antrea `NetworkPolicy`(ANP) CR and
