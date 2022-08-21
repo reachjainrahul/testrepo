@@ -58,7 +58,7 @@ Cloud Interface plugin implementation for a specific cloud type.
 The sequence diagram shows cloud plugin registration as part of `Nephe Controller`
 initialization.
 
-<img src="assets/cloud-plugin-register.png" height="420" width="620" alt="Cloud Plugin Register Sequence Diagram">
+<img src="assets/cloud-plugin-register.png" width="620" alt="Cloud Plugin Register Sequence Diagram">
 
 ### 2.2 Cloud Interface Plugin
 
@@ -94,7 +94,7 @@ respectively.
   [Service Interface](design-cloud-plugin.md#241-cloud-service-interface)
   level.
 
-<img src="assets/cloud-interface-apis.png" width="950" alt="Cloud Interface APIs Sequence Diagram">
+<img src="assets/cloud-interface-apis.png" width="1130" alt="Cloud Interface APIs Sequence Diagram">
 
 ### 2.3 Common Plugin Framework
 
