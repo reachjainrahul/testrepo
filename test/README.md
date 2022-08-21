@@ -113,24 +113,23 @@ make integration-test-azure
    Run integration tests on EKS cluster.
 
    ```bash
-   ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*test-cloud-cluster.*" -kubeconfig=$HOME/tmp/terraform-eks/kubeconfig -cloud-provider=AWS --cloud-cluster
+   ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*test-cloud-cluster.*" -kubeconfig=$HOME/tmp/terraform-eks/kubeconfig -cloud-provider=AWS -cloud-cluster
    ```
 
-    **Note**: If you want to run the test using IAM role, then pass an
-    argument `--cloud-cluster` and set the variable.
+    **Note**: If you want to run the test using AWS IAM role, set the variable.
 
     ```bash
-    export TF_VAR_cloud_controller_role_arn=YOUR_IAM_ROLE
+    export TF_VAR_nephe_controller_role_arn=YOUR_IAM_ROLE
     ```
 
 -  Deploy Nephe on an AKS cluster using [the AKS installation guide](../docs/eks-installation.md).
    Run integration tests on AKS cluster.
 
    ```bash
-   ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*test-cloud-cluster.*" -kubeconfig=$HOME/tmp/terraform-aks/kubeconfig -cloud-provider=Azure --cloud-cluster
+   ci/bin/integration.test -ginkgo.v -ginkgo.focus=".*test-cloud-cluster.*" -kubeconfig=$HOME/tmp/terraform-aks/kubeconfig -cloud-provider=Azure -cloud-cluster
    ```
 
 **Note**: If Cloud cluster is not created using nephe [terraform scripts](../hack/terraform),
-then update the `--kubeconfig` argument with your kubeconfig file.
+then update the `-kubeconfig` argument with your kubeconfig file.
 
 
