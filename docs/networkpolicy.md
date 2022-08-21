@@ -148,9 +148,7 @@ IPBlocks associated with an Antrea `NetworkPolicy`.
 It is desirable to show what Antrea `NetworkPolicies` are associated with a
 specific cloud resource and the Antrea `NetworkPolicies` realization status.
 Each cloud resource shall keep track of cloud `AppliedTo NSG` it is associated
-with. The union of Antrea `NetworkPolicies` associated with these cloud 
-`AppliedTo NSG`, is entirety of the NetworkPolicies intended to this network
-resource. An Antrea `NetworkPolicy` is considered to be successfully applied to
+with. An Antrea `NetworkPolicy` is considered to be successfully applied to
 a network resource, when the following expectations are met.
 - Its `AppliedTo NSG` to which the network resource is a member of,
   are created/updated with no error.
