@@ -2,12 +2,12 @@ name: Go
 on:
   pull_request:
     branches:
-    - master
+    - main
     - release-*
     - feature/*
   push:
     branches:
-    - master
+    - main
     - release-*
     - feature/*
   workflow_run:
@@ -26,7 +26,7 @@ jobs:
     - uses: antrea-io/has-changes@v2
       id: check_diff
       with:
-        paths-ignore: docs/*
+        paths-ignore: docs/* ci/jenkins/* *.md
     outputs:
       has_changes: ${{ steps.check_diff.outputs.has_changes }}
 

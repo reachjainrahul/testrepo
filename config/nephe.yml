@@ -642,7 +642,7 @@ spec:
         - --enable-debug-log
         command:
         - /nephe-controller
-        image: antrea/nephe:latest
+        image: projects.registry.vmware.com/antrea/nephe:latest
         imagePullPolicy: IfNotPresent
         name: nephe-controller
         ports:
