@@ -39,8 +39,11 @@ Create a Kind cluster. Recommend Kind v0.12.
 
 Install Nephe.
 
+To deploy the latest version of nephe (built from the main branch), use the
+checked-in [deployment yaml](/config/nephe.yml):
+
 ```bash
-kubectl apply -f config/nephe.yml
+kubectl apply -f https://raw.githubusercontent.com/antrea-io/nephe/main/config/nephe.yml
 ```
 
 ### Deploying Nephe in EKS cluster
