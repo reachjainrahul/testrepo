@@ -235,7 +235,7 @@ spec:
 `AddressGroup NSG` and `AppliedTo NSG` and attaches the NSGs to the respective
 VMs, as shown in the below image.
 
-<img src="assets/aws-ssh-allow-vm.png" width="600" alt="ANP realization on AWS VM">
+<img src="assets/aws-ssh-allow-vm.png" width="1200" alt="ANP realization on AWS VM">
 
 ### AddressGroup NSG
 
